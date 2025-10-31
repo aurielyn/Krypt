@@ -13,9 +13,12 @@ import xyz.meowing.krypt.managers.config.ConfigManager.registerListener
 
 @Module
 object FeatureManager {
-    private var moduleCount = 0
-    private var commandCount = 0
-    private var loadTime: Long = 0
+    var moduleCount = 0
+        private set
+    var commandCount = 0
+        private set
+    var loadTime: Long = 0
+        private set
 
     private val pendingFeatures = mutableListOf<Feature>()
     private val islandFeatures = mutableListOf<Feature>()
@@ -63,25 +66,24 @@ object FeatureManager {
                     }
                 }
 
-                ClientCommandRegistrationCallback.EVENT.register { dispatcher, _ ->
-                    commands.forEach {
-                        try {
-                            val instanceField = it.getDeclaredField("INSTANCE")
-                            val command = instanceField.get(null) as Commodore
+                commands.forEach {
+                    try {
+                        val instanceField = it.getDeclaredField("INSTANCE")
+                        val command = instanceField.get(null) as Commodore
 
+                        ClientCommandRegistrationCallback.EVENT.register { dispatcher, _ ->
                             command.register(dispatcher)
-                            commandCount++
-
-                            Krypt.LOGGER.debug("Loaded command: ${it.name}")
-                        } catch (e: Exception) {
-                            Krypt.LOGGER.error("Error initializing command ${it.name}: $e")
                         }
+                        commandCount++
+
+                        Krypt.LOGGER.debug("Loaded command: ${it.name}")
+                    } catch (e: Exception) {
+                        Krypt.LOGGER.error("Error initializing command ${it.name}: $e")
                     }
                 }
-
-                loadTime = System.currentTimeMillis() - startTime
             }
-        
+
+        loadTime = System.currentTimeMillis() - startTime
     }
 
     fun initializeFeatures() {

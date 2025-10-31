@@ -27,20 +27,9 @@ import kotlin.time.Instant
 object LocationAPI {
     private val unknownAreas = mutableMapOf<String, SkyBlockIsland?>()
 
-    private val locationRegex = RegexGroup.SCOREBOARD.create(
-        "location",
-        " *[⏣ф] *(?<location>(?:\\s?[^ൠ\\s]+)*)(?: ൠ x\\d)?",
-    )
-
-    private val guestRegex = RegexGroup.SCOREBOARD.create(
-        "guest",
-        "^ *\u270C *\\((?<guests>\\d+)/(?<max>\\d+)\\) *$",
-    )
-
-    private val playerCountRegex = RegexGroup.TABLIST.create(
-        "player_count",
-        " *(?:players|party) \\((?<count>\\d+)\\) *",
-    )
+    private val locationRegex = Regex(" *[⏣ф] *(?<location>(?:\\s?[^ൠ\\s]+)*)(?: ൠ x\\d)?",)
+    private val guestRegex = Regex("^ *\u270C *\\((?<guests>\\d+)/(?<max>\\d+)\\) *$",)
+    private val playerCountRegex = Regex(" *(?:players|party) \\((?<count>\\d+)\\) *",)
 
     var forceOnSkyblock: Boolean = false
 

@@ -18,6 +18,12 @@
 				"value": "xyz.meowing.krypt.Krypt",
 				"adapter": "kotlin"
 			}
+		],
+		"modmenu": [
+			{
+				"value": "xyz.meowing.krypt.compat.ModMenu",
+				"adapter": "kotlin"
+			}
 		]
 	},
 	"mixins": [

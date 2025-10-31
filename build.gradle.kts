@@ -40,12 +40,15 @@ val clocheAction: Action<ExternalModuleDependency> = Action {
 }
 
 dependencies {
+	implementation(include("io.github.classgraph:classgraph:4.8.184")!!)
+
 	modImplementation("net.fabricmc.fabric-api:fabric-api:${mcData.dependencies.fabric.fabricApiVersion}")
 	modImplementation("net.fabricmc:fabric-language-kotlin:${mcData.dependencies.fabric.fabricLanguageKotlinVersion}")
-	modImplementation(include("xyz.meowing:vexel-${mcData}:116-beta1")!!)
+
+	modImplementation(include("xyz.meowing:vexel-${mcData}:117")!!)
+
 	modImplementation(include("net.hypixel:mod-api:1.0.1")!!)
 	modImplementation(include("maven.modrinth:hypixel-mod-api:1.0.1+build.1+mc1.21")!!)
-	modImplementation(include("io.github.classgraph:classgraph:4.8.184")!!)
 
 	modImplementation("me.owdding:item-data-fixer:1.0.3", clocheAction)
 	modImplementation("tech.thatgravyboat:skyblock-api:3.0.9") {
