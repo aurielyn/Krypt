@@ -1,0 +1,32 @@
+{
+	"schemaVersion": 1,
+	"id": "${mod_id}",
+	"version": "${mod_version}",
+	"name": "${mod_name}",
+	"description": "Dungeon-focused mod for Fabric 1.21",
+	"authors": ["Aurielyn"],
+	"contact": {
+		"homepage": "https://fabricmc.net/",
+		"sources": "https://github.com/FabricMC/fabric-example-mod"
+	},
+	"license": "GPL-3.0-or-later",
+	"icon": "assets/krypt/icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"client": [
+			{
+				"value": "xyz.meowing.krypt.Krypt",
+				"adapter": "kotlin"
+			}
+		]
+	},
+	"mixins": [
+		"krypt.mixins.json"
+	],
+	"depends": {
+		"minecraft": "~${minor_mc_version}",
+		"fabric-api": "*",
+		"fabric-language-kotlin": "*",
+		"fabricloader": ">=0.17.2"
+	}
+}
