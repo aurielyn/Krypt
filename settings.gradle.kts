@@ -1,15 +1,17 @@
 pluginManagement {
 	repositories {
 		maven("https://maven.deftu.dev/releases")
+		maven("https://maven.deftu.dev/snapshots")
+
+		maven("https://jitpack.io/")
 		maven("https://maven.fabricmc.net")
 		maven("https://maven.architectury.dev/")
 		maven("https://maven.minecraftforge.net")
 		maven("https://repo.essential.gg/repository/maven-public")
 		maven("https://server.bbkr.space/artifactory/libs-release/")
-		maven("https://jitpack.io/")
-		maven("https://maven.terraformersmc.com/")
-		maven("https://pkgs.dev.azure.com/djtheredstoner/DevAuth/_packaging/public/maven/v1")
-		maven("https://maven.deftu.dev/snapshots")
+
+		maven("https://maven.terraformersmc.com/") // ModMenu
+		maven("https://maven.teamresourceful.com/repository/maven-private/") // Blossom 1.3.2
 
 		mavenLocal()
 		mavenCentral()

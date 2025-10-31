@@ -1,0 +1,185 @@
+@file:Suppress("UNUSED")
+
+package xyz.meowing.krypt.features
+
+import xyz.meowing.knit.api.events.Event
+import xyz.meowing.knit.api.scheduler.TickScheduler
+import xyz.meowing.knit.api.scheduler.TimeScheduler
+import xyz.meowing.krypt.Krypt
+import xyz.meowing.krypt.api.location.LocationAPI
+import xyz.meowing.krypt.api.location.SkyBlockArea
+import xyz.meowing.krypt.api.location.SkyBlockIsland
+import xyz.meowing.krypt.events.EventBus
+import xyz.meowing.krypt.managers.config.ConfigManager
+import xyz.meowing.krypt.managers.feature.FeatureManager
+
+open class Feature(
+    val configKey: String? = null,
+    val skyblockOnly: Boolean = false,
+    area: Any? = null,
+    subarea: Any? = null
+) {
+    val events = mutableListOf<xyz.meowing.knit.api.events.EventCall>()
+    val tickHandles = mutableSetOf<TickScheduler.Handle>()
+    val timeHandles = mutableSetOf<TimeScheduler.Handle>()
+    val timerIds = mutableSetOf<Long>()
+    val namedEventCalls = mutableMapOf<String, xyz.meowing.knit.api.events.EventCall>()
+    private var setupLoops: (() -> Unit)? = null
+    private var isRegistered = false
+
+    private val areas: List<SkyBlockIsland> = when (area) {
+        is SkyBlockIsland -> listOf(area)
+        is List<*> -> area.filterIsInstance<SkyBlockIsland>()
+        else -> emptyList()
+    }
+
+    private val subareas: List<SkyBlockArea> = when (subarea) {
+        is SkyBlockArea -> listOf(subarea)
+        is List<*> -> subarea.filterIsInstance<SkyBlockArea>()
+        else -> emptyList()
+    }
+
+    init {
+        FeatureManager.addFeature(this)
+    }
+
+    private fun checkConfig(): Boolean {
+        return try {
+            configKey?.let {
+                ConfigManager.getConfigValue(it) as? Boolean ?: false
+            } ?: true
+        } catch (e: Exception) {
+            Krypt.LOGGER.warn("Caught exception in checkConfig(): $e")
+            false
+        }
+    }
+
+    open fun initialize() {}
+
+    protected fun setupLoops(block: () -> Unit) {
+        setupLoops = block
+    }
+
+    open fun onRegister() {
+        setupLoops?.invoke()
+    }
+
+    open fun onUnregister() {
+        cancelLoops()
+    }
+
+    open fun addConfig() {}
+
+    fun isEnabled(): Boolean = checkConfig() && inSkyblock() && inArea() && inSubarea()
+
+    fun update() = onToggle(isEnabled())
+
+    @Synchronized
+    open fun onToggle(state: Boolean) {
+        if (state == isRegistered) return
+
+        if (state) {
+            events.forEach { it.register() }
+            onRegister()
+            isRegistered = true
+        } else {
+            events.forEach { it.unregister() }
+            onUnregister()
+            isRegistered = false
+        }
+    }
+
+    inline fun <reified T : Event> register(priority: Int = 0, noinline cb: (T) -> Unit) {
+        events.add(EventBus.register<T>(priority, false, cb))
+    }
+
+    inline fun <reified T : Event> createCustomEvent(name: String, priority: Int = 0, noinline cb: (T) -> Unit) {
+        val eventCall = EventBus.register<T>(priority, false, cb)
+        namedEventCalls[name] = eventCall
+    }
+
+    fun registerEvent(name: String) {
+        namedEventCalls[name]?.register()
+    }
+
+    fun unregisterEvent(name: String) {
+        namedEventCalls[name]?.unregister()
+    }
+
+    inline fun <reified T> loop(intervalTicks: Long, noinline action: () -> Unit): Any {
+        return when (T::class) {
+            ClientTick::class -> {
+                val handle = TickScheduler.Client.repeat(intervalTicks, action = action)
+                tickHandles.add(handle)
+                handle
+            }
+            ServerTick::class -> {
+                val handle = TickScheduler.Server.repeat(intervalTicks, action = action)
+                tickHandles.add(handle)
+                handle
+            }
+            Timer::class -> {
+                val handle = TimeScheduler.repeat(intervalTicks, action = action)
+                timeHandles.add(handle)
+                handle
+            }
+            else -> throw IllegalArgumentException("Unsupported loop type: ${T::class}")
+        }
+    }
+
+    inline fun <reified T> loopDynamic(
+        noinline delay: () -> Long,
+        noinline stop: () -> Boolean = { false },
+        noinline action: () -> Unit
+    ): Any {
+        return when (T::class) {
+            Timer::class -> {
+                val handle = TimeScheduler.repeatDynamic(delay, stop, action)
+                timeHandles.add(handle)
+                handle
+            }
+            ClientTick::class -> {
+                val handle = TickScheduler.Client.repeatDynamic(delay, action)
+                tickHandles.add(handle)
+                handle
+            }
+            ServerTick::class -> {
+                val handle = TickScheduler.Server.repeatDynamic(delay, action)
+                tickHandles.add(handle)
+                handle
+            }
+            else -> throw IllegalArgumentException("Unsupported loop type: ${T::class}")
+        }
+    }
+
+    fun createTimer(ticks: Int, onTick: () -> Unit = {}, onComplete: () -> Unit = {}): Long {
+        val id = TickScheduler.Client.createTimer(ticks, onTick, onComplete)
+        timerIds.add(id)
+        return id
+    }
+
+    fun getTimer(timerId: Long): TickScheduler.Timer? = TickScheduler.Client.getTimer(timerId)
+
+    private fun cancelLoops() {
+        tickHandles.forEach { it.cancel() }
+        timeHandles.forEach { it.cancel() }
+        timerIds.forEach { TickScheduler.Client.cancelTimer(it) }
+        tickHandles.clear()
+        timeHandles.clear()
+        timerIds.clear()
+    }
+
+    fun inSkyblock(): Boolean = !skyblockOnly || LocationAPI.isOnSkyBlock
+
+    fun inArea(): Boolean = areas.isEmpty() || LocationAPI.island in areas
+
+    fun inSubarea(): Boolean = subareas.isEmpty() || LocationAPI.area in subareas
+
+    fun hasIslands(): Boolean = areas.isNotEmpty()
+
+    fun hasAreas(): Boolean = subareas.isNotEmpty()
+}
+
+class ClientTick
+class ServerTick
+class Timer
