@@ -24,7 +24,7 @@ toolkitLoomHelper {
 dependencies {
 	modImplementation("net.fabricmc.fabric-api:fabric-api:${mcData.dependencies.fabric.fabricApiVersion}")
 	modImplementation("net.fabricmc:fabric-language-kotlin:${mcData.dependencies.fabric.fabricLanguageKotlinVersion}")
-	modImplementation(include("xyz.meowing:vexel-${mcData}:112")!!)
+	modImplementation(include("xyz.meowing:vexel-${mcData}:116")!!)
 
 	when (mcData.version) {
 		MinecraftVersions.VERSION_1_21_9 -> modImplementation("com.terraformersmc:modmenu:16.0.0-rc.1")
