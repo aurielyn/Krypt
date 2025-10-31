@@ -4,6 +4,7 @@
 package xyz.meowing.krypt.api.location
 
 import net.hypixel.data.type.GameType
+import tech.thatgravyboat.skyblockapi.api.SkyBlockAPI
 import tech.thatgravyboat.skyblockapi.api.events.base.Subscription
 import tech.thatgravyboat.skyblockapi.api.events.base.predicates.OnlyOnSkyBlock
 import tech.thatgravyboat.skyblockapi.api.events.hypixel.ServerChangeEvent
@@ -11,12 +12,11 @@ import tech.thatgravyboat.skyblockapi.api.events.info.ScoreboardTitleUpdateEvent
 import tech.thatgravyboat.skyblockapi.api.events.info.ScoreboardUpdateEvent
 import tech.thatgravyboat.skyblockapi.api.events.info.TabListChangeEvent
 import tech.thatgravyboat.skyblockapi.api.events.location.ServerDisconnectEvent
-import tech.thatgravyboat.skyblockapi.utils.regex.RegexGroup
 import tech.thatgravyboat.skyblockapi.utils.regex.RegexUtils.anyMatch
 import tech.thatgravyboat.skyblockapi.utils.regex.RegexUtils.findGroup
 import tech.thatgravyboat.skyblockapi.utils.text.TextProperties.stripped
 import xyz.meowing.knit.api.KnitClient
-import xyz.meowing.krypt.Krypt.Module
+import xyz.meowing.krypt.annotations.Module
 import xyz.meowing.krypt.events.EventBus
 import xyz.meowing.krypt.events.core.LocationEvent
 import kotlin.time.Clock
@@ -77,6 +77,10 @@ object LocationAPI {
 
     var lastServerChange: Instant = Instant.DISTANT_PAST
         private set
+
+    init {
+        SkyBlockAPI.eventBus.register(this)
+    }
 
     @Subscription
     fun onServerChange(event: ServerChangeEvent) {

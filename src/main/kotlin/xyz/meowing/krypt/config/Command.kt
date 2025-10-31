@@ -3,8 +3,8 @@ package xyz.meowing.krypt.config
 import xyz.meowing.knit.api.KnitChat
 import xyz.meowing.knit.api.command.Commodore
 import xyz.meowing.krypt.Krypt
-import xyz.meowing.krypt.Krypt.Command
 import xyz.meowing.krypt.Krypt.prefix
+import xyz.meowing.krypt.annotations.Command
 import xyz.meowing.krypt.managers.config.ConfigManager.configUI
 import xyz.meowing.krypt.managers.config.ConfigManager.openConfig
 import java.lang.Exception

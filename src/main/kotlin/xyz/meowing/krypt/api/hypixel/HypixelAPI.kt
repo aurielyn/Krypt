@@ -4,7 +4,7 @@ import net.hypixel.modapi.HypixelModAPI
 import net.hypixel.modapi.fabric.event.HypixelModAPICallback
 import net.hypixel.modapi.packet.impl.clientbound.ClientboundHelloPacket
 import net.hypixel.modapi.packet.impl.clientbound.event.ClientboundLocationPacket
-import xyz.meowing.krypt.Krypt.Module
+import xyz.meowing.krypt.annotations.Module
 import xyz.meowing.krypt.events.EventBus
 import xyz.meowing.krypt.events.core.LocationEvent
 import kotlin.jvm.optionals.getOrNull

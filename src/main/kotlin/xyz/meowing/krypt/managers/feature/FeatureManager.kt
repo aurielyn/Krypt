@@ -2,10 +2,11 @@ package xyz.meowing.krypt.managers.feature
 
 import io.github.classgraph.ClassGraph
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback
+import xyz.meowing.knit.api.KnitChat
 import xyz.meowing.knit.api.command.Commodore
 import xyz.meowing.krypt.Krypt
-import xyz.meowing.krypt.Krypt.Module
-import xyz.meowing.krypt.Krypt.Command
+import xyz.meowing.krypt.annotations.Command
+import xyz.meowing.krypt.annotations.Module
 import xyz.meowing.krypt.events.EventBus
 import xyz.meowing.krypt.events.core.LocationEvent
 import xyz.meowing.krypt.features.Feature

@@ -12,16 +12,10 @@ object Krypt : ClientModInitializer {
     private var showLoad = true
 
     @JvmStatic
-    val prefix = "§7[§cKrypt§7]"
+    val prefix = "§7[§aKrypt§7]"
 
     @JvmStatic
     var LOGGER = LogManager.getLogger("krypt")
-
-    @Target(AnnotationTarget.CLASS)
-    annotation class Module
-
-    @Target(AnnotationTarget.CLASS)
-    annotation class Command
 
     override fun onInitializeClient() {
         ConfigManager.createConfigUI()
@@ -34,7 +28,7 @@ object Krypt : ClientModInitializer {
 
             val loadMessage = KnitText
                 .literal("$prefix §fMod loaded.")
-                .onHover("§c${FeatureManager.moduleCount} modules §8- §c${FeatureManager.loadTime}ms §8- §c${FeatureManager.commandCount} commands")
+                .onHover("§a${FeatureManager.moduleCount} modules §8- §a${FeatureManager.loadTime}ms §8- §a${FeatureManager.commandCount} commands")
 
             KnitChat.fakeMessage(loadMessage)
 
