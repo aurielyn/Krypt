@@ -4,14 +4,6 @@
 package xyz.meowing.krypt.api.location
 
 import net.hypixel.data.type.GameType
-import tech.thatgravyboat.skyblockapi.api.SkyBlockAPI
-import tech.thatgravyboat.skyblockapi.api.events.base.Subscription
-import tech.thatgravyboat.skyblockapi.api.events.base.predicates.OnlyOnSkyBlock
-import tech.thatgravyboat.skyblockapi.api.events.hypixel.ServerChangeEvent
-import tech.thatgravyboat.skyblockapi.api.events.info.ScoreboardTitleUpdateEvent
-import tech.thatgravyboat.skyblockapi.api.events.info.ScoreboardUpdateEvent
-import tech.thatgravyboat.skyblockapi.api.events.info.TabListChangeEvent
-import tech.thatgravyboat.skyblockapi.api.events.location.ServerDisconnectEvent
 import tech.thatgravyboat.skyblockapi.utils.regex.RegexUtils.anyMatch
 import tech.thatgravyboat.skyblockapi.utils.regex.RegexUtils.findGroup
 import tech.thatgravyboat.skyblockapi.utils.text.TextProperties.stripped
@@ -19,17 +11,26 @@ import xyz.meowing.knit.api.KnitClient
 import xyz.meowing.krypt.annotations.Module
 import xyz.meowing.krypt.events.EventBus
 import xyz.meowing.krypt.events.core.LocationEvent
+import xyz.meowing.krypt.events.core.ScoreboardEvent
+import xyz.meowing.krypt.events.core.ServerEvent
+import xyz.meowing.krypt.events.core.TablistEvent
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
 
+/**
+ * Slightly modified version of SkyblockAPI's LocationAPI to allow us to modify it to fit our needs.
+ *
+ * Original File: [GitHub](https://github.com/SkyblockAPI/SkyblockAPI/blob/2.0/src/common/main/kotlin/tech/thatgravyboat/skyblockapi/api/location/LocationAPI.kt)
+ * @author SkyblockAPI
+ */
 @Module
 object LocationAPI {
     private val unknownAreas = mutableMapOf<String, SkyBlockIsland?>()
 
-    private val locationRegex = Regex(" *[⏣ф] *(?<location>(?:\\s?[^ൠ\\s]+)*)(?: ൠ x\\d)?",)
-    private val guestRegex = Regex("^ *\u270C *\\((?<guests>\\d+)/(?<max>\\d+)\\) *$",)
-    private val playerCountRegex = Regex(" *(?:players|party) \\((?<count>\\d+)\\) *",)
+    private val locationRegex = Regex(" *[⏣ф] *(?<location>(?:\\s?[^ൠ\\s]+)*)(?: ൠ x\\d)?")
+    private val guestRegex = Regex("^ *\u270C *\\((?<guests>\\d+)/(?<max>\\d+)\\) *$")
+    private val playerCountRegex = Regex(" *(?:players|party) \\((?<count>\\d+)\\) *")
 
     var forceOnSkyblock: Boolean = false
 
@@ -59,7 +60,7 @@ object LocationAPI {
         get() = field.coerceAtLeast(KnitClient.players.size)
         private set
 
-    val maxPlayercount: Int?
+    val maxPlayerCount: Int?
         get() = when {
             serverId?.startsWith("mega") == true -> 60
             else -> when (island) {
@@ -79,55 +80,52 @@ object LocationAPI {
         private set
 
     init {
-        SkyBlockAPI.eventBus.register(this)
-    }
+        EventBus.register<LocationEvent.ServerChange> { event ->
+            lastServerChange = Clock.System.now()
+            val wasOnSkyblock = isOnSkyBlock
+            isOnSkyBlock = event.type == GameType.SKYBLOCK
 
-    @Subscription
-    fun onServerChange(event: ServerChangeEvent) {
-        lastServerChange = Clock.System.now()
-        val wasOnSkyblock = isOnSkyBlock
-        isOnSkyBlock = event.type == GameType.SKYBLOCK
+            val newIsland = if (isOnSkyBlock && event.mode != null) SkyBlockIsland.getById(event.mode) else null
+            val oldIsland = island
 
-        val newIsland = if (isOnSkyBlock && event.mode != null) SkyBlockIsland.getById(event.mode!!) else null
-        val oldIsland = island
+            when {
+                !wasOnSkyblock && isOnSkyBlock -> EventBus.post(LocationEvent.SkyblockJoin(newIsland))
+                wasOnSkyblock && !isOnSkyBlock -> EventBus.post(LocationEvent.SkyblockLeave())
+            }
 
-        if (!wasOnSkyblock && isOnSkyBlock) EventBus.post(LocationEvent.SkyblockJoin(newIsland))
+            island = newIsland
+            EventBus.post(LocationEvent.IslandChange(oldIsland, newIsland))
+            serverId = event.name
+        }
 
-        island = newIsland
-        EventBus.post(LocationEvent.IslandChange(oldIsland, newIsland))
+        EventBus.registerIn<TablistEvent.Change> (skyblockOnly = true) { event ->
+            val component = event.new.firstOrNull()?.firstOrNull() ?: return@registerIn
+            playerCount = playerCountRegex.findGroup(component.stripped.lowercase(), "count")?.toIntOrNull() ?: 0
+        }
 
-        serverId = event.name
-    }
+        EventBus.registerIn<ScoreboardEvent.UpdateTitle> (skyblockOnly = true) { event ->
+            isGuest = event.new.contains("guest", ignoreCase = true)
+        }
 
-    @Subscription
-    @OnlyOnSkyBlock
-    fun onTabListUpdate(event: TabListChangeEvent) {
-        val component = event.new.firstOrNull()?.firstOrNull() ?: return
-        playerCount = playerCountRegex.findGroup(component.stripped.lowercase(), "count")?.toIntOrNull() ?: 0
-    }
+        EventBus.registerIn<ScoreboardEvent.Update> (skyblockOnly = true) { event ->
+            locationRegex.anyMatch(event.added, "location") { (location) ->
+                val old = area
+                area = SkyBlockArea(location)
+                EventBus.post(LocationEvent.AreaChange(old, area))
 
-    @Subscription
-    @OnlyOnSkyBlock
-    fun onScoreboardTitleUpdate(event: ScoreboardTitleUpdateEvent) {
-        isGuest = event.new.contains("guest", ignoreCase = true)
-    }
+                val knownArea = SkyBlockAreas.registeredAreas.entries.find { it.value.name == location } != null
+                if (!knownArea) {
+                    unknownAreas.putIfAbsent(location, island)
+                }
+            }
 
-    @Subscription
-    @OnlyOnSkyBlock
-    fun onScoreboardChange(event: ScoreboardUpdateEvent) {
-        locationRegex.anyMatch(event.added, "location") { (location) ->
-            val old = area
-            area = SkyBlockArea(location)
-            EventBus.post(LocationEvent.AreaChange(old, area))
-
-            val knownArea = SkyBlockAreas.registeredAreas.entries.find { it.value.name == location } != null
-            if (!knownArea) {
-                unknownAreas.putIfAbsent(location, island)
+            guestRegex.anyMatch(event.added, "guests") { (current) ->
+                playerCount = current.toIntOrNull() ?: 0
             }
         }
 
-        guestRegex.anyMatch(event.added, "guests") { (current) ->
-            playerCount = current.toIntOrNull() ?: 0
+        EventBus.register<ServerEvent.Disconnect> {
+            reset()
         }
     }
 
@@ -146,7 +144,4 @@ object LocationAPI {
             EventBus.post(LocationEvent.IslandChange(old, null))
         }
     }
-
-    @Subscription(ServerDisconnectEvent::class)
-    fun onServerDisconnect() = reset()
 }

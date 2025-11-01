@@ -2,10 +2,13 @@
 
 package xyz.meowing.krypt.features
 
+import xyz.meowing.knit.api.KnitChat
 import xyz.meowing.knit.api.events.Event
 import xyz.meowing.knit.api.scheduler.TickScheduler
 import xyz.meowing.knit.api.scheduler.TimeScheduler
 import xyz.meowing.krypt.Krypt
+import xyz.meowing.krypt.api.dungeons.DungeonAPI
+import xyz.meowing.krypt.api.dungeons.DungeonFloor
 import xyz.meowing.krypt.api.location.LocationAPI
 import xyz.meowing.krypt.api.location.SkyBlockArea
 import xyz.meowing.krypt.api.location.SkyBlockIsland
@@ -16,8 +19,9 @@ import xyz.meowing.krypt.managers.feature.FeatureManager
 open class Feature(
     val configKey: String? = null,
     val skyblockOnly: Boolean = false,
+    island: Any? = null,
     area: Any? = null,
-    subarea: Any? = null
+    dungeonFloor: Any? = null
 ) {
     val events = mutableListOf<xyz.meowing.knit.api.events.EventCall>()
     val tickHandles = mutableSetOf<TickScheduler.Handle>()
@@ -27,15 +31,21 @@ open class Feature(
     private var setupLoops: (() -> Unit)? = null
     private var isRegistered = false
 
-    private val areas: List<SkyBlockIsland> = when (area) {
-        is SkyBlockIsland -> listOf(area)
-        is List<*> -> area.filterIsInstance<SkyBlockIsland>()
+    private val islands: List<SkyBlockIsland> = when (island) {
+        is SkyBlockIsland -> listOf(island)
+        is List<*> -> island.filterIsInstance<SkyBlockIsland>()
         else -> emptyList()
     }
 
-    private val subareas: List<SkyBlockArea> = when (subarea) {
-        is SkyBlockArea -> listOf(subarea)
-        is List<*> -> subarea.filterIsInstance<SkyBlockArea>()
+    private val areas: List<SkyBlockArea> = when (area) {
+        is SkyBlockArea -> listOf(area)
+        is List<*> -> area.filterIsInstance<SkyBlockArea>()
+        else -> emptyList()
+    }
+
+    private val dungeonFloors: List<DungeonFloor> = when (dungeonFloor) {
+        is DungeonFloor -> listOf(dungeonFloor)
+        is List<*> -> dungeonFloor.filterIsInstance<DungeonFloor>()
         else -> emptyList()
     }
 
@@ -70,7 +80,7 @@ open class Feature(
 
     open fun addConfig() {}
 
-    fun isEnabled(): Boolean = checkConfig() && inSkyblock() && inArea() && inSubarea()
+    fun isEnabled(): Boolean = checkConfig() && inSkyblock() && inArea() && inSubarea() && inDungeonFloor()
 
     fun update() = onToggle(isEnabled())
 
@@ -171,13 +181,20 @@ open class Feature(
 
     fun inSkyblock(): Boolean = !skyblockOnly || LocationAPI.isOnSkyBlock
 
-    fun inArea(): Boolean = areas.isEmpty() || LocationAPI.island in areas
+    fun inArea(): Boolean = islands.isEmpty() || LocationAPI.island in islands
 
-    fun inSubarea(): Boolean = subareas.isEmpty() || LocationAPI.area in subareas
+    fun inSubarea(): Boolean = areas.isEmpty() || LocationAPI.area in areas
 
-    fun hasIslands(): Boolean = areas.isNotEmpty()
+    fun inDungeonFloor(): Boolean {
+        if (dungeonFloors.isEmpty()) return true
+        return SkyBlockIsland.THE_CATACOMBS.inIsland() && DungeonAPI.dungeonFloor in dungeonFloors
+    }
 
-    fun hasAreas(): Boolean = subareas.isNotEmpty()
+    fun hasIslands(): Boolean = islands.isNotEmpty()
+
+    fun hasAreas(): Boolean = areas.isNotEmpty()
+
+    fun hasDungeonFloors(): Boolean = dungeonFloors.isNotEmpty()
 }
 
 class ClientTick

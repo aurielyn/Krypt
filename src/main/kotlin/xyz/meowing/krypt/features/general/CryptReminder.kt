@@ -1,9 +1,9 @@
 package xyz.meowing.krypt.features.general
 
-import tech.thatgravyboat.skyblockapi.api.area.dungeon.DungeonAPI
 import xyz.meowing.knit.api.KnitChat
 import xyz.meowing.knit.api.scheduler.TimeScheduler
 import xyz.meowing.krypt.annotations.Module
+import xyz.meowing.krypt.api.dungeons.DungeonAPI
 import xyz.meowing.krypt.api.location.LocationAPI
 import xyz.meowing.krypt.api.location.SkyBlockIsland
 import xyz.meowing.krypt.config.ConfigDelegate
@@ -13,9 +13,10 @@ import xyz.meowing.krypt.features.Feature
 import xyz.meowing.krypt.managers.config.ConfigElement
 import xyz.meowing.krypt.managers.config.ConfigManager
 import xyz.meowing.krypt.utils.StringUtils.removeFormatting
+import xyz.meowing.krypt.utils.TitleUtils.showTitle
 
 @Module
-object CryptReminder : Feature("general.cryptReminder", area = SkyBlockIsland.THE_CATACOMBS) {
+object CryptReminder : Feature("general.cryptReminder", island = SkyBlockIsland.THE_CATACOMBS) {
     private val delay by ConfigDelegate<Double>("general.cryptReminder.delay")
     private val sendToParty by ConfigDelegate<Boolean>("general.cryptReminder.sendToParty")
 
@@ -40,8 +41,11 @@ object CryptReminder : Feature("general.cryptReminder", area = SkyBlockIsland.TH
             if (event.isActionBar) return@register
             if (event.message.string.removeFormatting() == "[NPC] Mort: Good luck.") {
                 TimeScheduler.schedule(1000 * 60 * delay.toLong()) {
-                    if (LocationAPI.island != SkyBlockIsland.THE_CATACOMBS || DungeonAPI.inBoss) return@schedule
-                    val cryptCount = xyz.meowing.krypt.api.dungeons.DungeonAPI.cryptCount
+                    val cryptCount = DungeonAPI.cryptCount
+
+                    if (cryptCount == 5 || LocationAPI.island != SkyBlockIsland.THE_CATACOMBS || DungeonAPI.inBoss) return@schedule
+
+                    showTitle("§c$cryptCount§7/§c5 §fcrypts", null, 3000)
                     if (sendToParty) KnitChat.sendCommand("pc $cryptCount/5 crypts")
                 }
             }

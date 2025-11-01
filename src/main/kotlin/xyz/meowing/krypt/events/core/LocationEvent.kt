@@ -3,6 +3,7 @@ package xyz.meowing.krypt.events.core
 import net.hypixel.data.region.Environment
 import net.hypixel.data.type.ServerType
 import xyz.meowing.knit.api.events.Event
+import xyz.meowing.krypt.api.dungeons.DungeonFloor
 import xyz.meowing.krypt.api.location.SkyBlockArea
 import xyz.meowing.krypt.api.location.SkyBlockIsland
 
@@ -20,6 +21,16 @@ sealed class LocationEvent {
         val new: SkyBlockIsland?
     ) : Event()
 
+    class AreaChange(
+        val old: SkyBlockArea,
+        val new: SkyBlockArea
+    ) : Event()
+
+    class DungeonFloorChange(
+        val old: DungeonFloor?,
+        val new: DungeonFloor?
+    ) : Event()
+
     class HypixelJoin(
         val environment: Environment
     ) : Event() {
@@ -30,8 +41,5 @@ sealed class LocationEvent {
         val newIsland: SkyBlockIsland?
     ) : Event()
 
-    class AreaChange(
-        val old: SkyBlockArea,
-        val new: SkyBlockArea
-    ) : Event()
+    class SkyblockLeave : Event()
 }

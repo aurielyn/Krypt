@@ -2,7 +2,6 @@ package xyz.meowing.krypt.managers.feature
 
 import io.github.classgraph.ClassGraph
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback
-import xyz.meowing.knit.api.KnitChat
 import xyz.meowing.knit.api.command.Commodore
 import xyz.meowing.krypt.Krypt
 import xyz.meowing.krypt.annotations.Command
@@ -25,11 +24,16 @@ object FeatureManager {
     private val islandFeatures = mutableListOf<Feature>()
     private val areaFeatures = mutableListOf<Feature>()
     private val skyblockFeatures = mutableListOf<Feature>()
+    private val dungeonFloorFeatures = mutableListOf<Feature>()
 
     val features = mutableListOf<Feature>()
 
     init {
-        EventBus.register<LocationEvent.ServerChange> {
+        EventBus.register<LocationEvent.SkyblockJoin> {
+            skyblockFeatures.forEach { it.update() }
+        }
+
+        EventBus.register<LocationEvent.SkyblockLeave> {
             skyblockFeatures.forEach { it.update() }
         }
 
@@ -39,6 +43,11 @@ object FeatureManager {
 
         EventBus.register<LocationEvent.AreaChange> {
             areaFeatures.forEach { it.update() }
+        }
+
+
+        EventBus.register<LocationEvent.DungeonFloorChange> {
+            dungeonFloorFeatures.forEach { it.update() }
         }
     }
 
@@ -92,12 +101,15 @@ object FeatureManager {
             features.add(feature)
             if (feature.hasIslands()) islandFeatures.add(feature)
             if (feature.hasAreas()) areaFeatures.add(feature)
+            if (feature.hasDungeonFloors()) dungeonFloorFeatures.add(feature)
             if (feature.skyblockOnly) skyblockFeatures.add(feature)
+
             feature.addConfig()
             feature.initialize()
             feature.configKey?.let { registerListener(it, feature) }
             feature.update()
         }
+
         pendingFeatures.clear()
     }
 }

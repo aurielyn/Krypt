@@ -74,7 +74,7 @@ object ConfigManager {
     }
 
     fun openConfig() {
-        TickScheduler.Client.schedule(2) {
+        TickScheduler.Client.post {
             client.execute { client.setScreen(configUI) }
         }
     }
