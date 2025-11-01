@@ -27,7 +27,6 @@ sealed class LocationEvent {
     ) : Event()
 
     class DungeonFloorChange(
-        val old: DungeonFloor?,
         val new: DungeonFloor?
     ) : Event()
 
@@ -37,9 +36,7 @@ sealed class LocationEvent {
         val onAlpha: Boolean get() = environment == Environment.BETA
     }
 
-    class SkyblockJoin(
-        val newIsland: SkyBlockIsland?
-    ) : Event()
+    class SkyblockJoin : Event()
 
     class SkyblockLeave : Event()
 }

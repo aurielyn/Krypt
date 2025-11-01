@@ -36,7 +36,12 @@ object LocationAPI {
 
     var isOnSkyBlock: Boolean = false
         get() = field || forceOnSkyblock
-        private set
+        private set(value) {
+            if (field != value) {
+                field = value
+                if (value) EventBus.post(LocationEvent.SkyblockJoin()) else EventBus.post(LocationEvent.SkyblockLeave())
+            }
+        }
 
     var island: SkyBlockIsland? = null
         private set
@@ -82,16 +87,10 @@ object LocationAPI {
     init {
         EventBus.register<LocationEvent.ServerChange> { event ->
             lastServerChange = Clock.System.now()
-            val wasOnSkyblock = isOnSkyBlock
             isOnSkyBlock = event.type == GameType.SKYBLOCK
 
             val newIsland = if (isOnSkyBlock && event.mode != null) SkyBlockIsland.getById(event.mode) else null
             val oldIsland = island
-
-            when {
-                !wasOnSkyblock && isOnSkyBlock -> EventBus.post(LocationEvent.SkyblockJoin(newIsland))
-                wasOnSkyblock && !isOnSkyBlock -> EventBus.post(LocationEvent.SkyblockLeave())
-            }
 
             island = newIsland
             EventBus.post(LocationEvent.IslandChange(oldIsland, newIsland))

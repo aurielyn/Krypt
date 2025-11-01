@@ -2,7 +2,6 @@
 
 package xyz.meowing.krypt.features
 
-import xyz.meowing.knit.api.KnitChat
 import xyz.meowing.knit.api.events.Event
 import xyz.meowing.knit.api.scheduler.TickScheduler
 import xyz.meowing.knit.api.scheduler.TimeScheduler

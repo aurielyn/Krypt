@@ -1,10 +1,11 @@
 package xyz.meowing.krypt
 
 import net.fabricmc.api.ClientModInitializer
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents
 import org.apache.logging.log4j.LogManager
 import xyz.meowing.knit.api.KnitChat
 import xyz.meowing.knit.api.text.KnitText
+import xyz.meowing.krypt.events.EventBus
+import xyz.meowing.krypt.events.core.ServerEvent
 import xyz.meowing.krypt.managers.config.ConfigManager
 import xyz.meowing.krypt.managers.feature.FeatureManager
 
@@ -23,7 +24,7 @@ object Krypt : ClientModInitializer {
         FeatureManager.initializeFeatures()
         ConfigManager.executePending()
 
-        ClientPlayConnectionEvents.JOIN.register { _, _, _ ->
+        EventBus.register<ServerEvent.Connect> {
             if (!showLoad) return@register
 
             val loadMessage = KnitText
