@@ -18,6 +18,8 @@ class FeatureElement(
         val optionsList = options.getOrPut(optionsSection) { mutableListOf() }
         if (!optionsList.any { it.optionName == optionName }) optionsList.add(option)
 
+        ConfigManager.ensureDefaultValue(element)
+
         return this
     }
 }
