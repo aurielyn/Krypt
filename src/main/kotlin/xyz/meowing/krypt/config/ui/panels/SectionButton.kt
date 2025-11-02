@@ -19,7 +19,8 @@ import kotlin.math.absoluteValue
 class SectionButton(
     val feature: FeatureElement,
     container: VexelElement<*>,
-    private val onConfigUpdate: (String, Any) -> Unit
+    private val onConfigUpdate: (String, Any) -> Unit,
+    val isLast: Boolean
 ) : VexelElement<SectionButton>() {
 
     private var extended = false
@@ -44,7 +45,7 @@ class SectionButton(
         .alignRight()
         .childOf(buttonBackground)
 
-    private val optionsContainer = Rectangle(0x00000000, 0x00000000, 0f, 0f)
+    private val optionsContainer = Rectangle(0x00000000, 0x00000000)
         .setSizing(Panel.WIDTH, Size.Pixels, 0f, Size.Pixels)
         .setPositioning(0f, Pos.ParentPixels, HEIGHT, Pos.ParentPixels)
         .childOf(this)
@@ -56,6 +57,7 @@ class SectionButton(
     init {
         setSizing(Panel.WIDTH, Size.Pixels, HEIGHT, Size.Pixels)
         setPositioning(0f, Pos.ParentPixels, 0f, Pos.AfterSibling)
+        setRadius()
         childOf(container)
 
         chevron.visible = feature.options.values.flatten().isNotEmpty()
@@ -155,6 +157,8 @@ class SectionButton(
                 }
             }
         }
+
+        setRadius()
     }
 
     private fun calculateOptionsHeight(): Float {
@@ -190,6 +194,12 @@ class SectionButton(
         return feature.options.values.flatten().any {
             it.optionName.contains(query, ignoreCase = true)
         }
+    }
+
+    private fun setRadius() {
+        val bottomLeftRadius = if (isLast && !extended) 5f else 0f
+        val bottomRightRadius = if (isLast && !extended) 5f else 0f
+        buttonBackground.borderRadiusVarying(topRight = 0f, topLeft = 0f, bottomRight = bottomRightRadius, bottomLeft = bottomLeftRadius)
     }
 
     override fun onRender(mouseX: Float, mouseY: Float) {}
