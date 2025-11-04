@@ -1,10 +1,13 @@
 package xyz.meowing.krypt.api.dungeons.map
 
+import xyz.meowing.knit.Knit
 import xyz.meowing.knit.api.KnitClient
+import xyz.meowing.knit.api.scheduler.TickScheduler
 import xyz.meowing.krypt.api.dungeons.utils.WorldScanUtils
 import xyz.meowing.krypt.api.dungeons.Dungeon.rooms
 import xyz.meowing.krypt.api.dungeons.players.DungeonPlayer
 import xyz.meowing.knit.internal.events.TickEvent
+import xyz.meowing.krypt.Krypt
 import xyz.meowing.krypt.api.dungeons.Dungeon
 import xyz.meowing.krypt.api.dungeons.utils.RoomType
 import xyz.meowing.krypt.api.dungeons.utils.ScanUtils
@@ -18,8 +21,10 @@ object WorldScanner {
     var lastIdx: Int? = null
 
     fun init() {
-        EventBus.registerIn<TickEvent.Client.Start>(SkyBlockIsland.THE_CATACOMBS) {
-            val player = KnitClient.player ?: return@registerIn
+        Knit.EventBus.register<TickEvent.Client.Start> {
+            if (!Dungeon.inDungeon) return@register
+
+            val player = KnitClient.player ?: return@register
 
             // checking player states
             checkPlayerState()
@@ -39,12 +44,12 @@ object WorldScanner {
                 val prevRoom = lastIdx?.let { rooms[it] }
                 val currRoom = rooms.getOrNull(idx)
 
-                if (lastIdx == idx) return@registerIn
+                if (lastIdx == idx) return@register
 
                 lastIdx = idx
                 Dungeon.currentRoom = Dungeon.getRoomAt(player.x.toInt(), player.z.toInt())
                 Dungeon.currentRoom?.explored = true
-                val (rmx, rmz) = Dungeon.currentRoom?.components?.firstOrNull() ?: return@registerIn
+                val (rmx, rmz) = Dungeon.currentRoom?.components?.firstOrNull() ?: return@register
                 Dungeon.discoveredRooms.remove("$rmx/$rmz")
             }
         }

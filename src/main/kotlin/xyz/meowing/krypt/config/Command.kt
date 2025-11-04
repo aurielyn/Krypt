@@ -1,10 +1,13 @@
 package xyz.meowing.krypt.config
 
 import xyz.meowing.knit.api.KnitChat
+import xyz.meowing.knit.api.KnitClient.client
 import xyz.meowing.knit.api.command.Commodore
+import xyz.meowing.knit.api.scheduler.TickScheduler
 import xyz.meowing.krypt.Krypt
 import xyz.meowing.krypt.Krypt.prefix
 import xyz.meowing.krypt.annotations.Command
+import xyz.meowing.krypt.hud.HudEditor
 import xyz.meowing.krypt.managers.config.ConfigManager.configUI
 import xyz.meowing.krypt.managers.config.ConfigManager.openConfig
 import java.lang.Exception
@@ -21,6 +24,14 @@ object ConfigCommand : Commodore("krypt") {
                     Krypt.LOGGER.info("Updated config $configName to value $value [${value.javaClass}]")
                 } catch (e: Exception) {
                     Krypt.LOGGER.error("Caught exception in command \"/krypt updateConfig\": $e")
+                }
+            }
+        }
+
+        literal("hud") {
+            runs {
+                TickScheduler.Client.post {
+                    client.execute { client.setScreen(HudEditor()) }
                 }
             }
         }

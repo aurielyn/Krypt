@@ -33,8 +33,11 @@ object DungeonPlayerManager {
             val firstColumn = event.new.firstOrNull() ?: return@registerIn
 
             for (i in 0 until 5) {
-                val matcher = playerTabPattern.matcher(firstColumn[1 + i * 4].stripped)
-                if (matcher == null ) {
+                val index = 1 + i * 4
+                if (index !in firstColumn.indices) continue
+                val matcher = playerTabPattern.matcher(firstColumn[index].stripped)
+
+                if (!matcher.matches()) {
                     players[i] = null
                     continue
                 }

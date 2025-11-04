@@ -2,6 +2,7 @@ package xyz.meowing.krypt.api.dungeons
 
 import tech.thatgravyboat.skyblockapi.utils.regex.RegexUtils.find
 import tech.thatgravyboat.skyblockapi.utils.regex.matchWhen
+import xyz.meowing.knit.Knit
 import xyz.meowing.knit.api.KnitPlayer
 import xyz.meowing.knit.internal.events.TickEvent
 import xyz.meowing.krypt.api.dungeons.map.Door
@@ -58,6 +59,13 @@ object Dungeon {
 
     // Floor info
     var floor: DungeonFloor? = null
+        set(value) {
+            if (field != value) {
+                field = value
+                EventBus.post(LocationEvent.DungeonFloorChange(value))
+            }
+        }
+
     var inDungeon = false
     val inBoss: Boolean
         get() = floor != null && KnitPlayer.player?.let {
@@ -125,7 +133,9 @@ object Dungeon {
             if (secrets != room.secretsFound) room.secretsFound = secrets
         }
 
-        EventBus.registerIn<TickEvent.Client.Start>(SkyBlockIsland.THE_CATACOMBS){
+        Knit.EventBus.register<TickEvent.Client.Start> {
+            if (!inDungeon) return@register
+
             updateHudLines()
             updateHeldItem()
         }

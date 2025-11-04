@@ -69,7 +69,7 @@ class DataUtils<T: Any>(fileName: String, private val defaultObject: T, private 
 
     private val dataFile = File(
         FabricLoader.getInstance().configDir.toFile(),
-        "Zen-1.21/${fileName}.json"
+        "Krypt/${fileName}.json"
     )
     private var data: T = loadData()
     private var lastSavedTime = System.currentTimeMillis()

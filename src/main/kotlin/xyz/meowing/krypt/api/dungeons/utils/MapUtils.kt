@@ -7,6 +7,7 @@ import net.minecraft.item.map.MapDecoration
 import net.minecraft.item.map.MapDecorationTypes
 import net.minecraft.item.map.MapState
 import net.minecraft.network.packet.s2c.play.MapUpdateS2CPacket
+import xyz.meowing.knit.Knit
 import xyz.meowing.knit.api.KnitClient
 import xyz.meowing.knit.internal.events.TickEvent
 import xyz.meowing.krypt.api.dungeons.map.MapScanner
@@ -42,7 +43,9 @@ object MapUtils {
             }
         }
 
-        EventBus.registerIn<TickEvent.Client.Start>(SkyBlockIsland.THE_CATACOMBS) {
+        Knit.EventBus.register<TickEvent.Client.Start> {
+            if (!Dungeon.inDungeon) return@register
+
             if (!calibrated) {
                 if (mapData == null) {
                     mapData = getCurrentMapState()

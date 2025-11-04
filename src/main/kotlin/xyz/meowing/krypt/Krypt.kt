@@ -4,6 +4,7 @@ import net.fabricmc.api.ClientModInitializer
 import org.apache.logging.log4j.LogManager
 import xyz.meowing.knit.api.KnitChat
 import xyz.meowing.knit.api.text.KnitText
+import xyz.meowing.krypt.api.dungeons.Dungeon
 import xyz.meowing.krypt.events.EventBus
 import xyz.meowing.krypt.events.core.ServerEvent
 import xyz.meowing.krypt.managers.config.ConfigManager
@@ -13,7 +14,7 @@ object Krypt : ClientModInitializer {
     private var showLoad = true
 
     @JvmStatic
-    val prefix = "§7[§aKrypt§7]"
+    val prefix = "§7[§dKrypt§7]"
 
     @JvmStatic
     var LOGGER = LogManager.getLogger("krypt")
@@ -23,13 +24,14 @@ object Krypt : ClientModInitializer {
         FeatureManager.loadFeatures()
         FeatureManager.initializeFeatures()
         ConfigManager.executePending()
+        Dungeon.init()
 
         EventBus.register<ServerEvent.Connect> {
             if (!showLoad) return@register
 
             val loadMessage = KnitText
                 .literal("$prefix §fMod loaded.")
-                .onHover("§a${FeatureManager.moduleCount} modules §8- §a${FeatureManager.loadTime}ms §8- §a${FeatureManager.commandCount} commands")
+                .onHover("§d${FeatureManager.moduleCount} modules §8- §d${FeatureManager.loadTime}ms §8- §d${FeatureManager.commandCount} commands")
 
             KnitChat.fakeMessage(loadMessage)
 
