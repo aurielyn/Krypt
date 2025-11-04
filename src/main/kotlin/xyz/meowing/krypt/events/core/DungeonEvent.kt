@@ -1,34 +1,39 @@
 package xyz.meowing.krypt.events.core
 
 import xyz.meowing.knit.api.events.Event
-import xyz.meowing.krypt.api.dungeons.DungeonFloor
-import xyz.meowing.krypt.api.dungeons.DungeonKey
+import xyz.meowing.krypt.api.dungeons.utils.DungeonFloor
+import xyz.meowing.krypt.api.dungeons.utils.DungeonKey
 
 sealed class DungeonEvent {
     /**
      * Posted when the dungeon starts.
      *
-     * @see xyz.meowing.krypt.api.dungeons.DungeonAPI
+     * @see xyz.meowing.krypt.api.dungeonsold.DungeonAPI
      * @since 1.2.0
      */
     class Start(
         val floor: DungeonFloor
     ) : Event()
 
+    class End(
+        val floor: DungeonFloor
+    ) : Event()
+
     /**
      * Posted when the player loads into a Dungeon.
      *
-     * @see xyz.meowing.krypt.api.dungeons.DungeonAPI
+     * @see xyz.meowing.krypt.api.dungeons.Dungeon
      * @since 1.2.0
      */
     class Enter(
         val floor: DungeonFloor
     ) : Event()
 
+
     /**
      * Posted when a key is picked up
      *
-     * @see xyz.meowing.krypt.api.dungeons.DungeonAPI
+     * @see xyz.meowing.krypt.api.dungeon.Dungeon
      * @since 1.2.0
      */
     class KeyPickUp(

@@ -11,6 +11,8 @@
         "requireAnnotations": true
     },
     "client": [
-        "MixinGameRenderer"
+        "MixinGameRenderer",
+        "MixinClientConnection",
+        "AccessorMapState"
     ]
 }

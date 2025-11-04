@@ -3,7 +3,8 @@ package xyz.meowing.krypt.features.general
 import xyz.meowing.knit.api.KnitChat
 import xyz.meowing.knit.api.scheduler.TimeScheduler
 import xyz.meowing.krypt.annotations.Module
-import xyz.meowing.krypt.api.dungeons.DungeonAPI
+import xyz.meowing.krypt.api.dungeons.Dungeon
+import xyz.meowing.krypt.api.dungeons.score.DungeonScore
 import xyz.meowing.krypt.api.location.LocationAPI
 import xyz.meowing.krypt.api.location.SkyBlockIsland
 import xyz.meowing.krypt.config.ConfigDelegate
@@ -41,9 +42,9 @@ object CryptReminder : Feature("general.cryptReminder", island = SkyBlockIsland.
             if (event.isActionBar) return@register
             if (event.message.string.removeFormatting() == "[NPC] Mort: Good luck.") {
                 TimeScheduler.schedule(1000 * 60 * delay.toLong()) {
-                    val cryptCount = DungeonAPI.cryptCount
+                    val cryptCount = DungeonScore.data.crypts
 
-                    if (cryptCount == 5 || LocationAPI.island != SkyBlockIsland.THE_CATACOMBS || DungeonAPI.inBoss) return@schedule
+                    if (cryptCount == 5 || LocationAPI.island != SkyBlockIsland.THE_CATACOMBS || Dungeon.inBoss) return@schedule
 
                     showTitle("§c$cryptCount§7/§c5 §fcrypts", null, 3000)
                     if (sendToParty) KnitChat.sendCommand("pc $cryptCount/5 crypts")

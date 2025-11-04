@@ -2,6 +2,7 @@ package xyz.meowing.krypt.events
 
 import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents
+import net.minecraft.network.packet.Packet
 import xyz.meowing.knit.Knit
 import xyz.meowing.knit.api.events.Event
 import xyz.meowing.knit.api.events.EventBus
@@ -10,6 +11,7 @@ import xyz.meowing.knit.internal.events.TickEvent
 import xyz.meowing.krypt.annotations.Module
 import xyz.meowing.krypt.api.location.SkyBlockIsland
 import xyz.meowing.krypt.events.core.ChatEvent
+import xyz.meowing.krypt.events.core.PacketEvent
 import xyz.meowing.krypt.events.core.ServerEvent
 import xyz.meowing.krypt.managers.events.EventBusManager
 
@@ -31,6 +33,10 @@ object EventBus : EventBus(true) {
         Knit.EventBus.register<TickEvent.Client.Start> { TickScheduler.Client.onTick() }
 
         Knit.EventBus.register<TickEvent.Server.Start> { TickScheduler.Server.onTick() }
+    }
+
+    fun onPacketReceived(packet: Packet<*>): Boolean {
+        return post(PacketEvent.Received(packet))
     }
 
     inline fun <reified T : Event> registerIn(

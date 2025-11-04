@@ -13,7 +13,7 @@ import xyz.meowing.krypt.utils.Utils.toColorFromMap
 
 object ConfigManager {
     private val dataUtils = DataUtils("config", mutableMapOf<String, Any>())
-    private val categoryOrder = listOf("general", "qol", "hud", "visuals", "slayers", "dungeons", "meowing", "rift")
+    private val categoryOrder = listOf("general", "qol", "hud", "visuals", "slayers", "dungeonsold", "meowing", "rift")
     private val pendingCallbacks = mutableListOf<Pair<String, (Any) -> Unit>>()
 
     val configValueMap: MutableMap<String, Any> = dataUtils.getData()
