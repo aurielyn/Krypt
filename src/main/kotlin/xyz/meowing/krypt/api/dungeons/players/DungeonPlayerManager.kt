@@ -1,6 +1,5 @@
 package xyz.meowing.krypt.api.dungeons.players
 
-import xyz.meowing.krypt.api.dungeons.Dungeon
 import net.minecraft.text.Text
 import tech.thatgravyboat.skyblockapi.utils.text.TextProperties.stripped
 import xyz.meowing.knit.api.KnitPlayer
@@ -54,12 +53,6 @@ object DungeonPlayerManager {
         }
 
         EventBus.registerIn<ChatEvent.Receive>(SkyBlockIsland.THE_CATACOMBS) { onDeath(it.message) }
-    }
-
-    fun update() {
-        if (!Dungeon.inDungeon) return
-
-
     }
 
     private fun onDeath(text: Text) {

@@ -5,6 +5,7 @@ import net.hypixel.modapi.HypixelModAPI
 import net.hypixel.modapi.fabric.event.HypixelModAPICallback
 import net.hypixel.modapi.packet.impl.clientbound.ClientboundHelloPacket
 import net.hypixel.modapi.packet.impl.clientbound.event.ClientboundLocationPacket
+import xyz.meowing.knit.api.scheduler.TimeScheduler
 import xyz.meowing.krypt.Krypt
 import xyz.meowing.krypt.annotations.Module
 import xyz.meowing.krypt.events.EventBus
@@ -76,6 +77,7 @@ object HypixelAPI {
         )
     }
 
+
     data class ElectionData(
         val mayorName: String,
         val mayorPerks: List<Pair<String, String>>,
@@ -116,6 +118,10 @@ object HypixelAPI {
     object SecretsCache {
         private val data = mutableMapOf<String, Pair<Long, Int>>() // UUID → (timestamp, secrets)
         private const val EXPIRY_MS = 5 * 60 * 1000L
+
+        init {
+            TimeScheduler.repeat(60_000L) { cleanup() }
+        }
 
         fun cleanup() {
             val now = System.currentTimeMillis()

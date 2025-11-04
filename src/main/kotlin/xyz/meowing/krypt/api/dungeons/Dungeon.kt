@@ -2,9 +2,8 @@ package xyz.meowing.krypt.api.dungeons
 
 import tech.thatgravyboat.skyblockapi.utils.regex.RegexUtils.find
 import tech.thatgravyboat.skyblockapi.utils.regex.matchWhen
-import xyz.meowing.knit.Knit
 import xyz.meowing.knit.api.KnitPlayer
-import xyz.meowing.knit.internal.events.TickEvent
+import xyz.meowing.krypt.events.core.TickEvent
 import xyz.meowing.krypt.api.dungeons.map.Door
 import xyz.meowing.krypt.api.dungeons.map.Room
 import xyz.meowing.krypt.api.dungeons.map.WorldScanner
@@ -105,6 +104,7 @@ object Dungeon {
             if (dungeonCompleteRegex.containsMatchIn(msg)) {
                 DungeonPlayerManager.updateAllSecrets()
                 complete = true
+                floor?.let { EventBus.post(DungeonEvent.End(it)) }
                 return@registerIn
             }
 
@@ -133,9 +133,7 @@ object Dungeon {
             if (secrets != room.secretsFound) room.secretsFound = secrets
         }
 
-        Knit.EventBus.register<TickEvent.Client.Start> {
-            if (!inDungeon) return@register
-
+        EventBus.registerIn<TickEvent.Client>(SkyBlockIsland.THE_CATACOMBS) {
             updateHudLines()
             updateHeldItem()
         }
@@ -172,16 +170,12 @@ object Dungeon {
 
     /** Handles Key Events **/
     private fun handleGetKey(type: String) {
-         when {
-            type.equals("wither", true) -> {
-                ++witherKeys
-                DungeonKey.getById(type)?.let { EventBus.post(DungeonEvent.KeyPickUp(it)) }
-            }
-            type.equals("blood", true) -> {
-                ++bloodKeys
-                DungeonKey.getById(type)?.let { EventBus.post(DungeonEvent.KeyPickUp(it)) }
-            }
+        val key = DungeonKey.getById(type) ?: return
+        when (key) {
+            DungeonKey.WITHER -> ++witherKeys
+            DungeonKey.BLOOD -> ++bloodKeys
         }
+        EventBus.post(DungeonEvent.KeyPickUp(key))
     }
 
     /** Updates HUD lines for map overlay */

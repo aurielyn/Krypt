@@ -11,7 +11,7 @@ object RoomRegistry {
     private val byCore = mutableMapOf<Int, RoomMetadata>()
     private val allRooms = mutableListOf<RoomMetadata>()
     private const val ROOM_DATA_URL = "https://raw.githubusercontent.com/Skytils/SkytilsMod/refs/heads/2.x/mod/src/main/resources/assets/catlas/rooms.json"
-    private val LOCAL_ROOMS_FILE = File("config/stella/rooms.json")
+    private val LOCAL_ROOMS_FILE = File("config/krypt/rooms.json")
 
     fun loadFromRemote() {
         NetworkUtils.fetchJson<List<RoomMetadata>>(

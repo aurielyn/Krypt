@@ -99,7 +99,7 @@ class Room(
     }
 
     fun findRotation(): Room {
-        if (height == null) return this
+        val currentHeight = height ?: return this
 
         if (type == RoomType.FAIRY) {
             rotation = 0
@@ -121,11 +121,11 @@ class Room(
                 val nx = x + dx
                 val nz = z + dz
 
-                if (!WorldScanUtils.isChunkLoaded(nx, height!!, nz)) continue
-                val state = WorldUtils.getBlockStateAt(nx, height!!, nz) ?: continue
+                if (!WorldScanUtils.isChunkLoaded(nx, currentHeight, nz)) continue
+                val state = WorldUtils.getBlockStateAt(nx, currentHeight, nz) ?: continue
                 if (state.isOf(Blocks.BLUE_TERRACOTTA)) {
                     rotation = jdx * 90
-                    corner = Triple(nx + 0.5, height!!.toDouble(), nz + 0.5)
+                    corner = Triple(nx + 0.5, currentHeight.toDouble(), nz + 0.5)
                     return this
                 }
             }

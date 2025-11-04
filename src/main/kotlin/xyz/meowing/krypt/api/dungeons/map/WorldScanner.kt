@@ -1,18 +1,15 @@
 package xyz.meowing.krypt.api.dungeons.map
 
-import xyz.meowing.knit.Knit
 import xyz.meowing.knit.api.KnitClient
-import xyz.meowing.knit.api.scheduler.TickScheduler
 import xyz.meowing.krypt.api.dungeons.utils.WorldScanUtils
 import xyz.meowing.krypt.api.dungeons.Dungeon.rooms
 import xyz.meowing.krypt.api.dungeons.players.DungeonPlayer
-import xyz.meowing.knit.internal.events.TickEvent
-import xyz.meowing.krypt.Krypt
 import xyz.meowing.krypt.api.dungeons.Dungeon
 import xyz.meowing.krypt.api.dungeons.utils.RoomType
 import xyz.meowing.krypt.api.dungeons.utils.ScanUtils
 import xyz.meowing.krypt.api.location.SkyBlockIsland
 import xyz.meowing.krypt.events.EventBus
+import xyz.meowing.krypt.events.core.TickEvent
 import xyz.meowing.krypt.utils.WorldUtils
 import java.util.UUID
 
@@ -21,10 +18,8 @@ object WorldScanner {
     var lastIdx: Int? = null
 
     fun init() {
-        Knit.EventBus.register<TickEvent.Client.Start> {
-            if (!Dungeon.inDungeon) return@register
-
-            val player = KnitClient.player ?: return@register
+        EventBus.registerIn<TickEvent.Client>(SkyBlockIsland.THE_CATACOMBS) {
+            val player = KnitClient.player ?: return@registerIn
 
             // checking player states
             checkPlayerState()
@@ -44,12 +39,12 @@ object WorldScanner {
                 val prevRoom = lastIdx?.let { rooms[it] }
                 val currRoom = rooms.getOrNull(idx)
 
-                if (lastIdx == idx) return@register
+                if (lastIdx == idx) return@registerIn
 
                 lastIdx = idx
                 Dungeon.currentRoom = Dungeon.getRoomAt(player.x.toInt(), player.z.toInt())
                 Dungeon.currentRoom?.explored = true
-                val (rmx, rmz) = Dungeon.currentRoom?.components?.firstOrNull() ?: return@register
+                val (rmx, rmz) = Dungeon.currentRoom?.components?.firstOrNull() ?: return@registerIn
                 Dungeon.discoveredRooms.remove("$rmx/$rmz")
             }
         }
@@ -104,7 +99,7 @@ object WorldScanner {
             }
 
             // Scan neighbors *before* claiming this room index
-            for ((dx, dz, cxoff, zoff) in ScanUtils.directions.map { it }) {
+            for ((dx, dz, cxoff, zoff) in ScanUtils.directions) {
                 val nx = rx + dx
                 val nz = rz + dz
                 val blockBelow = WorldUtils.getBlockNumericId(nx, roofHeight, nz)
@@ -179,7 +174,7 @@ object WorldScanner {
         if (entity == null) return
         entity.inRender = true
 
-        if ( x in -200.0..-10.0 || z in -200.0..-10.0){
+        if ( x in -200.0..-10.0 && z in -200.0..-10.0){
             entity.iconX = clampMap(x, -200.0, -10.0, 0.0, ScanUtils.defaultMapSize.first.toDouble())
             entity.iconZ = clampMap(z, -200.0, -10.0, 0.0, ScanUtils.defaultMapSize.second.toDouble())
 

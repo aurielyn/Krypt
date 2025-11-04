@@ -7,13 +7,12 @@ import net.minecraft.item.map.MapDecoration
 import net.minecraft.item.map.MapDecorationTypes
 import net.minecraft.item.map.MapState
 import net.minecraft.network.packet.s2c.play.MapUpdateS2CPacket
-import xyz.meowing.knit.Knit
 import xyz.meowing.knit.api.KnitClient
-import xyz.meowing.knit.internal.events.TickEvent
 import xyz.meowing.krypt.api.dungeons.map.MapScanner
 import xyz.meowing.krypt.api.location.SkyBlockIsland
 import xyz.meowing.krypt.events.EventBus
 import xyz.meowing.krypt.events.core.PacketEvent
+import xyz.meowing.krypt.events.core.TickEvent
 
 object MapUtils {
     val MapDecoration.mapX get() = (this.x() + 128) shr 1
@@ -43,9 +42,7 @@ object MapUtils {
             }
         }
 
-        Knit.EventBus.register<TickEvent.Client.Start> {
-            if (!Dungeon.inDungeon) return@register
-
+        EventBus.registerIn<TickEvent.Client>(SkyBlockIsland.THE_CATACOMBS) {
             if (!calibrated) {
                 if (mapData == null) {
                     mapData = getCurrentMapState()

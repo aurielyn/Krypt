@@ -30,9 +30,15 @@ object EventBus : EventBus(true) {
             post(ServerEvent.Disconnect())
         }
 
-        Knit.EventBus.register<TickEvent.Client.Start> { TickScheduler.Client.onTick() }
+        Knit.EventBus.register<TickEvent.Client.Start> {
+            TickScheduler.Client.onTick()
+            post(xyz.meowing.krypt.events.core.TickEvent.Client())
+        }
 
-        Knit.EventBus.register<TickEvent.Server.Start> { TickScheduler.Server.onTick() }
+        Knit.EventBus.register<TickEvent.Server.Start> {
+            TickScheduler.Server.onTick()
+            post(xyz.meowing.krypt.events.core.TickEvent.Server())
+        }
     }
 
     fun onPacketReceived(packet: Packet<*>): Boolean {

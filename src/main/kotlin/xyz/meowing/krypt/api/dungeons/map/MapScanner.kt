@@ -58,8 +58,8 @@ object MapScanner {
 
             dplayer.iconX = clampMap(mapDecoration.mapX.toDouble() - MapUtils.mapCorners.first.toDouble(), 0.0, MapUtils.mapRoomSize.toDouble() * 6 + 20.0, 0.0, ScanUtils.defaultMapSize.first.toDouble())
             dplayer.iconZ = clampMap(mapDecoration.mapZ.toDouble() - MapUtils.mapCorners.second.toDouble(), 0.0, MapUtils.mapRoomSize.toDouble() * 6 + 20.0, 0.0, ScanUtils.defaultMapSize.second.toDouble())
-            dplayer.realX = clampMap(dplayer.iconX!!, 0.0, 125.0, -200.0, -10.0)
-            dplayer.realZ = clampMap(dplayer.iconZ!!, 0.0, 125.0, -200.0, -10.0)
+            dplayer.realX = dplayer.iconX?.let { clampMap(it, 0.0, 125.0, -200.0, -10.0) }
+            dplayer.realZ = dplayer.iconZ?.let { clampMap(it, 0.0, 125.0, -200.0, -10.0) }
             dplayer.yaw = mapDecoration.yaw + 180f
 
             dplayer.currRoom = Dungeon.getRoomAt(dplayer.realX!!.toInt(), dplayer.realZ!!.toInt())
@@ -246,7 +246,7 @@ object MapScanner {
     }
 
     private fun dungeonPlayerError(decorationId: String?, reason: String?, i: Int, dungeonPlayers: Array<DungeonPlayer?>?, mapDecorations: MutableMap<String?, MapDecoration?>?) {
-        Krypt.LOGGER.error("[Dungeon Map] Dungeon player for map decoration '{}' {}. Player list index (zero-indexed): {}. Player list: {}. Map decorations: {}", decorationId, reason, i, dungeonPlayers.toString(), mapDecorations)
+        Krypt.LOGGER.error("[Dungeon Map] Dungeon player for map decoration '{}' {}. Player list index (zero-indexed): {}. Player list: {}. Map decorations: {}", decorationId, reason, i, dungeonPlayers.contentToString(), mapDecorations)
     }
 
     fun clampMap(n: Double, inMin: Double, inMax: Double, outMin: Double, outMax: Double): Double {

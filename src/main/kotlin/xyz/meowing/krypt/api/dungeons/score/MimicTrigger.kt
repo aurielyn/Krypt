@@ -36,7 +36,7 @@ object MimicTrigger {
 
     fun init() {
         EventBus.registerIn<ChatEvent.Receive>(SkyBlockIsland.THE_CATACOMBS) { event ->
-            if (Dungeon.floor?.floorNumber !in listOf(6, 7) || Dungeon.floor == null || !Dungeon.inDungeon) return@registerIn
+            if (Dungeon.floor?.floorNumber !in listOf(6, 7) || Dungeon.floor == null) return@registerIn
 
             val msg = event.message.string.removeFormatting()
             val match = MIMIC_PATTERN.matchEntire(msg) ?: return@registerIn

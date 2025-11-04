@@ -26,7 +26,7 @@ class DungeonPlayer(val name: String) {
 
     private var initSecrets: Int? = null
     private var currSecrets: Int? = null
-    val secrets get() = currSecrets!! - initSecrets!!
+    val secrets get() = (currSecrets ?: initSecrets ?: 0) - (initSecrets ?: 0)
 
     // api
     var uuid: UUID? = null
