@@ -3,7 +3,6 @@ package xyz.meowing.krypt.features.general
 import net.minecraft.client.gui.DrawContext
 import xyz.meowing.knit.api.KnitClient.client
 import xyz.meowing.knit.api.scheduler.TickScheduler
-import xyz.meowing.krypt.Krypt
 import xyz.meowing.krypt.annotations.Module
 import xyz.meowing.krypt.api.dungeons.Dungeon
 import xyz.meowing.krypt.api.location.SkyBlockIsland
@@ -18,27 +17,36 @@ import xyz.meowing.krypt.utils.Render2D
 import xyz.meowing.krypt.utils.Render2D.width
 
 @Module
-object RoomSecrets: Feature("general.roomSecrets", island = SkyBlockIsland.THE_CATACOMBS) {
-    private const val name = "Secrets Display"
+object RoomSecrets: Feature(
+    "general.roomSecrets",
+    island = SkyBlockIsland.THE_CATACOMBS
+) {
+    private const val NAME = "Secrets Display"
 
     override fun addConfig() {
         ConfigManager
-        .addFeature("Room Secrets HUD", "Shows the secrets in the current dungeon room", "Dungeons", ConfigElement(
-            "general.roomSecrets",
-            ElementType.Switch(false)
-        ))
-        .addFeatureOption("HudEditor", "Opens Hud Editor", "Options", ConfigElement(
-            "general.roomSecrets.hudEditor",
-            ElementType.Button("Edit Position") {
-                TickScheduler.Client.post {
-                    client.execute { client.setScreen(HudEditor()) }
+        .addFeature("Room Secrets HUD",
+            "Shows the secrets in the current dungeon room",
+            "Dungeons",
+            ConfigElement(
+                "general.roomSecrets",
+                ElementType.Switch(false)
+            )
+        )
+        .addFeatureOption("HudEditor",
+            ConfigElement(
+                "general.roomSecrets.hudEditor",
+                ElementType.Button("Edit Position") {
+                    TickScheduler.Client.post {
+                        client.execute { client.setScreen(HudEditor()) }
+                    }
                 }
-            }
-        ))
+            )
+        )
     }
 
     override fun initialize() {
-        HudManager.registerCustom(name, 50,30, this::hudEditorRender, "general.roomSecrets")
+        HudManager.registerCustom(NAME, 50,30, this::hudEditorRender, "general.roomSecrets")
 
         register<GuiEvent.RenderHUD> { renderHUD(it.context) }
     }
@@ -74,9 +82,9 @@ object RoomSecrets: Feature("general.roomSecrets", island = SkyBlockIsland.THE_C
 
     private fun renderHUD(context: DrawContext) {
         val matrix = context.matrices
-        val x = HudManager.getX(name)
-        val y = HudManager.getY(name)
-        val scale = HudManager.getScale(name)
+        val x = HudManager.getX(NAME)
+        val y = HudManager.getY(NAME)
+        val scale = HudManager.getScale(NAME)
 
         //#if MC >= 1.21.7
         //$$ matrix.pushMatrix()

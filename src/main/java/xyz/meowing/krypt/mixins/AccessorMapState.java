@@ -1,4 +1,4 @@
-package xyz.meowing.krypt.mixin;
+package xyz.meowing.krypt.mixins;
 
 import net.minecraft.item.map.MapDecoration;
 import net.minecraft.item.map.MapState;

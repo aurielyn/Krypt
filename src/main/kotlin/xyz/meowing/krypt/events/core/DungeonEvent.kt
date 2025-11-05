@@ -8,7 +8,7 @@ sealed class DungeonEvent {
     /**
      * Posted when the dungeon starts.
      *
-     * @see xyz.meowing.krypt.api.dungeonsold.DungeonAPI
+     * @see xyz.meowing.krypt.api.dungeons.Dungeon
      * @since 1.2.0
      */
     class Start(
@@ -33,7 +33,7 @@ sealed class DungeonEvent {
     /**
      * Posted when a key is picked up
      *
-     * @see xyz.meowing.krypt.api.dungeon.Dungeon
+     * @see xyz.meowing.krypt.api.dungeons.Dungeon
      * @since 1.2.0
      */
     class KeyPickUp(

@@ -1,9 +1,16 @@
 package xyz.meowing.krypt.api.dungeons.score
 
+import tech.thatgravyboat.skyblockapi.api.data.Perk
+import tech.thatgravyboat.skyblockapi.utils.extentions.parseFormattedDouble
+import tech.thatgravyboat.skyblockapi.utils.extentions.parseFormattedInt
+import tech.thatgravyboat.skyblockapi.utils.extentions.toIntValue
+import tech.thatgravyboat.skyblockapi.utils.regex.RegexGroup
+import tech.thatgravyboat.skyblockapi.utils.regex.RegexUtils.findGroup
+import tech.thatgravyboat.skyblockapi.utils.regex.RegexUtils.match
 import tech.thatgravyboat.skyblockapi.utils.text.TextProperties.stripped
+import xyz.meowing.krypt.annotations.Module
 import xyz.meowing.krypt.api.dungeons.Dungeon
 import xyz.meowing.krypt.api.dungeons.utils.DungeonFloor
-import xyz.meowing.krypt.api.hypixel.HypixelAPI
 import xyz.meowing.krypt.api.location.SkyBlockIsland
 import xyz.meowing.krypt.events.EventBus
 import xyz.meowing.krypt.events.core.ScoreboardEvent
@@ -12,112 +19,94 @@ import xyz.meowing.krypt.utils.StringUtils.removeFormatting
 import kotlin.math.ceil
 import kotlin.math.floor
 
-/**
- * Tracks and calculates dungeon score metrics based on tablist and scoreboard data.
- */
+@Module
 object DungeonScore {
-    // Enums
-    val puzzleStates = mapOf("✦" to 0, "✔" to 1, "✖" to 2)
-    val milestones = listOf("⓿", "❶", "❷", "❸", "❹", "❺", "❻", "❼", "❽", "❾")
-    val floorSecrets = mapOf("F1" to 0.3, "F2" to 0.4, "F3" to 0.5, "F4" to 0.6, "F5" to 0.7, "F6" to 0.85)
-    val floorTimes = mapOf("F3" to 120, "F4" to 240, "F5" to 120, "F6" to 240, "F7" to 360, "M6" to 120, "M7" to 360)
+    private val PUZZLE_STATES = mapOf("✦" to 0, "✔" to 1, "✖" to 2)
+    private val MILESTONES = listOf("⓿", "❶", "❷", "❸", "❹", "❺", "❻", "❼", "❽", "❾")
+    private val FLOOR_SECRETS = mapOf("F1" to 0.3, "F2" to 0.4, "F3" to 0.5, "F4" to 0.6, "F5" to 0.7, "F6" to 0.85)
+    private val FLOOR_TIMES = mapOf("F3" to 120, "F4" to 240, "F5" to 120, "F6" to 240, "F7" to 360, "M6" to 120, "M7" to 360)
 
-    // Regex patterns for parsing tablist and scoreboard lines
-    val SECRETS_FOUND_PATTERN = Regex("""^Secrets Found: ([\d,.]+)$""")
-    val SECRETS_FOUND_PERCENT_PATTERN = Regex("""^Secrets Found: ([\d,.]+)%$""")
-    val MILESTONES_PATTERN = Regex("""^Your Milestone: .(.)$""")
-    val COMPLETED_ROOMS_PATTERN =  Regex("""^Completed Rooms: (\d+)$""")
-    val TEAM_DEATHS_PATTERN = Regex("""^Team Deaths: (\d+)$""")
-    val PUZZLE_COUNT_PATTERN = Regex("""^Puzzles: \((\d+)\)$""")
-    val CRYPTS_PATTERN = Regex("""^Crypts: (\d+)$""")
-    val PUZZLE_STATE_PATTERN = Regex("""^([\w ]+): \[([✦✔✖])]\s?\(?(\w{1,16})?\)?$""")
-    val OPENED_ROOMS_PATTERN = Regex("""^Opened Rooms: (\d+)$""")
-    val CLEARED_ROOMS_PATTERN = Regex("""^Completed Rooms: (\d+)$""")
-    val CLEAR_PERCENT_PATTERN =  Regex("""^Cleared: (\d+)% \(\d+\)$""")
-    val DUNGEON_TIME_PATTERN =  Regex("""^Time: (?:(\d+)h)?\s?(?:(\d+)m)?\s?(?:(\d+)s)?$""")
+    private val regexGroup = RegexGroup("dungeons.score")
+    private val SECRETS_FOUND_PATTERN = regexGroup.create("secrets.found", """^Secrets Found: (?<count>[\d,.]+)$""")
+    private val SECRETS_PERCENT_PATTERN = regexGroup.create("secrets.percent", """^Secrets Found: (?<percent>[\d,.]+)%$""")
+    private val MILESTONES_PATTERN = regexGroup.create("milestone", """^Your Milestone: .(?<milestone>.)$""")
+    private val COMPLETED_ROOMS_PATTERN = regexGroup.create("rooms.completed", """^Completed Rooms: (?<count>\d+)$""")
+    private val TEAM_DEATHS_PATTERN = regexGroup.create("deaths", """^Team Deaths: (?<count>\d+)$""")
+    private val PUZZLE_COUNT_PATTERN = regexGroup.create("puzzle.count", """^Puzzles: \((?<count>\d+)\)$""")
+    private val CRYPTS_PATTERN = regexGroup.create("crypts", """^Crypts: (?<count>\d+)$""")
+    private val PUZZLE_STATE_PATTERN = regexGroup.create("puzzle.state", """^(?<name>[\w ]+): \[(?<state>[✦✔✖])]\s?\(?(?<player>\w{1,16})?\)?$""")
+    private val OPENED_ROOMS_PATTERN = regexGroup.create("rooms.opened", """^Opened Rooms: (?<count>\d+)$""")
+    private val CLEARED_ROOMS_PATTERN = regexGroup.create("rooms.cleared", """^Completed Rooms: (?<count>\d+)$""")
+    private val CLEAR_PERCENT_PATTERN = regexGroup.create("clear.percent", """^Cleared: (?<percent>\d+)% \(\d+\)$""")
+    private val DUNGEON_TIME_PATTERN = regexGroup.create("time", """^Time: (?:(?<hours>\d+)h)?\s?(?:(?<minutes>\d+)m)?\s?(?:(?<seconds>\d+)s)?$""")
 
-    // Current dungeon score state and accessor
-    var hasPaul = false
+    val hasPaul = Perk.EZPZ.active
     var data = ScoreData()
+        private set
     val score get() = data.score
 
-    /** Resets all score data to default values */
     fun reset() {
         data = ScoreData()
         MimicTrigger.reset()
     }
 
-    /** Registers event listeners for tablist and scoreboard updates */
-    fun init() {
+    init {
         EventBus.registerIn<TablistEvent.Change>(SkyBlockIsland.THE_CATACOMBS) { event ->
             event.new.forEach { column ->
-                column.forEach { line->
-                    val msg = line.stripped.trim()
-                    parseTablist(msg)
+                column.forEach { line ->
+                    parseTablist(line.stripped.trim())
                 }
             }
         }
 
         EventBus.registerIn<ScoreboardEvent.Update>(SkyBlockIsland.THE_CATACOMBS) { event ->
-            //MimicTrigger.updater.register()
             event.new.forEach { line ->
-                val msg = line.removeFormatting().trim()
-                parseSidebar(msg)
+                parseSidebar(line.removeFormatting().trim())
             }
         }
-
-        HypixelAPI.fetchElectionData(
-            onResult = { data -> hasPaul = (data?.mayorName?.lowercase() == "paul" && data.mayorPerks.any { it.first.lowercase() == "ezpz" }) || (data?.ministerName?.lowercase() == "paul" && data.ministerPerk.lowercase() == "ezpz") },
-            onError = { error -> error.printStackTrace() }
-        )
     }
 
-    /** Parses a single tablist line and updates score data */
     private fun parseTablist(msg: String) = with(data) {
-        msg.match(DUNGEON_TIME_PATTERN)?.let {
-            val (h, m, s) = it.destructured
-            dungeonSeconds = (h.toIntOrNull() ?: 0) * 3600 + (m.toIntOrNull() ?: 0) * 60 + (s.toIntOrNull() ?: 0)
+        DUNGEON_TIME_PATTERN.match(msg) { (h, m, s) ->
+            dungeonSeconds = h.toIntValue() * 3600 + m.toIntValue() * 60 + s.toIntValue()
         }
 
-        secretsFound        = msg.extractInt(SECRETS_FOUND_PATTERN, secretsFound)
-        secretsFoundPercent = msg.extractDouble(SECRETS_FOUND_PERCENT_PATTERN, secretsFoundPercent)
-        crypts              = msg.extractInt(CRYPTS_PATTERN, crypts)
-        milestone           = msg.extractString(MILESTONES_PATTERN, milestone)
-        completedRooms      = msg.extractInt(COMPLETED_ROOMS_PATTERN, completedRooms)
-        puzzleCount         = msg.extractInt(PUZZLE_COUNT_PATTERN, puzzleCount)
-        teamDeaths          = msg.extractInt(TEAM_DEATHS_PATTERN, teamDeaths)
-        openedRooms         = msg.extractInt(OPENED_ROOMS_PATTERN, openedRooms)
-        clearedRooms        = msg.extractInt(CLEARED_ROOMS_PATTERN, clearedRooms)
+        secretsFound = SECRETS_FOUND_PATTERN.findGroup(msg, "count").parseFormattedInt(secretsFound)
+        secretsFoundPercent = SECRETS_PERCENT_PATTERN.findGroup(msg, "percent").parseFormattedDouble(secretsFoundPercent)
+        crypts = CRYPTS_PATTERN.findGroup(msg, "count").parseFormattedInt(crypts)
+        milestone = MILESTONES_PATTERN.findGroup(msg, "milestone") ?: milestone
+        completedRooms = COMPLETED_ROOMS_PATTERN.findGroup(msg, "count").toIntValue()
+        puzzleCount = PUZZLE_COUNT_PATTERN.findGroup(msg, "count").toIntValue()
+        teamDeaths = TEAM_DEATHS_PATTERN.findGroup(msg, "count").toIntValue()
+        openedRooms = OPENED_ROOMS_PATTERN.findGroup(msg, "count").toIntValue()
+        clearedRooms = CLEARED_ROOMS_PATTERN.findGroup(msg, "count").toIntValue()
 
-        msg.match(PUZZLE_STATE_PATTERN)?.let {
-            val (_, state, _) = it.destructured
-            if (puzzleStates[state] == 1) puzzlesDone++
+        PUZZLE_STATE_PATTERN.match(msg) { (_, state) ->
+            if (PUZZLE_STATES[state] == 1) puzzlesDone++
         }
 
         calculateScore()
     }
 
-    /** Parses a single sidebar line and updates percent-based metrics */
     private fun parseSidebar(msg: String) = with(data) {
-        msg.match(CLEAR_PERCENT_PATTERN)?.let {
-            clearedPercent = it.groupValues[1].toIntOrNull() ?: clearedPercent
+        CLEAR_PERCENT_PATTERN.match(msg) { (percent) ->
+            clearedPercent = percent.toIntValue()
         }
-        secretsPercentNeeded = floorSecrets[Dungeon.floor?.name] ?: 1.0
+        secretsPercentNeeded = FLOOR_SECRETS[Dungeon.floor?.name] ?: 1.0
     }
 
-    /** Computes final score and all derived metrics */
     private fun calculateScore() = with(data) {
-        if (Dungeon.floor == null) return
-
+        val floor = Dungeon.floor ?: return
         val missingPuzzles = puzzleCount - puzzlesDone
 
         totalSecrets = ((100.0 / secretsFoundPercent) * secretsFound + 0.5).toInt()
         secretsRemaining = totalSecrets - secretsFound
 
-        val estimatedRooms = ((100.0 / clearedPercent) * completedRooms + 0.4)
+        val estimatedRooms = (100.0 / clearedPercent) * completedRooms + 0.4
         totalRooms = estimatedRooms.toInt().takeIf { it > 0 } ?: 36
-        adjustedRooms = completedRooms + if (!Dungeon.bloodClear || !Dungeon.inBoss) 1 else 0
-        if (completedRooms <= totalRooms - 1 && !Dungeon.bloodClear) adjustedRooms++
+
+        adjustedRooms = completedRooms + if (!Dungeon.bloodSpawnedAll || !Dungeon.inBoss) 1 else 0
+        if (completedRooms <= totalRooms - 1 && !Dungeon.bloodSpawnedAll) adjustedRooms++
 
         deathPenalty = (teamDeaths * -2) + if (hasSpiritPet && teamDeaths > 0) 1 else 0
         completionRatio = adjustedRooms.toDouble() / totalRooms
@@ -126,17 +115,17 @@ object DungeonScore {
 
         secretsScore = (40 * ((secretsFoundPercent / 100.0) / secretsPercentNeeded)).coerceIn(0.0, 40.0)
         exploreScore = if (clearedPercent == 0) 0.0 else (60 * completionRatio + secretsScore).coerceIn(0.0, 100.0)
-         bonusScore = crypts.coerceAtMost(5) + if (MimicTrigger.mimicDead) 2 else 0 + if (hasPaul) 10 else 0
-        val timeOffset = dungeonSeconds - (floorTimes[Dungeon.floor?.name] ?: 0)
-        val speedScore = calculateSpeedScore(timeOffset, if (Dungeon.floor == DungeonFloor.E) 0.7 else 1.0)
+
+        bonusScore = crypts.coerceAtMost(5) + if (MimicTrigger.mimicDead) 2 else 0 + if (hasPaul) 10 else 0
+
+        val timeOffset = dungeonSeconds - (FLOOR_TIMES[floor.name] ?: 0)
+        val speedScore = calculateSpeedScore(timeOffset, if (floor == DungeonFloor.E) 0.7 else 1.0)
 
         score = (skillScore + exploreScore + speedScore + bonusScore).toInt()
         maxSecrets = ceil(totalSecrets * secretsPercentNeeded).toInt()
         minSecrets = floor(maxSecrets * ((40.0 - bonusScore + deathPenalty) / 40.0)).toInt()
     }
 
-
-    /** Calculates speed score based on time offset and scaling factor */
     private fun calculateSpeedScore(time: Int, scale: Double): Int = when {
         time < 492 -> 100.0 * scale
         time < 600 -> (140 - time / 12.0) * scale
@@ -146,12 +135,5 @@ object DungeonScore {
         else -> 0.0
     }.toInt()
 
-    /** Returns milestone symbol or index */
-    fun getMilestone(asIndex: Boolean = false): Any = if (asIndex) milestones.indexOf(data.milestone) else data.milestone
-
-    // Regex helpers for parsing
-    private fun String.match(regex: Regex) = regex.find(this)
-    private fun String.extractInt(regex: Regex, fallback: Int) = regex.find(this)?.groupValues?.getOrNull(1)?.replace(",", "")?.toIntOrNull() ?: fallback
-    private fun String.extractDouble(regex: Regex, fallback: Double) = regex.find(this)?.groupValues?.getOrNull(1)?.replace(",", "")?.toDoubleOrNull() ?: fallback
-    private fun String.extractString(regex: Regex, fallback: String) = regex.find(this)?.groupValues?.getOrNull(1) ?: fallback
+    fun getMilestone(asIndex: Boolean = false): Any = if (asIndex) MILESTONES.indexOf(data.milestone) else data.milestone
 }

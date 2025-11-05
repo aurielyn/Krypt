@@ -35,7 +35,7 @@ object MapUtils {
                 val id = event.packet.mapId.id
                 if (id and 1000 == 0) {
                     val guess = FilledMapItem.getMapState(event.packet.mapId, world) ?: return@registerIn
-                    if(guess.decorations.any {it.type == MapDecorationTypes.FRAME }) {
+                    if (guess.decorations.any {it.type == MapDecorationTypes.FRAME }) {
                         guessMapData = guess
                     }
                 }
@@ -53,7 +53,6 @@ object MapUtils {
                 (mapData ?: guessMapData)?.let {
                     MapScanner.updatePlayers(it)
                     MapScanner.scan(it)
-                    checkBloodDone(it)
                 }
             }
         }
@@ -62,7 +61,7 @@ object MapUtils {
     fun getCurrentMapState(): MapState? {
         val stack = KnitClient.player?.inventory?.getStack(8) ?: return null
         if (stack.item !is FilledMapItem || !stack.name.string.contains("Magical Map")) return null
-        return FilledMapItem.getMapState(stack, KnitClient.world!!)
+        return FilledMapItem.getMapState(stack, KnitClient.world)
     }
 
     fun calibrateDungeonMap(): Boolean {
@@ -103,27 +102,6 @@ object MapUtils {
             }
         }
         return null
-    }
-
-    fun checkBloodDone(state: MapState) {
-        if (Dungeon.bloodClear) return
-
-        val startX = mapCorners.first + (mapRoomSize / 2)
-        val startY = mapCorners.second + (mapRoomSize / 2) + 1
-
-        for (x in startX until 118 step (mapGapSize / 2)) {
-            for (y in startY until 118 step (mapGapSize / 2)) {
-                val i = x + y * 128
-                if (state.colors.getOrNull(i) == null) continue
-
-                val center = state.colors[i - 1]
-                val roomColor = state.colors.getOrNull(i + 5 + 128 * 4) ?: continue
-
-                if (roomColor != 18.toByte()) continue
-                if (center != 30.toByte()) continue
-                Dungeon.bloodClear = true
-            }
-        }
     }
 
     fun reset() {

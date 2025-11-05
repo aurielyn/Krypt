@@ -1,91 +1,80 @@
 package xyz.meowing.krypt.api.dungeons.players
 
-import net.minecraft.text.Text
+import tech.thatgravyboat.skyblockapi.utils.extentions.parseRomanOrArabic
+import tech.thatgravyboat.skyblockapi.utils.regex.RegexUtils.find
+import tech.thatgravyboat.skyblockapi.utils.regex.RegexUtils.findThenNull
 import tech.thatgravyboat.skyblockapi.utils.text.TextProperties.stripped
 import xyz.meowing.knit.api.KnitPlayer
-import xyz.meowing.krypt.Krypt
+import xyz.meowing.krypt.annotations.Module
 import xyz.meowing.krypt.api.dungeons.utils.DungeonClass
 import xyz.meowing.krypt.api.location.SkyBlockIsland
 import xyz.meowing.krypt.events.EventBus
-import xyz.meowing.krypt.events.core.ChatEvent
+import xyz.meowing.krypt.events.core.LocationEvent
 import xyz.meowing.krypt.events.core.TablistEvent
-import java.util.regex.Pattern
 
+@Module
 object DungeonPlayerManager {
-    /**
-     * Match a player entry.
-     * Group 1: name
-     * Group 2: class (or literal "EMPTY" pre map start)
-     * Group 3: level (or nothing, if pre map start)
-     * This regex filters out the ironman icon as well as rank prefixes and emblems
-     * \[\d+\] (?:\[[A-Za-z]+\] )?(?&lt;name&gt;[A-Za-z0-9_]+) (?:.+ )?\((?&lt;class&gt;\S+) ?(?&lt;level&gt;[LXVI0]+)?\)
-     *
-     * Taken from Skyblocker
-     */
-    val playerTabPattern: Pattern = Pattern.compile("\\[\\d+] (?:\\[[A-Za-z]+] )?(?<name>[A-Za-z0-9_]+) (?:.+ )?\\((?<class>\\S+) ?(?<level>[LXVI0]+)?\\)")
-    val playerGhostPattern: Pattern = Pattern.compile(" ☠ (?<name>[A-Za-z0-9_]+) .+ became a ghost\\.")
+    private val playerTabRegex = Regex("(?:\\[.+] ?)*(?<name>\\S+) .*\\((?<class>\\S+) (?<level>.+)\\)")
+    private val deadTeammateRegex = Regex("\\[.+] (?<name>\\S+) .*\\(DEAD\\)")
 
-    val players = Array<DungeonPlayer?>(5) { null }
+    var players: List<DungeonPlayer> = emptyList()
+        private set
 
-    fun init() {
-        EventBus.registerIn<TablistEvent.Change>(SkyBlockIsland.THE_CATACOMBS){ event ->
+    init {
+        EventBus.register<LocationEvent.IslandChange> { reset() }
+
+        EventBus.registerIn<TablistEvent.Change>(SkyBlockIsland.THE_CATACOMBS) { event ->
             val firstColumn = event.new.firstOrNull() ?: return@registerIn
 
-            for (i in 0 until 5) {
-                val index = 1 + i * 4
-                if (index !in firstColumn.indices) continue
-                val matcher = playerTabPattern.matcher(firstColumn[index].stripped)
+            val ownName = KnitPlayer.name
 
-                if (!matcher.matches()) {
-                    players[i] = null
-                    continue
-                }
+            for (line in firstColumn) {
+                val stripped = line.stripped
 
-                val name = matcher.group("name")
-                val clazz = DungeonClass.from(matcher.group("class"))
+                playerTabRegex.findThenNull(stripped, "name", "class", "level") { (name, dungeonClass, level) ->
+                    val dungeonPlayer = players.find { it.name == name }
 
-                if (players[i] != null && players[i]!!.name == name) {
-                    players[i]!!.dclass = clazz
-                } else {
-                    players[i] = DungeonPlayer(name).apply { dclass = clazz }
+                    if (dungeonPlayer != null) {
+                        if (name != ownName) dungeonPlayer.dead = false
+
+                        if (dungeonPlayer.missingData()) {
+                            dungeonPlayer.dungeonClass = DungeonClass.from(dungeonClass)
+                            dungeonPlayer.classLevel = level.parseRomanOrArabic()
+                        }
+
+                        return@findThenNull
+                    }
+
+                    val playerClass = DungeonClass.from(dungeonClass)
+                    val player = DungeonPlayer(name, playerClass, level.parseRomanOrArabic())
+
+                    players += player
+                } ?: continue
+
+                deadTeammateRegex.find(stripped, "name") { (name) ->
+                    var dungeonPlayer = players.find { it.name == name }
+
+                    if (dungeonPlayer == null) {
+                        dungeonPlayer = DungeonPlayer(name, null, null)
+                        players += dungeonPlayer
+                    }
+
+                    dungeonPlayer.dead = true
+                    dungeonPlayer.deaths++
                 }
             }
-        }
-
-        EventBus.registerIn<ChatEvent.Receive>(SkyBlockIsland.THE_CATACOMBS) { onDeath(it.message) }
-    }
-
-    private fun onDeath(text: Text) {
-        val matcher = playerGhostPattern.matcher(text.string)
-        if (!matcher.find()) return
-
-        var name = matcher.group("name")
-        if (name == "You") KnitPlayer.player?.let { name = it.name.string }
-
-        val player = getPlayer(name)
-        if (player != null) {
-            player.dclass = DungeonClass.DEAD
-        } else {
-            Krypt.LOGGER.error(
-                "[Dungeon Player Manager] Received ghost message for player '{}' but player was not found in the player list: {}",
-                matcher.group("name"),
-                players.contentToString()
-            )
         }
     }
 
     fun getPlayer(name: String): DungeonPlayer? {
-        return players
-            .asSequence()
-            .filterNotNull()
-            .firstOrNull { it.name == name }
+        return players.firstOrNull { it.name == name }
     }
 
     fun updateAllSecrets() {
-        players.filterNotNull().forEach { it.updateSecrets() }
+        players.forEach { it.updateSecrets() }
     }
 
     fun reset() {
-        players.fill(null)
+        players = emptyList()
     }
 }

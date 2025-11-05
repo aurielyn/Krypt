@@ -17,24 +17,37 @@ import xyz.meowing.krypt.utils.StringUtils.removeFormatting
 import xyz.meowing.krypt.utils.TitleUtils.showTitle
 
 @Module
-object CryptReminder : Feature("general.cryptReminder", island = SkyBlockIsland.THE_CATACOMBS) {
+object CryptReminder : Feature(
+    "general.cryptReminder",
+    island = SkyBlockIsland.THE_CATACOMBS
+) {
     private val delay by ConfigDelegate<Double>("general.cryptReminder.delay")
     private val sendToParty by ConfigDelegate<Boolean>("general.cryptReminder.sendToParty")
 
     override fun addConfig() {
         ConfigManager
-            .addFeature("Crypt reminder", "Crypt reminder", "Dungeons", ConfigElement(
-                "general.cryptReminder",
-                ElementType.Switch(false)
-            ))
-            .addFeatureOption("Crypt reminder delay", "Crypt reminder delay", "Options", ConfigElement(
-                "general.cryptReminder.delay",
-                ElementType.Slider(1.0, 5.0, 2.0, false)
-            ))
-            .addFeatureOption("Send to party", "", "Options", ConfigElement(
-                "general.cryptReminder.sendToParty",
-                ElementType.Switch(true)
-            ))
+            .addFeature(
+                "Crypt reminder",
+                "Crypt reminder",
+                "Dungeons",
+                ConfigElement(
+                    "general.cryptReminder",
+                    ElementType.Switch(false)
+                )
+            )
+            .addFeatureOption(
+                "Crypt reminder delay",
+                ConfigElement(
+                    "general.cryptReminder.delay",
+                    ElementType.Slider(1.0, 5.0, 2.0, false)
+                )
+            )
+            .addFeatureOption("Send to party",
+                ConfigElement(
+                    "general.cryptReminder.sendToParty",
+                    ElementType.Switch(true)
+                )
+            )
     }
 
     override fun initialize() {

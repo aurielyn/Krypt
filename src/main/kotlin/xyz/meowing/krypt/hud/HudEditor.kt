@@ -1,11 +1,12 @@
 package xyz.meowing.krypt.hud
 
-import com.google.gson.reflect.TypeToken
+import com.mojang.serialization.Codec
+import com.mojang.serialization.DataResult
 import net.minecraft.client.gui.DrawContext
 import xyz.meowing.knit.api.KnitClient
 import xyz.meowing.knit.api.screen.KnitScreen
+import xyz.meowing.krypt.api.data.StoredFile
 import xyz.meowing.krypt.hud.HudManager.customRenderers
-import xyz.meowing.krypt.utils.DataUtils
 import xyz.meowing.krypt.utils.Render2D.height
 import xyz.meowing.krypt.utils.Render2D.width
 import java.awt.Color
@@ -20,12 +21,27 @@ class HudEditor : KnitScreen("HUD Editor") {
         var x: Float,
         var y: Float,
         var scale: Float = 1f
-    )
+    ) {
+        companion object {
+            val CODEC: Codec<HudLayoutData> = Codec.FLOAT.listOf().comapFlatMap(
+                { list ->
+                    if (list.size == 3) {
+                        DataResult.success(HudLayoutData(list[0], list[1], list[2]))
+                    } else {
+                        DataResult.error { "Invalid layout data size" }
+                    }
+                },
+                { data -> listOf(data.x, data.y, data.scale) }
+            )
+        }
+    }
 
-    private val layoutStore = DataUtils(
-        fileName = "hud_positions",
-        defaultObject = mutableMapOf<String, HudLayoutData>(),
-        typeToken = object : TypeToken<MutableMap<String, HudLayoutData>>() {}
+    private val layoutStore = StoredFile("config/HUD")
+    private var layouts by layoutStore.map(
+        "layouts",
+        Codec.STRING,
+        HudLayoutData.CODEC,
+        emptyMap()
     )
 
     override fun onInitGui() {
@@ -41,7 +57,6 @@ class HudEditor : KnitScreen("HUD Editor") {
     override fun render(context: DrawContext, mouseX: Int, mouseY: Int, deltaTicks: Float) {
         super.render(context, mouseX, mouseY, deltaTicks)
 
-        // Render all HUD elements
         HudManager.elements.values.forEach { element ->
             if (!element.isEnabled()) return@forEach
 
@@ -78,7 +93,6 @@ class HudEditor : KnitScreen("HUD Editor") {
             context.matrices.pop()
         }
 
-        // Optional: instructions
         context.drawTextWithShadow(mc.textRenderer, "Drag elements. Press ESC to exit.", 10, 10, 0xFFFFFF)
     }
 
@@ -118,19 +132,17 @@ class HudEditor : KnitScreen("HUD Editor") {
         return super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount)
     }
 
-
     override fun shouldPause(): Boolean = false
 
     private fun saveAllLayouts() {
-        layoutStore.updateAndSave {
-            HudManager.elements.forEach { (id, element) ->
-                this[id] = HudLayoutData(element.x, element.y, element.scale)
-            }
+        layouts = HudManager.elements.mapValues { (_, element) ->
+            HudLayoutData(element.x, element.y, element.scale)
         }
+        layoutStore.forceSave()
     }
 
     private fun loadAllLayouts() {
-        layoutStore.getData().forEach { (id, layout) ->
+        layouts.forEach { (id, layout) ->
             HudManager.elements[id]?.apply {
                 x = layout.x
                 y = layout.y

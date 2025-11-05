@@ -1,128 +1,159 @@
 package xyz.meowing.krypt.api.dungeons
 
 import tech.thatgravyboat.skyblockapi.utils.regex.RegexUtils.find
-import tech.thatgravyboat.skyblockapi.utils.regex.RegexUtils.findThenNull
 import tech.thatgravyboat.skyblockapi.utils.regex.matchWhen
 import xyz.meowing.knit.api.KnitPlayer
 import xyz.meowing.krypt.annotations.Module
-import xyz.meowing.krypt.events.core.TickEvent
 import xyz.meowing.krypt.api.dungeons.map.Door
 import xyz.meowing.krypt.api.dungeons.map.Room
 import xyz.meowing.krypt.api.dungeons.map.WorldScanner
+import xyz.meowing.krypt.api.dungeons.players.DungeonPlayer
 import xyz.meowing.krypt.api.dungeons.players.DungeonPlayerManager
 import xyz.meowing.krypt.api.dungeons.score.DungeonScore
 import xyz.meowing.krypt.api.dungeons.score.MimicTrigger
+import xyz.meowing.krypt.api.dungeons.utils.DungeonClass
 import xyz.meowing.krypt.api.dungeons.utils.DungeonFloor
 import xyz.meowing.krypt.api.dungeons.utils.DungeonKey
 import xyz.meowing.krypt.api.dungeons.utils.MapUtils
 import xyz.meowing.krypt.api.dungeons.utils.RoomRegistry
 import xyz.meowing.krypt.api.dungeons.utils.WorldScanUtils
-import xyz.meowing.krypt.api.location.LocationAPI
 import xyz.meowing.krypt.api.location.SkyBlockIsland
 import xyz.meowing.krypt.events.EventBus
 import xyz.meowing.krypt.events.core.ChatEvent
 import xyz.meowing.krypt.events.core.DungeonEvent
 import xyz.meowing.krypt.events.core.LocationEvent
+import xyz.meowing.krypt.events.core.TickEvent
 import xyz.meowing.krypt.utils.StringUtils.removeFormatting
 
-/**
- * Central dungeon state manager.
- * Basically one-stop shop for everything dungeons
- */
 @Module
 object Dungeon {
+    private val watcherSpawnedAllRegex = Regex("""\[BOSS] The Watcher: That will be enough for now\.""")
+    private val watcherKilledAllRegex = Regex("\\[BOSS] The Watcher: You have proven yourself\\. You may pass\\.")
+    private val bossStartRegex = Regex("^\\[BOSS] (?<boss>.+?):")
 
-    // Regex patterns for chat parsing
-    private val watcherRegex = Regex("""\[BOSS] The Watcher: That will be enough for now\.""")
     private val roomSecretsRegex = Regex("""\b([0-9]|10)/([0-9]|10)\s+Secrets\b""")
     private val dungeonFloorRegex = Regex("The Catacombs \\((?<floor>.+)\\)")
+
     private val keyObtainedRegex = Regex("(?:\\[.+] ?)?\\w+ has obtained (?<type>\\w+) Key!")
     private val keyPickedUpRegex = Regex("A (?<type>\\w+) Key was picked up!")
+
     private val witherDoorOpenRegex = Regex("\\w+ opened a WITHER door!")
     private val bloodDoorOpenRegex = Regex("The BLOOD DOOR has been opened!")
-    private val bossStartRegex = Regex("^\\[BOSS] (?<boss>.+?):")
+
     private val startRegex = Regex("\\[NPC] Mort: Here, I found this map when I first entered the dungeon\\.")
     private val endRegex = Regex("\\s+(?:Master Mode|The) Catacombs - (?:Entrance|Floor [XVI]+)")
 
-    // Room and door data
+    private val uniqueClassRegex = Regex("Your .+ stats are doubled because you are the only player using this class!")
+
     val rooms = Array<Room?>(36) { null }
     val doors = Array<Door?>(60) { null }
     val uniqueRooms = mutableSetOf<Room>()
     val uniqueDoors = mutableSetOf<Door>()
     val discoveredRooms = mutableMapOf<String, DiscoveredRoom>()
 
-    // Dungeon state
     var bloodOpened = false
-    var bloodClear = false
-    var bloodDone = false
-    var complete = false
+        private set
+    var bloodKilledAll = false
+        private set
+    var bloodSpawnedAll = false
+        private set
+
+    var floorStarted = false
+        private set
+    var floorCompleted = false
+        private set
+
     var currentRoom: Room? = null
     var holdingLeaps = false
-    var witherKeys: Int = 0
-    var bloodKeys: Int = 0
+        private set
 
-    // Floor info
+    var witherKeys = 0
+        private set
+    var bloodKeys = 0
+        private set
+
     var floor: DungeonFloor? = null
-        set(value) {
+        private set(value) {
             if (field != value) {
                 field = value
                 EventBus.post(LocationEvent.DungeonFloorChange(value))
             }
         }
 
-    var inDungeon = false
-    var inBoss: Boolean = false
+    var inBoss = false
         private set
 
-    var started: Boolean = false
-        private set
-
-    // HUD lines
     var mapLine1 = ""
+        private set
     var mapLine2 = ""
+        private set
 
-    val players get() = DungeonPlayerManager.players
-    val score get() = DungeonScore.score
+    var uniqueClass = false
+        private set
+
+    val mimicDead: Boolean
+        get() = MimicTrigger.mimicDead
+
+    val players: List<DungeonPlayer>
+        get() = DungeonPlayerManager.players
+
+    val score: Int
+        get() = DungeonScore.score
+
+    val ownPlayer: DungeonPlayer?
+        get() = players.find { it.name == KnitPlayer.player?.name?.string }
+
+    val dungeonClass: DungeonClass?
+        get() = ownPlayer?.dungeonClass
+
+    val classLevel: Int
+        get() = ownPlayer?.classLevel ?: 0
 
     data class DiscoveredRoom(val x: Int, val z: Int, val room: Room)
 
-    /** Initializes all dungeon systems and event listeners */
     init {
         EventBus.registerIn<LocationEvent.AreaChange>(SkyBlockIsland.THE_CATACOMBS) { event ->
             dungeonFloorRegex.find(event.new.name, "floor") { (f) ->
                 floor = DungeonFloor.getByName(f)
-                val floorValue = floor ?: return@find
-                EventBus.post(DungeonEvent.Enter(floorValue))
+                floor?.let { EventBus.post(DungeonEvent.Enter(it)) }
             }
         }
 
-        EventBus.register<LocationEvent.IslandChange> {
-            inDungeon = LocationAPI.island == SkyBlockIsland.THE_CATACOMBS
-            if (!inDungeon) reset()
-        }
+        EventBus.register<LocationEvent.IslandChange> { reset() }
 
         EventBus.registerIn<ChatEvent.Receive>(SkyBlockIsland.THE_CATACOMBS) { event ->
             val message = event.message.string.removeFormatting()
-            if (watcherRegex.containsMatchIn(message)) bloodDone = true
 
-            if (endRegex.matches(message)) {
-                DungeonPlayerManager.updateAllSecrets()
-                complete = true
-                floor?.let { EventBus.post(DungeonEvent.End(it)) }
-                return@registerIn
-            }
+            when {
+                watcherSpawnedAllRegex.matches(message) -> {
+                    bloodSpawnedAll = true
+                }
 
-            if (!started && startRegex.matches(message)) {
-                started = true
-                floor?.let { EventBus.post(DungeonEvent.Start(it)) }
-                return@registerIn
-            }
+                watcherKilledAllRegex.matches(message) -> {
+                    bloodKilledAll = true
+                }
 
-            if (!inBoss && floor != DungeonFloor.E) {
-                bossStartRegex.findThenNull(message, "boss") { (boss) ->
-                    if (boss != "The Watcher") return@findThenNull
-                    inBoss = floor?.chatBossName == boss
-                } ?: return@registerIn
+                uniqueClassRegex.matches(message) -> {
+                    uniqueClass = true
+                }
+
+                endRegex.matches(message) -> {
+                    DungeonPlayerManager.updateAllSecrets()
+                    floorCompleted = true
+                    floor?.let { EventBus.post(DungeonEvent.End(it)) }
+                }
+
+                !floorStarted && startRegex.matches(message) -> {
+                    floorStarted = true
+                    floor?.let { EventBus.post(DungeonEvent.Start(it)) }
+                }
+
+                !inBoss && floor != DungeonFloor.E -> {
+                    bossStartRegex.find(message, "boss") { (boss) ->
+                        if (boss == "The Watcher") return@find
+                        inBoss = floor?.chatBossName == boss
+                    }
+                }
             }
 
             matchWhen(message) {
@@ -157,8 +188,6 @@ object Dungeon {
 
         RoomRegistry.loadFromRemote()
         WorldScanner.init()
-        DungeonPlayerManager.init()
-        DungeonScore.init()
         MapUtils.init()
     }
 
@@ -169,23 +198,32 @@ object Dungeon {
         uniqueRooms.clear()
         uniqueDoors.clear()
         discoveredRooms.clear()
+
         currentRoom = null
-        bloodClear = false
-        bloodDone = false
-        bloodOpened = false
-        complete = false
         holdingLeaps = false
+
+        bloodKilledAll = false
+        bloodSpawnedAll = false
+        bloodOpened = false
+
+        floorCompleted = false
+        floorStarted = false
+
         mapLine1 = ""
         mapLine2 = ""
+
         witherKeys = 0
         bloodKeys = 0
+
+        inBoss = false
+        uniqueClass = false
+
         WorldScanner.reset()
         DungeonPlayerManager.reset()
         DungeonScore.reset()
         MapUtils.reset()
     }
 
-    /** Handles Key Events **/
     private fun handleGetKey(type: String) {
         val key = DungeonKey.getById(type) ?: return
         when (key) {
@@ -195,15 +233,14 @@ object Dungeon {
         EventBus.post(DungeonEvent.KeyPickUp(key))
     }
 
-    /** Updates HUD lines for map overlay */
     private fun updateHudLines() {
         val run = DungeonScore.data
 
         val dSecrets = "§7Secrets: §b${run.secretsFound}§8-§e${run.secretsRemaining}§8-§c${run.totalSecrets}"
         val dCrypts = "§7Crypts: " + when {
             run.crypts >= 5 -> "§a${run.crypts}"
-            run.crypts > 0  -> "§e${run.crypts}"
-            else            -> "§c0"
+            run.crypts > 0 -> "§e${run.crypts}"
+            else -> "§c0"
         }
         val dMimic = if (floor?.floorNumber in listOf(6, 7)) {
             "§7Mimic: " + if (MimicTrigger.mimicDead) "§a✔" else "§c✘"
@@ -219,7 +256,7 @@ object Dungeon {
         val dScore = "§7Score: " + when {
             run.score >= 300 -> "§a${run.score}"
             run.score >= 270 -> "§e${run.score}"
-            else             -> "§c${run.score}"
+            else -> "§c${run.score}"
         } + if (DungeonScore.hasPaul) " §b★" else ""
 
         mapLine1 = "$dSecrets    $dCrypts    $dMimic".trim()

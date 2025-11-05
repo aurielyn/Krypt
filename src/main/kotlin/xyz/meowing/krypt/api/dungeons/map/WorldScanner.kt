@@ -11,7 +11,6 @@ import xyz.meowing.krypt.api.location.SkyBlockIsland
 import xyz.meowing.krypt.events.EventBus
 import xyz.meowing.krypt.events.core.TickEvent
 import xyz.meowing.krypt.utils.WorldUtils
-import java.util.UUID
 
 object WorldScanner {
     val availableComponents = ScanUtils.getScanCords().toMutableList()
@@ -130,11 +129,9 @@ object WorldScanner {
         val world = KnitClient.world ?: return
 
         Dungeon.players.forEach { player ->
-            if (player == null) return@forEach
-
             val entity = world.players.find { it.name.string == player.name }
 
-            val entry = KnitClient.client.networkHandler?.getPlayerListEntry(entity?.uuid ?: UUID(0, 0))
+            val entry = KnitClient.client.networkHandler?.getPlayerListEntry(entity?.uuid)
             val ping = entry?.latency ?: -1
 
             if (ping != -1 && entity != null) {

@@ -4,7 +4,6 @@ import net.minecraft.block.BlockState
 import net.minecraft.util.math.BlockPos
 import xyz.meowing.knit.api.KnitClient
 
-
 object WorldUtils {
     fun getBlockStateAt(x: Int, y: Int, z: Int): BlockState? {
         val world = KnitClient.world ?: return null

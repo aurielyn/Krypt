@@ -1,4 +1,4 @@
-package xyz.meowing.krypt.mixin;
+package xyz.meowing.krypt.mixins;
 
 import io.netty.channel.ChannelHandlerContext;
 import net.minecraft.network.ClientConnection;
@@ -13,12 +13,12 @@ import xyz.meowing.krypt.events.core.PacketEvent;
 @Mixin(ClientConnection.class)
 public class MixinClientConnection {
     @Inject(method = "channelRead0*", at = @At("HEAD"), cancellable = true)
-    private void zen$onReceivePacket(ChannelHandlerContext context, Packet<?> packet, CallbackInfo ci) {
+    private void krypt$onReceivePacket(ChannelHandlerContext context, Packet<?> packet, CallbackInfo ci) {
         if (EventBus.INSTANCE.onPacketReceived(packet)) ci.cancel();
     }
 
     @Inject(method = "channelRead0*", at = @At("TAIL"))
-    private void zen$onReceivePacketPost(ChannelHandlerContext context, Packet<?> packet, CallbackInfo ci) {
+    private void krypt$onReceivePacketPost(ChannelHandlerContext context, Packet<?> packet, CallbackInfo ci) {
         EventBus.INSTANCE.post(new PacketEvent.ReceivedPost(packet));
     }
 }

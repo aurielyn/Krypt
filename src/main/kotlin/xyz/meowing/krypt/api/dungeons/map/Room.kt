@@ -1,4 +1,5 @@
 package xyz.meowing.krypt.api.dungeons.map
+
 import xyz.meowing.krypt.api.dungeons.utils.WorldScanUtils
 import xyz.meowing.krypt.api.dungeons.players.DungeonPlayer
 import net.minecraft.block.Blocks
@@ -7,7 +8,6 @@ import xyz.meowing.krypt.api.dungeons.utils.RoomMetadata
 import xyz.meowing.krypt.api.dungeons.utils.RoomRegistry
 import xyz.meowing.krypt.api.dungeons.utils.RoomType
 import xyz.meowing.krypt.api.dungeons.utils.ScanUtils
-import xyz.meowing.krypt.utils.TimeUtils
 import xyz.meowing.krypt.utils.WorldUtils
 
 class Room(
@@ -32,7 +32,7 @@ class Room(
     var secretsFound: Int = 0
     var crypts: Int = 0
 
-    var clearTime = TimeUtils.zero
+    var clearTime = 0L
 
     init {
         addComponents(listOf(initialComponent))

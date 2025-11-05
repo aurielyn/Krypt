@@ -1,4 +1,4 @@
-package xyz.meowing.krypt.mixin;
+package xyz.meowing.krypt.mixins;
 
 import com.llamalad7.mixinextras.sugar.Local;
 import net.minecraft.client.gui.DrawContext;
@@ -14,7 +14,7 @@ import xyz.meowing.krypt.events.core.GuiEvent;
 @Mixin(GameRenderer.class)
 public class MixinGameRenderer {
     @Inject(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/hud/InGameHud;render(Lnet/minecraft/client/gui/DrawContext;Lnet/minecraft/client/render/RenderTickCounter;)V", shift = At.Shift.AFTER))
-    private void zen$afterHudRender(RenderTickCounter tickCounter, boolean tick, CallbackInfo ci, @Local DrawContext context) {
+    private void krypt$afterHudRender(RenderTickCounter tickCounter, boolean tick, CallbackInfo ci, @Local DrawContext context) {
         EventBus.INSTANCE.post(new GuiEvent.RenderHUD(context));
     }
 }

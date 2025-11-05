@@ -16,14 +16,11 @@ import xyz.meowing.krypt.api.dungeons.utils.MapUtils.mapZ
 import xyz.meowing.krypt.api.dungeons.utils.MapUtils.yaw
 import xyz.meowing.krypt.api.dungeons.utils.RoomType
 import xyz.meowing.krypt.api.dungeons.utils.ScanUtils
-import xyz.meowing.krypt.mixin.AccessorMapState
-import xyz.meowing.krypt.utils.TimeUtils
-import kotlin.time.Duration
-
+import xyz.meowing.krypt.mixins.AccessorMapState
 
 object MapScanner {
     data class RoomClearInfo(
-        val time: Duration,
+        val time: Long,
         val room: Room,
         val solo: Boolean
     )
@@ -38,15 +35,16 @@ object MapScanner {
                 dplayer = Dungeon.players.firstOrNull()
             } else {
                 val players = Dungeon.players
-                while (i < players.size && (dplayer == null || !dplayer.alive)) {
+                while (i < players.size && (dplayer == null || !dplayer.dead)) {
                     dplayer = players[i]
                     i++
                 }
             }
+
             if (dplayer == null) {
                 dungeonPlayerError(key, "not found", i - 1, Dungeon.players, (state as AccessorMapState).decorations)
                 continue
-            } else if (!dplayer.alive) {
+            } else if (dplayer.dead) {
                 dungeonPlayerError(key, "not alive", i - 1, Dungeon.players, (state as AccessorMapState).decorations)
                 continue
             } else if (dplayer.uuid == null) {
@@ -158,14 +156,14 @@ object MapScanner {
                             if (room.checkmark != Checkmark.WHITE) roomCleared(room, Checkmark.WHITE)
                             check = Checkmark.WHITE
                         }
-                        rcolor == 18.toByte() && Dungeon.bloodDone -> {
+                        rcolor == 18.toByte() && Dungeon.bloodSpawnedAll -> {
                             if (room.checkmark != Checkmark.WHITE) roomCleared(room, Checkmark.WHITE)
                             check = Checkmark.WHITE
                         }
                         center == 18.toByte() && rcolor != 18.toByte() -> check = Checkmark.FAILED
                         room.checkmark == Checkmark.UNEXPLORED -> {
                             check = Checkmark.NONE
-                            room.clearTime = TimeUtils.now
+                            room.clearTime = System.currentTimeMillis()
                         }
                     }
 
@@ -237,7 +235,7 @@ object MapScanner {
             clearedMap?.putIfAbsent(
                 room.name ?: "unknown",
                 RoomClearInfo(
-                    time = room.clearTime.since,
+                    time = System.currentTimeMillis() - room.clearTime,
                     room = room,
                     solo = players.size == 1
                 )
@@ -245,8 +243,8 @@ object MapScanner {
         }
     }
 
-    private fun dungeonPlayerError(decorationId: String?, reason: String?, i: Int, dungeonPlayers: Array<DungeonPlayer?>?, mapDecorations: MutableMap<String?, MapDecoration?>?) {
-        Krypt.LOGGER.error("[Dungeon Map] Dungeon player for map decoration '{}' {}. Player list index (zero-indexed): {}. Player list: {}. Map decorations: {}", decorationId, reason, i, dungeonPlayers.contentToString(), mapDecorations)
+    private fun dungeonPlayerError(decorationId: String?, reason: String?, i: Int, dungeonPlayers: List<DungeonPlayer?>?, mapDecorations: MutableMap<String?, MapDecoration?>?) {
+        Krypt.LOGGER.error("[Dungeon Map] Dungeon player for map decoration '{}' {}. Player list index (zero-indexed): {}. Player list: {}. Map decorations: {}", decorationId, reason, i, dungeonPlayers, mapDecorations)
     }
 
     fun clampMap(n: Double, inMin: Double, inMax: Double, outMin: Double, outMax: Double): Double {

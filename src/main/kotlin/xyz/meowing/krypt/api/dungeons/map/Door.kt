@@ -7,7 +7,6 @@ import xyz.meowing.krypt.api.dungeons.utils.WorldScanUtils
 import xyz.meowing.krypt.utils.WorldUtils
 
 class Door(val worldPos: Pair<Int, Int>, val componentPos: Pair<Int, Int>) {
-
     var opened: Boolean = false
     var rotation: Int? = null
     var type: DoorType = DoorType.NORMAL

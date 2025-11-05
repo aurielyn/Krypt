@@ -17,36 +17,45 @@ import xyz.meowing.krypt.managers.config.ConfigManager
 import xyz.meowing.krypt.utils.Render2D
 
 @Module
-object RoomName: Feature("general.roomName", island = SkyBlockIsland.THE_CATACOMBS) {
-    var chroma by ConfigDelegate<Boolean>("general.roomName.chroma")
-    var name = "room name"
+object RoomName: Feature(
+    "general.roomName",
+    island = SkyBlockIsland.THE_CATACOMBS
+) {
+    val chroma by ConfigDelegate<Boolean>("general.roomName.chroma")
+    private const val NAME = "room name"
 
     override fun addConfig() {
         ConfigManager
             .addFeature(
-                "Room Name Hud", "Displays the current rooms name", "Dungeons", ConfigElement(
+                "Room Name Hud",
+                "Displays the current rooms name",
+                "Dungeons",
+                ConfigElement(
                     "general.roomName",
                     ElementType.Switch(false)
                 )
             )
             .addFeatureOption(
-                "Chroma Room Name", "Makes the room name hud chroma (requires sba / sh)", "Options", ConfigElement(
+                "Chroma Room Name",
+                ConfigElement(
                     "general.roomName.chroma",
                     ElementType.Switch(false)
                 )
             )
-            .addFeatureOption("HudEditor", "Opens Hud Editor", "Options", ConfigElement(
-                "general.roomName.hudEditor",
-                ElementType.Button("Edit Position") {
-                    TickScheduler.Client.post {
-                        client.execute { client.setScreen(HudEditor()) }
+            .addFeatureOption("HudEditor",
+                ConfigElement(
+                    "general.roomName.hudEditor",
+                    ElementType.Button("Edit Position") {
+                        TickScheduler.Client.post {
+                            client.execute { client.setScreen(HudEditor()) }
+                        }
                     }
-                }
-            ))
+                )
+            )
     }
 
     override fun initialize() {
-        HudManager.register(name, "No Room Found", "general.roomName")
+        HudManager.register(NAME, "No Room Found", "general.roomName")
         register<GuiEvent.RenderHUD> { renderHud(it.context) }
     }
 
@@ -54,9 +63,9 @@ object RoomName: Feature("general.roomName", island = SkyBlockIsland.THE_CATACOM
         if (Dungeon.inBoss) return
 
         val text = "${if (chroma) "§z" else ""}${Dungeon.currentRoom?.name ?: "No Room Found"}"
-        val x = HudManager.getX(name) + 5f
-        val y = HudManager.getY(name) + 5f
-        val scale = HudManager.getScale(name)
+        val x = HudManager.getX(NAME) + 5f
+        val y = HudManager.getY(NAME) + 5f
+        val scale = HudManager.getScale(NAME)
 
         Render2D.renderString(context,text, x, y, scale)
     }
