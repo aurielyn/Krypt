@@ -1,8 +1,10 @@
 package xyz.meowing.krypt.api.dungeons
 
 import tech.thatgravyboat.skyblockapi.utils.regex.RegexUtils.find
+import tech.thatgravyboat.skyblockapi.utils.regex.RegexUtils.findThenNull
 import tech.thatgravyboat.skyblockapi.utils.regex.matchWhen
 import xyz.meowing.knit.api.KnitPlayer
+import xyz.meowing.krypt.annotations.Module
 import xyz.meowing.krypt.events.core.TickEvent
 import xyz.meowing.krypt.api.dungeons.map.Door
 import xyz.meowing.krypt.api.dungeons.map.Room
@@ -27,17 +29,20 @@ import xyz.meowing.krypt.utils.StringUtils.removeFormatting
  * Central dungeon state manager.
  * Basically one-stop shop for everything dungeons
  */
+@Module
 object Dungeon {
 
     // Regex patterns for chat parsing
     private val watcherRegex = Regex("""\[BOSS] The Watcher: That will be enough for now\.""")
-    private val dungeonCompleteRegex = Regex("""^\s*(Master Mode)?\s?(?:The)? Catacombs - (Entrance|Floor .{1,3})$""")
     private val roomSecretsRegex = Regex("""\b([0-9]|10)/([0-9]|10)\s+Secrets\b""")
     private val dungeonFloorRegex = Regex("The Catacombs \\((?<floor>.+)\\)")
     private val keyObtainedRegex = Regex("(?:\\[.+] ?)?\\w+ has obtained (?<type>\\w+) Key!")
     private val keyPickedUpRegex = Regex("A (?<type>\\w+) Key was picked up!")
     private val witherDoorOpenRegex = Regex("\\w+ opened a WITHER door!")
     private val bloodDoorOpenRegex = Regex("The BLOOD DOOR has been opened!")
+    private val bossStartRegex = Regex("^\\[BOSS] (?<boss>.+?):")
+    private val startRegex = Regex("\\[NPC] Mort: Here, I found this map when I first entered the dungeon\\.")
+    private val endRegex = Regex("\\s+(?:Master Mode|The) Catacombs - (?:Entrance|Floor [XVI]+)")
 
     // Room and door data
     val rooms = Array<Room?>(36) { null }
@@ -66,24 +71,23 @@ object Dungeon {
         }
 
     var inDungeon = false
-    val inBoss: Boolean
-        get() = floor != null && KnitPlayer.player?.let {
-            val (x, z) = WorldScanUtils.realCoordToComponent(it.x.toInt(), it.z.toInt())
-            6 * z + x > 35
-        } == true
+    var inBoss: Boolean = false
+        private set
+
+    var started: Boolean = false
+        private set
 
     // HUD lines
     var mapLine1 = ""
     var mapLine2 = ""
 
-    // Shortcuts
     val players get() = DungeonPlayerManager.players
     val score get() = DungeonScore.score
 
     data class DiscoveredRoom(val x: Int, val z: Int, val room: Room)
 
     /** Initializes all dungeon systems and event listeners */
-    fun init() {
+    init {
         EventBus.registerIn<LocationEvent.AreaChange>(SkyBlockIsland.THE_CATACOMBS) { event ->
             dungeonFloorRegex.find(event.new.name, "floor") { (f) ->
                 floor = DungeonFloor.getByName(f)
@@ -97,18 +101,31 @@ object Dungeon {
             if (!inDungeon) reset()
         }
 
-
         EventBus.registerIn<ChatEvent.Receive>(SkyBlockIsland.THE_CATACOMBS) { event ->
-            val msg = event.message.string.removeFormatting()
-            if (watcherRegex.containsMatchIn(msg)) bloodDone = true
-            if (dungeonCompleteRegex.containsMatchIn(msg)) {
+            val message = event.message.string.removeFormatting()
+            if (watcherRegex.containsMatchIn(message)) bloodDone = true
+
+            if (endRegex.matches(message)) {
                 DungeonPlayerManager.updateAllSecrets()
                 complete = true
                 floor?.let { EventBus.post(DungeonEvent.End(it)) }
                 return@registerIn
             }
 
-            matchWhen(msg) {
+            if (!started && startRegex.matches(message)) {
+                started = true
+                floor?.let { EventBus.post(DungeonEvent.Start(it)) }
+                return@registerIn
+            }
+
+            if (!inBoss && floor != DungeonFloor.E) {
+                bossStartRegex.findThenNull(message, "boss") { (boss) ->
+                    if (boss != "The Watcher") return@findThenNull
+                    inBoss = floor?.chatBossName == boss
+                } ?: return@registerIn
+            }
+
+            matchWhen(message) {
                 case(keyObtainedRegex, "type") { (type) ->
                     handleGetKey(type)
                 }

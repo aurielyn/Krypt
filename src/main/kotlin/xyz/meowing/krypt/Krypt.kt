@@ -24,7 +24,6 @@ object Krypt : ClientModInitializer {
         FeatureManager.loadFeatures()
         FeatureManager.initializeFeatures()
         ConfigManager.executePending()
-        Dungeon.init()
 
         EventBus.register<ServerEvent.Connect> {
             if (!showLoad) return@register

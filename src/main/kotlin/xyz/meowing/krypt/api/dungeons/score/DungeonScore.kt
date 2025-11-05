@@ -55,7 +55,6 @@ object DungeonScore {
                     val msg = line.stripped.trim()
                     parseTablist(msg)
                 }
-
             }
         }
 
