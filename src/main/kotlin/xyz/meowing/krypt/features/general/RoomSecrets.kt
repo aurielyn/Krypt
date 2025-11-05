@@ -88,12 +88,12 @@ object RoomSecrets: Feature(
 
         //#if MC >= 1.21.7
         //$$ matrix.pushMatrix()
-        //$$ matrix.scale(scale, scale)
         //$$ matrix.translate(x, y)
+        //$$ matrix.scale(scale, scale)
         //#else
         matrix.push()
-        matrix.scale(scale, scale, 1f)
         matrix.translate(x, y, 0f)
+        matrix.scale(scale, scale, 1f)
         //#endif
 
         val text1 = "§fSecrets"
