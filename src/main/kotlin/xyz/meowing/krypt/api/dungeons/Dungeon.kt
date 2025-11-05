@@ -29,7 +29,6 @@ import xyz.meowing.krypt.utils.StringUtils.removeFormatting
 object Dungeon {
     private val watcherSpawnedAllRegex = Regex("""\[BOSS] The Watcher: That will be enough for now\.""")
     private val watcherKilledAllRegex = Regex("\\[BOSS] The Watcher: You have proven yourself\\. You may pass\\.")
-    private val bossStartRegex = Regex("^\\[BOSS] (?<boss>.+?):")
 
     private val roomSecretsRegex = Regex("""\b([0-9]|10)/([0-9]|10)\s+Secrets\b""")
     private val dungeonFloorRegex = Regex("The Catacombs \\((?<floor>.+)\\)")
@@ -80,8 +79,11 @@ object Dungeon {
             }
         }
 
-    var inBoss = false
-        private set
+    val inBoss: Boolean
+        get() = floor != null && KnitPlayer.player?.let {
+            val (x, z) = WorldScanUtils.realCoordToComponent(it.x.toInt(), it.z.toInt())
+            6 * z + x > 35
+        } == true
 
     var mapLine1 = ""
         private set
@@ -147,13 +149,6 @@ object Dungeon {
                     floorStarted = true
                     floor?.let { EventBus.post(DungeonEvent.Start(it)) }
                 }
-
-                !inBoss && floor != DungeonFloor.E -> {
-                    bossStartRegex.find(message, "boss") { (boss) ->
-                        if (boss == "The Watcher") return@find
-                        inBoss = floor?.chatBossName == boss
-                    }
-                }
             }
 
             matchWhen(message) {
@@ -215,7 +210,6 @@ object Dungeon {
         witherKeys = 0
         bloodKeys = 0
 
-        inBoss = false
         uniqueClass = false
 
         WorldScanner.reset()

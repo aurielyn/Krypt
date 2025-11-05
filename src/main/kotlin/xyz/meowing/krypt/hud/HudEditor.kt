@@ -29,6 +29,7 @@ class HudEditor : KnitScreen("HUD Editor") {
 
     override fun render(context: DrawContext, mouseX: Int, mouseY: Int, deltaTicks: Float) {
         super.render(context, mouseX, mouseY, deltaTicks)
+        context.fill(0, 0, width, width, 0x90000000.toInt())
 
         HudManager.elements.values.forEach { element ->
             if (!element.isEnabled()) return@forEach

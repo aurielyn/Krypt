@@ -63,8 +63,8 @@ object RoomName: Feature(
         if (Dungeon.inBoss) return
 
         val text = "${if (chroma) "§z" else ""}${Dungeon.currentRoom?.name ?: "No Room Found"}"
-        val x = HudManager.getX(NAME) + 5f
-        val y = HudManager.getY(NAME) + 5f
+        val x = HudManager.getX(NAME)
+        val y = HudManager.getY(NAME)
         val scale = HudManager.getScale(NAME)
 
         Render2D.renderString(context,text, x, y, scale)
