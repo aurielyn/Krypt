@@ -54,8 +54,8 @@ object RoomName: Feature("general.roomName", island = SkyBlockIsland.THE_CATACOM
         if (Dungeon.inBoss) return
 
         val text = "${if (chroma) "§z" else ""}${Dungeon.currentRoom?.name ?: "No Room Found"}"
-        val x = HudManager.getX(name) + 5f
-        val y = HudManager.getY(name) + 5f
+        val x = HudManager.getX(name)
+        val y = HudManager.getY(name)
         val scale = HudManager.getScale(name)
 
         Render2D.renderString(context,text, x, y, scale)

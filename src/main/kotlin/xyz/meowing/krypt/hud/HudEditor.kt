@@ -16,30 +16,19 @@ class HudEditor : KnitScreen("HUD Editor") {
     private var offsetY = 0f
     private var mc = KnitClient.client
 
-    data class HudLayoutData(
-        var x: Float,
-        var y: Float,
-        var scale: Float = 1f
-    )
-
-    private val layoutStore = DataUtils(
-        fileName = "hud_positions",
-        defaultObject = mutableMapOf<String, HudLayoutData>(),
-        typeToken = object : TypeToken<MutableMap<String, HudLayoutData>>() {}
-    )
-
     override fun onInitGui() {
         super.onInitGui()
-        loadAllLayouts()
+        HudManager.loadAllLayouts()
     }
 
     override fun onCloseGui() {
         super.onCloseGui()
-        saveAllLayouts()
+        HudManager.saveAllLayouts()
     }
 
     override fun render(context: DrawContext, mouseX: Int, mouseY: Int, deltaTicks: Float) {
         super.render(context, mouseX, mouseY, deltaTicks)
+        context.fill(0, 0, width, width, 0x90000000.toInt())
 
         // Render all HUD elements
         HudManager.elements.values.forEach { element ->
@@ -120,24 +109,6 @@ class HudEditor : KnitScreen("HUD Editor") {
 
 
     override fun shouldPause(): Boolean = false
-
-    private fun saveAllLayouts() {
-        layoutStore.updateAndSave {
-            HudManager.elements.forEach { (id, element) ->
-                this[id] = HudLayoutData(element.x, element.y, element.scale)
-            }
-        }
-    }
-
-    private fun loadAllLayouts() {
-        layoutStore.getData().forEach { (id, layout) ->
-            HudManager.elements[id]?.apply {
-                x = layout.x
-                y = layout.y
-                scale = layout.scale
-            }
-        }
-    }
 
     private fun drawHollowRect(context: DrawContext, x1: Int, y1: Int, x2: Int, y2: Int, color: Int) {
         context.fill(x1, y1, x2, y1 + 1, color)

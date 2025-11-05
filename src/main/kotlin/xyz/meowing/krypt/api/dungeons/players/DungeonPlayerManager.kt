@@ -9,7 +9,6 @@ import xyz.meowing.krypt.api.location.SkyBlockIsland
 import xyz.meowing.krypt.events.EventBus
 import xyz.meowing.krypt.events.core.ChatEvent
 import xyz.meowing.krypt.events.core.TablistEvent
-import java.util.regex.Pattern
 
 object DungeonPlayerManager {
     /**
@@ -22,8 +21,8 @@ object DungeonPlayerManager {
      *
      * Taken from Skyblocker
      */
-    val playerTabPattern: Pattern = Pattern.compile("\\[\\d+] (?:\\[[A-Za-z]+] )?(?<name>[A-Za-z0-9_]+) (?:.+ )?\\((?<class>\\S+) ?(?<level>[LXVI0]+)?\\)")
-    val playerGhostPattern: Pattern = Pattern.compile(" ☠ (?<name>[A-Za-z0-9_]+) .+ became a ghost\\.")
+    val playerTabPattern = Regex("\\[\\d+] (?:\\[[A-Za-z]+] )?(?<name>[A-Za-z0-9_]+) (?:.+ )?\\((?<class>\\S+) ?(?<level>[LXVI0]+)?\\)")
+    val playerGhostPattern = Regex(" ☠ (?<name>[A-Za-z0-9_]+) .+ became a ghost\\.")
 
     val players = Array<DungeonPlayer?>(5) { null }
 
@@ -34,15 +33,14 @@ object DungeonPlayerManager {
             for (i in 0 until 5) {
                 val index = 1 + i * 4
                 if (index !in firstColumn.indices) continue
-                val matcher = playerTabPattern.matcher(firstColumn[index].stripped)
-
-                if (!matcher.matches()) {
+                val match = playerTabPattern.find(firstColumn[index].stripped)
+                if (match == null) {
                     players[i] = null
                     continue
                 }
 
-                val name = matcher.group("name")
-                val clazz = DungeonClass.from(matcher.group("class"))
+                val name = match.groups["name"]?.value ?: continue
+                val clazz = DungeonClass.from(match.groups["class"]?.value ?: "EMPTY")
 
                 if (players[i] != null && players[i]!!.name == name) {
                     players[i]!!.dclass = clazz
@@ -56,19 +54,19 @@ object DungeonPlayerManager {
     }
 
     private fun onDeath(text: Text) {
-        val matcher = playerGhostPattern.matcher(text.string)
-        if (!matcher.find()) return
+        val match = playerGhostPattern.find(text.string) ?: return
 
-        var name = matcher.group("name")
+        var name = match.groups["name"]?.value ?: return
         if (name == "You") KnitPlayer.player?.let { name = it.name.string }
 
         val player = getPlayer(name)
         if (player != null) {
             player.dclass = DungeonClass.DEAD
+            player.deaths ++
         } else {
             Krypt.LOGGER.error(
                 "[Dungeon Player Manager] Received ghost message for player '{}' but player was not found in the player list: {}",
-                matcher.group("name"),
+                match.groups["name"]?.value,
                 players.contentToString()
             )
         }

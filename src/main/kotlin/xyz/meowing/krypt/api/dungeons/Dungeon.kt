@@ -3,6 +3,7 @@ package xyz.meowing.krypt.api.dungeons
 import tech.thatgravyboat.skyblockapi.utils.regex.RegexUtils.find
 import tech.thatgravyboat.skyblockapi.utils.regex.matchWhen
 import xyz.meowing.knit.api.KnitPlayer
+import xyz.meowing.krypt.annotations.Module
 import xyz.meowing.krypt.events.core.TickEvent
 import xyz.meowing.krypt.api.dungeons.map.Door
 import xyz.meowing.krypt.api.dungeons.map.Room
@@ -27,10 +28,12 @@ import xyz.meowing.krypt.utils.StringUtils.removeFormatting
  * Central dungeon state manager.
  * Basically one-stop shop for everything dungeons
  */
+@Module
 object Dungeon {
 
     // Regex patterns for chat parsing
     private val watcherRegex = Regex("""\[BOSS] The Watcher: That will be enough for now\.""")
+    private val watcherDoneRegex = Regex("""\[BOSS] The Watcher: You have proven yourself\. You may pass\.""")
     private val dungeonCompleteRegex = Regex("""^\s*(Master Mode)?\s?(?:The)? Catacombs - (Entrance|Floor .{1,3})$""")
     private val roomSecretsRegex = Regex("""\b([0-9]|10)/([0-9]|10)\s+Secrets\b""")
     private val dungeonFloorRegex = Regex("The Catacombs \\((?<floor>.+)\\)")
@@ -83,7 +86,7 @@ object Dungeon {
     data class DiscoveredRoom(val x: Int, val z: Int, val room: Room)
 
     /** Initializes all dungeon systems and event listeners */
-    fun init() {
+    init {
         EventBus.registerIn<LocationEvent.AreaChange>(SkyBlockIsland.THE_CATACOMBS) { event ->
             dungeonFloorRegex.find(event.new.name, "floor") { (f) ->
                 floor = DungeonFloor.getByName(f)
@@ -100,8 +103,9 @@ object Dungeon {
 
         EventBus.registerIn<ChatEvent.Receive>(SkyBlockIsland.THE_CATACOMBS) { event ->
             val msg = event.message.string.removeFormatting()
-            if (watcherRegex.containsMatchIn(msg)) bloodDone = true
-            if (dungeonCompleteRegex.containsMatchIn(msg)) {
+            if (watcherRegex.matches(msg)) bloodDone = true
+            if (watcherDoneRegex.matches(msg)) bloodClear = true
+            if (dungeonCompleteRegex.matches(msg)) {
                 DungeonPlayerManager.updateAllSecrets()
                 complete = true
                 floor?.let { EventBus.post(DungeonEvent.End(it)) }

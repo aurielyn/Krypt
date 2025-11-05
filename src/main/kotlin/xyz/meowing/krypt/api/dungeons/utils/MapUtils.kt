@@ -53,7 +53,7 @@ object MapUtils {
                 (mapData ?: guessMapData)?.let {
                     MapScanner.updatePlayers(it)
                     MapScanner.scan(it)
-                    checkBloodDone(it)
+                    //checkBloodDone(it)
                 }
             }
         }

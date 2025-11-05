@@ -1,9 +1,10 @@
 package xyz.meowing.krypt.api.dungeons.score
 
+import tech.thatgravyboat.skyblockapi.api.area.hub.ElectionAPI
+import tech.thatgravyboat.skyblockapi.api.data.Perk
 import tech.thatgravyboat.skyblockapi.utils.text.TextProperties.stripped
 import xyz.meowing.krypt.api.dungeons.Dungeon
 import xyz.meowing.krypt.api.dungeons.utils.DungeonFloor
-import xyz.meowing.krypt.api.hypixel.HypixelAPI
 import xyz.meowing.krypt.api.location.SkyBlockIsland
 import xyz.meowing.krypt.events.EventBus
 import xyz.meowing.krypt.events.core.ScoreboardEvent
@@ -37,7 +38,7 @@ object DungeonScore {
     val DUNGEON_TIME_PATTERN =  Regex("""^Time: (?:(\d+)h)?\s?(?:(\d+)m)?\s?(?:(\d+)s)?$""")
 
     // Current dungeon score state and accessor
-    var hasPaul = false
+    val hasPaul get() = ElectionAPI.currentMayor?.perks?.find { it == Perk.EZPZ }?.active?: false || ElectionAPI.currentMinister?.perks?.find { it == Perk.EZPZ }?.active ?: false
     var data = ScoreData()
     val score get() = data.score
 
@@ -66,11 +67,6 @@ object DungeonScore {
                 parseSidebar(msg)
             }
         }
-
-        HypixelAPI.fetchElectionData(
-            onResult = { data -> hasPaul = (data?.mayorName?.lowercase() == "paul" && data.mayorPerks.any { it.first.lowercase() == "ezpz" }) || (data?.ministerName?.lowercase() == "paul" && data.ministerPerk.lowercase() == "ezpz") },
-            onError = { error -> error.printStackTrace() }
-        )
     }
 
     /** Parses a single tablist line and updates score data */
