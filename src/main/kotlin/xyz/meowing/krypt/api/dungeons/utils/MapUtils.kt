@@ -53,7 +53,6 @@ object MapUtils {
                 (mapData ?: guessMapData)?.let {
                     MapScanner.updatePlayers(it)
                     MapScanner.scan(it)
-                    //checkBloodDone(it)
                 }
             }
         }
@@ -103,27 +102,6 @@ object MapUtils {
             }
         }
         return null
-    }
-
-    fun checkBloodDone(state: MapState) {
-        if (Dungeon.bloodClear) return
-
-        val startX = mapCorners.first + (mapRoomSize / 2)
-        val startY = mapCorners.second + (mapRoomSize / 2) + 1
-
-        for (x in startX until 118 step (mapGapSize / 2)) {
-            for (y in startY until 118 step (mapGapSize / 2)) {
-                val i = x + y * 128
-                if (state.colors.getOrNull(i) == null) continue
-
-                val center = state.colors[i - 1]
-                val roomColor = state.colors.getOrNull(i + 5 + 128 * 4) ?: continue
-
-                if (roomColor != 18.toByte()) continue
-                if (center != 30.toByte()) continue
-                Dungeon.bloodClear = true
-            }
-        }
     }
 
     fun reset() {
