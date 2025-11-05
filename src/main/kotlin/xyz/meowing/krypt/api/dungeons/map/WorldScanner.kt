@@ -14,7 +14,7 @@ import xyz.meowing.krypt.utils.WorldUtils
 import java.util.UUID
 
 object WorldScanner {
-    val availableComponents = ScanUtils.getScanCoords().toMutableList()
+    val availableComponents = ScanUtils.getScanCords().toMutableList()
     var lastIdx: Int? = null
 
     fun init() {
@@ -52,7 +52,7 @@ object WorldScanner {
 
     fun reset() {
         availableComponents.clear()
-        availableComponents += ScanUtils.getScanCoords()
+        availableComponents += ScanUtils.getScanCords()
         lastIdx = null
     }
 

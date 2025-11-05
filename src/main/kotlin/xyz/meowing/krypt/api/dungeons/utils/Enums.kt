@@ -2,7 +2,7 @@ package xyz.meowing.krypt.api.dungeons.utils
 
 import xyz.meowing.krypt.api.dungeons.Dungeon
 
-enum class DungeonClass (val displayName: String) {
+enum class DungeonClass(val displayName: String) {
     UNKNOWN("Unknown"),
     HEALER("Healer"),
     MAGE("Mage"),

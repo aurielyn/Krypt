@@ -48,8 +48,8 @@ object ScanUtils {
         66 to RoomType.PUZZLE
     )
 
-    fun getScanCoords(): List<Triple<Int, Int, Pair<Int, Int>>> {
-        val coords = mutableListOf<Triple<Int, Int, Pair<Int, Int>>>()
+    fun getScanCords(): List<Triple<Int, Int, Pair<Int, Int>>> {
+        val cords = mutableListOf<Triple<Int, Int, Pair<Int, Int>>>()
 
         for (z in 0..<11) {
             for (x in 0..<11) {
@@ -57,10 +57,10 @@ object ScanUtils {
 
                 val rx = cornerStart.first + halfRoomSize + x * halfCombinedSize
                 val rz = cornerStart.second + halfRoomSize + z * halfCombinedSize
-                coords += Triple(x, z, Pair(rx, rz))
+                cords += Triple(x, z, Pair(rx, rz))
             }
         }
 
-        return coords
+        return cords
     }
 }
