@@ -34,13 +34,14 @@ object Dungeon {
     // Regex patterns for chat parsing
     private val watcherRegex = Regex("""\[BOSS] The Watcher: That will be enough for now\.""")
     private val watcherDoneRegex = Regex("""\[BOSS] The Watcher: You have proven yourself\. You may pass\.""")
-    private val dungeonCompleteRegex = Regex("""^\s*(Master Mode)?\s?(?:The)? Catacombs - (Entrance|Floor .{1,3})$""")
     private val roomSecretsRegex = Regex("""\b([0-9]|10)/([0-9]|10)\s+Secrets\b""")
     private val dungeonFloorRegex = Regex("The Catacombs \\((?<floor>.+)\\)")
     private val keyObtainedRegex = Regex("(?:\\[.+] ?)?\\w+ has obtained (?<type>\\w+) Key!")
     private val keyPickedUpRegex = Regex("A (?<type>\\w+) Key was picked up!")
     private val witherDoorOpenRegex = Regex("\\w+ opened a WITHER door!")
     private val bloodDoorOpenRegex = Regex("The BLOOD DOOR has been opened!")
+    private val startRegex = Regex("\\[NPC] Mort: Here, I found this map when I first entered the dungeon\\.")
+    private val endRegex = Regex("\\s+(?:Master Mode|The) Catacombs - (?:Entrance|Floor [XVI]+)")
 
     // Room and door data
     val rooms = Array<Room?>(36) { null }
@@ -68,18 +69,19 @@ object Dungeon {
             }
         }
 
-    var inDungeon = false
     val inBoss: Boolean
         get() = floor != null && KnitPlayer.player?.let {
             val (x, z) = WorldScanUtils.realCoordToComponent(it.x.toInt(), it.z.toInt())
             6 * z + x > 35
         } == true
 
+    var started: Boolean = false
+        private set
+
     // HUD lines
     var mapLine1 = ""
     var mapLine2 = ""
 
-    // Shortcuts
     val players get() = DungeonPlayerManager.players
     val score get() = DungeonScore.score
 
@@ -96,23 +98,29 @@ object Dungeon {
         }
 
         EventBus.register<LocationEvent.IslandChange> {
-            inDungeon = LocationAPI.island == SkyBlockIsland.THE_CATACOMBS
-            if (!inDungeon) reset()
+            if (LocationAPI.island != SkyBlockIsland.THE_CATACOMBS) reset()
         }
 
 
         EventBus.registerIn<ChatEvent.Receive>(SkyBlockIsland.THE_CATACOMBS) { event ->
-            val msg = event.message.string.removeFormatting()
-            if (watcherRegex.matches(msg)) bloodDone = true
-            if (watcherDoneRegex.matches(msg)) bloodClear = true
-            if (dungeonCompleteRegex.matches(msg)) {
+            val message = event.message.string.removeFormatting()
+            if (watcherRegex.matches(message)) bloodDone = true
+            if (watcherDoneRegex.matches(message)) bloodClear = true
+
+            if (endRegex.matches(message)) {
                 DungeonPlayerManager.updateAllSecrets()
                 complete = true
                 floor?.let { EventBus.post(DungeonEvent.End(it)) }
                 return@registerIn
             }
 
-            matchWhen(msg) {
+            if (!started && startRegex.matches(message)) {
+                started = true
+                floor?.let { EventBus.post(DungeonEvent.Start(it)) }
+                return@registerIn
+            }
+
+            matchWhen(message) {
                 case(keyObtainedRegex, "type") { (type) ->
                     handleGetKey(type)
                 }
@@ -161,6 +169,7 @@ object Dungeon {
         bloodDone = false
         bloodOpened = false
         complete = false
+        started = false
         holdingLeaps = false
         mapLine1 = ""
         mapLine2 = ""
