@@ -1,8 +1,11 @@
 package xyz.meowing.krypt.hud
 
 import com.google.gson.reflect.TypeToken
+import com.mojang.serialization.Codec
+import com.mojang.serialization.DataResult
 import net.minecraft.client.gui.DrawContext
 import xyz.meowing.knit.Knit
+import xyz.meowing.krypt.api.data.StoredFile
 import xyz.meowing.krypt.events.EventBus
 import xyz.meowing.krypt.utils.DataUtils
 import kotlin.collections.component1
@@ -18,13 +21,30 @@ object HudManager {
         var x: Float,
         var y: Float,
         var scale: Float = 1f
+    ) {
+        companion object {
+            val CODEC: Codec<HudLayoutData> = Codec.FLOAT.listOf().comapFlatMap(
+                { list ->
+                    if (list.size == 3) {
+                        DataResult.success(HudLayoutData(list[0], list[1], list[2]))
+                    } else {
+                        DataResult.error { "Invalid layout data size" }
+                    }
+                },
+                { data -> listOf(data.x, data.y, data.scale) }
+            )
+        }
+    }
+
+    private val layoutStore = StoredFile("config/HUD")
+
+    private var layouts by layoutStore.map(
+        "layouts",
+        Codec.STRING,
+        HudLayoutData.CODEC,
+        emptyMap()
     )
 
-    private val layoutStore = DataUtils(
-        fileName = "hud_positions",
-        defaultObject = mutableMapOf<String, HudLayoutData>(),
-        typeToken = object : TypeToken<MutableMap<String, HudLayoutData>>() {}
-    )
 
     fun register(id: String, text: String, configKey: String? = null) {
         elements[id] = HudElement(id, 20f, 20f, 0, 0, text = text, configKey = configKey)
@@ -45,21 +65,20 @@ object HudManager {
     }
 
     fun saveAllLayouts() {
-        layoutStore.updateAndSave {
-            elements.forEach { (id, element) ->
-                this[id] = HudLayoutData(element.x, element.y, element.scale)
-            }
+        layouts = elements.mapValues { (_, element) ->
+            HudLayoutData(element.x, element.y, element.scale)
         }
+        layoutStore.forceSave()
     }
 
-    fun loadAllLayouts() { layoutStore.getData().keys.forEach { loadLayout(it) } }
+    fun loadAllLayouts() { layouts.keys.forEach { loadLayout(it) } }
 
     fun loadLayout(id: String) {
-        layoutStore.getData()[id]?.let {
+        layouts.forEach { (id, layout) ->
             elements[id]?.apply {
-                x = it.x
-                y = it.y
-                scale = it.scale
+                x = layout.x
+                y = layout.y
+                scale = layout.scale
             }
         }
     }

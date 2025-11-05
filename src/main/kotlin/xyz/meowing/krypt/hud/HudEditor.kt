@@ -17,41 +17,14 @@ class HudEditor : KnitScreen("HUD Editor") {
     private var offsetY = 0f
     private var mc = KnitClient.client
 
-    data class HudLayoutData(
-        var x: Float,
-        var y: Float,
-        var scale: Float = 1f
-    ) {
-        companion object {
-            val CODEC: Codec<HudLayoutData> = Codec.FLOAT.listOf().comapFlatMap(
-                { list ->
-                    if (list.size == 3) {
-                        DataResult.success(HudLayoutData(list[0], list[1], list[2]))
-                    } else {
-                        DataResult.error { "Invalid layout data size" }
-                    }
-                },
-                { data -> listOf(data.x, data.y, data.scale) }
-            )
-        }
-    }
-
-    private val layoutStore = StoredFile("config/HUD")
-    private var layouts by layoutStore.map(
-        "layouts",
-        Codec.STRING,
-        HudLayoutData.CODEC,
-        emptyMap()
-    )
-
     override fun onInitGui() {
         super.onInitGui()
-        loadAllLayouts()
+        HudManager.loadAllLayouts()
     }
 
     override fun onCloseGui() {
         super.onCloseGui()
-        saveAllLayouts()
+        HudManager.saveAllLayouts()
     }
 
     override fun render(context: DrawContext, mouseX: Int, mouseY: Int, deltaTicks: Float) {
@@ -133,23 +106,6 @@ class HudEditor : KnitScreen("HUD Editor") {
     }
 
     override fun shouldPause(): Boolean = false
-
-    private fun saveAllLayouts() {
-        layouts = HudManager.elements.mapValues { (_, element) ->
-            HudLayoutData(element.x, element.y, element.scale)
-        }
-        layoutStore.forceSave()
-    }
-
-    private fun loadAllLayouts() {
-        layouts.forEach { (id, layout) ->
-            HudManager.elements[id]?.apply {
-                x = layout.x
-                y = layout.y
-                scale = layout.scale
-            }
-        }
-    }
 
     private fun drawHollowRect(context: DrawContext, x1: Int, y1: Int, x2: Int, y2: Int, color: Int) {
         context.fill(x1, y1, x2, y1 + 1, color)
