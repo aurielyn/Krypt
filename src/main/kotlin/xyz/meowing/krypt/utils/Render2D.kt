@@ -1,10 +1,18 @@
 package xyz.meowing.krypt.utils
 
+import net.minecraft.block.entity.SkullBlockEntity
 import net.minecraft.client.gui.DrawContext
+import net.minecraft.client.gui.PlayerSkinDrawer
+import net.minecraft.client.render.RenderLayer
+import net.minecraft.client.util.DefaultSkinHelper
 import net.minecraft.item.ItemStack
 import net.minecraft.util.Colors
+import net.minecraft.util.Identifier
 import xyz.meowing.knit.api.KnitClient.client
 import xyz.meowing.krypt.utils.StringUtils.removeFormatting
+import java.awt.Color
+import java.util.Optional
+import java.util.UUID
 
 object Render2D {
     enum class TextStyle {
@@ -70,6 +78,23 @@ object Render2D {
         //#else
         context.matrices.pop()
         //#endif
+    }
+
+    fun drawPlayerHead(context: DrawContext, x: Int, y: Int, size: Int, uuid: UUID) {
+        val textures = SkullBlockEntity.fetchProfileByUuid(uuid)
+            .getNow(Optional.empty())
+            .map(client.skinProvider::getSkinTextures)
+            .orElseGet { DefaultSkinHelper.getSkinTextures(uuid) }
+
+        PlayerSkinDrawer.draw(context, textures, x, y, size)
+    }
+
+    fun drawImage(ctx: DrawContext, image: Identifier, x: Int, y: Int, width: Int, height: Int) {
+        ctx.drawGuiTexture(RenderLayer::getGuiTextured, image, x, y, width, height)
+    }
+
+    fun drawRect(ctx: DrawContext, x: Int, y: Int, width: Int, height: Int, color: Color = Color.WHITE) {
+        ctx.fill(RenderLayer.getGui(), x, y, x + width, y + height, color.rgb)
     }
 
     fun String.width(): Int {

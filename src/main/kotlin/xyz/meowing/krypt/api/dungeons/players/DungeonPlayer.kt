@@ -37,11 +37,12 @@ class DungeonPlayer(
 
     val secrets get() = (currSecrets ?: initSecrets ?: 0) - (initSecrets ?: 0)
 
-    val uuid: UUID? = world?.entities
+    val entity: PlayerEntity? = world?.entities
         ?.asSequence()
         ?.filterIsInstance<PlayerEntity>()
         ?.find { it.gameProfile.name == name }
-        ?.uuid
+
+    val uuid: UUID? get() = entity?.uuid
 
     var inRender = false
 

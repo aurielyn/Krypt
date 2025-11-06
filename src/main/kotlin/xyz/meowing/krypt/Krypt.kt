@@ -19,6 +19,9 @@ object Krypt : ClientModInitializer {
     @JvmStatic
     var LOGGER = LogManager.getLogger("krypt")
 
+    @JvmStatic
+    val NAMESPACE = "krypt"
+
     override fun onInitializeClient() {
         ConfigManager.createConfigUI()
         FeatureManager.loadFeatures()
