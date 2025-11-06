@@ -155,7 +155,7 @@ object clear {
     /** Renders player icons and optional nametags */
     fun renderPlayers(context: DrawContext) {
         for (player in Dungeon.players) {
-            if (player.dead && player.name != KnitPlayer.name) continue
+            if (player == null || (player.dead && player.name != KnitPlayer.name)) continue
 
             val iconX = player.iconX ?: continue
             val iconY = player.iconZ ?: continue

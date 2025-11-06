@@ -243,7 +243,7 @@ object MapScanner {
         }
     }
 
-    private fun dungeonPlayerError(decorationId: String?, reason: String?, i: Int, dungeonPlayers: List<DungeonPlayer?>?, mapDecorations: MutableMap<String?, MapDecoration?>?) {
+    private fun dungeonPlayerError(decorationId: String?, reason: String?, i: Int, dungeonPlayers: Array<DungeonPlayer?>?, mapDecorations: MutableMap<String?, MapDecoration?>?) {
         Krypt.LOGGER.error("[Dungeon Map] Dungeon player for map decoration '{}' {}. Player list index (zero-indexed): {}. Player list: {}. Map decorations: {}", decorationId, reason, i, dungeonPlayers, mapDecorations)
     }
 

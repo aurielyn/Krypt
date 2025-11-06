@@ -9,7 +9,7 @@ import java.awt.Color
 
 object hud {
     private val defaultMapSize = Pair(138, 138)
-    private val mapInfoUnder = false // Config this
+    private val mapInfoUnder = true // Config this
     private val mapBorder = false // Config this
 
     fun render(context: DrawContext, x: Float, y: Float, scale: Float) {
@@ -46,7 +46,7 @@ object hud {
         val matrix = context.matrices
 
         matrix.push()
-        matrix.translate(x, y, 0f)
+        matrix.translate(x + 5f, y + 5f, 0f)
 
         renderMapBackground(context)
 
@@ -64,8 +64,8 @@ object hud {
         var mapLine2 = Dungeon.mapLine2
 
         if (preview) {
-            mapLine1 = "&7Secrets: &b?    &7Crypts: &c0    &7Mimic: &c✘";
-            mapLine2 = "&7Min Secrets: &b?    &7Deaths: &a0    &7Score: &c0";
+            mapLine1 = "§7Secrets: §b?    §7Crypts: §c0    §7Mimic: §c✘";
+            mapLine2 = "§7Min Secrets: §b?    §7Deaths: §a0    §7Score: §c0";
         }
 
         val w1 = mapLine1.width().toFloat()

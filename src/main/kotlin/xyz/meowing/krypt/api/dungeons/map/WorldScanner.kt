@@ -129,6 +129,8 @@ object WorldScanner {
         val world = KnitClient.world ?: return
 
         Dungeon.players.forEach { player ->
+            if (player == null) return@forEach
+
             val entity = world.players.find { it.name.string == player.name }
 
             val entry = KnitClient.client.networkHandler?.getPlayerListEntry(entity?.uuid)

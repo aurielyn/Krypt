@@ -10,8 +10,8 @@ import java.util.*
 
 class DungeonPlayer(
     val name: String,
-    dungeonClass: DungeonClass?,
-    classLevel: Int?
+    dungeonClass: DungeonClass? = null,
+    classLevel: Int? = null
 ) {
     var iconX: Double? = null
     var iconZ: Double? = null

@@ -96,14 +96,14 @@ object Dungeon {
     val mimicDead: Boolean
         get() = MimicTrigger.mimicDead
 
-    val players: List<DungeonPlayer>
+    val players: Array<DungeonPlayer?>
         get() = DungeonPlayerManager.players
 
     val score: Int
         get() = DungeonScore.score
 
     val ownPlayer: DungeonPlayer?
-        get() = players.find { it.name == KnitPlayer.player?.name?.string }
+        get() = players.find { it?.name == KnitPlayer.player?.name?.string }
 
     val dungeonClass: DungeonClass?
         get() = ownPlayer?.dungeonClass
