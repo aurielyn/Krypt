@@ -1,21 +1,21 @@
 package xyz.meowing.krypt.hud
 
-import com.mojang.serialization.Codec
-import com.mojang.serialization.DataResult
 import net.minecraft.client.gui.DrawContext
 import xyz.meowing.knit.api.KnitClient
+import xyz.meowing.knit.api.input.KnitMouse
 import xyz.meowing.knit.api.screen.KnitScreen
-import xyz.meowing.krypt.api.data.StoredFile
 import xyz.meowing.krypt.hud.HudManager.customRenderers
 import xyz.meowing.krypt.utils.Render2D.height
 import xyz.meowing.krypt.utils.Render2D.width
 import java.awt.Color
 
 class HudEditor : KnitScreen("HUD Editor") {
+    private val borderHoverColor = Color(255, 255, 255).rgb
+    private val borderNormalColor = Color(100, 100, 120).rgb
+
     private var dragging: HudElement? = null
     private var offsetX = 0f
     private var offsetY = 0f
-    private var mc = KnitClient.client
 
     override fun onInitGui() {
         super.onInitGui()
@@ -27,23 +27,26 @@ class HudEditor : KnitScreen("HUD Editor") {
         HudManager.saveAllLayouts()
     }
 
-    override fun render(context: DrawContext, mouseX: Int, mouseY: Int, deltaTicks: Float) {
-        super.render(context, mouseX, mouseY, deltaTicks)
+    override fun onRender(context: DrawContext?, mouseX: Int, mouseY: Int, deltaTicks: Float) {
+        val context = context ?: return
         context.fill(0, 0, width, width, 0x90000000.toInt())
 
         HudManager.elements.values.forEach { element ->
             if (!element.isEnabled()) return@forEach
 
+            //#if MC >= 1.21.7
+            //$$ context.matrices.pushMatrix()
+            //$$ context.matrices.translate(element.x, element.y)
+            //$$ context.matrices.scale(element.scale, element.scale)
+            //#else
             context.matrices.push()
             context.matrices.translate(element.x, element.y, 0f)
             context.matrices.scale(element.scale, element.scale, 1f)
+            //#endif
 
             val isHovered = element.isHovered(mouseX.toFloat(), mouseY.toFloat())
 
-            val borderColor = when {
-                isHovered -> Color(255, 255, 255).rgb
-                else -> Color(100, 100, 120).rgb
-            }
+            val borderColor = if (isHovered) borderHoverColor else borderNormalColor
 
             val alpha = if (isHovered) 140 else 90
             val custom = customRenderers[element.id]
@@ -53,9 +56,9 @@ class HudEditor : KnitScreen("HUD Editor") {
                 context.fill(0,0, element.width, element.height, Color(30, 35, 45, alpha).rgb)
                 custom(context)
             } else {
-                if (element.width == 0 && element.height == 0){
-                    element.width = element.text.width() + 4
-                    element.height = element.text.height() + 4
+                if (element.width == 0 && element.height == 0) {
+                    element.width = element.text.width() + 2
+                    element.height = element.text.height() + 2
                 }
 
                 drawHollowRect(context, -2, -3, element.width, element.height, borderColor)
@@ -64,46 +67,43 @@ class HudEditor : KnitScreen("HUD Editor") {
                 context.drawTextWithShadow(KnitClient.client.textRenderer, element.text, 0, 0, 0xFFFFFF)
             }
 
+            //#if MC >= 1.21.7
+            //$$ context.matrices.popMatrix()
+            //#else
             context.matrices.pop()
+            //#endif
         }
 
-        context.drawTextWithShadow(mc.textRenderer, "Drag elements. Press ESC to exit.", 10, 10, 0xFFFFFF)
+        context.drawTextWithShadow(KnitClient.client.textRenderer, "Drag elements. Press ESC to exit.", 10, 10, 0xFFFFFF)
     }
 
-    override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
+    override fun onMouseClick(mouseX: Int, mouseY: Int, button: Int) {
         val hovered = HudManager.elements.values.firstOrNull { it.isHovered(mouseX.toFloat(), mouseY.toFloat()) }
         if (hovered != null) {
             dragging = hovered
             offsetX = mouseX.toFloat() - hovered.x
             offsetY = mouseY.toFloat() - hovered.y
-            return true
         }
-        return super.mouseClicked(mouseX, mouseY, button)
     }
 
-    override fun mouseDragged(mouseX: Double, mouseY: Double, button: Int, deltaX: Double, deltaY: Double): Boolean {
+    override fun onMouseMove(mouseX: Int, mouseY: Int) {
         dragging?.let {
-            it.x = mouseX.toFloat() - offsetX
-            it.y = mouseY.toFloat() - offsetY
-            return true
+            it.x = KnitMouse.Scaled.x.toFloat() - offsetX
+            it.y = KnitMouse.Scaled.y.toFloat() - offsetY
         }
-        return super.mouseDragged(mouseX, mouseY, button, deltaX, deltaY)
     }
 
-    override fun mouseReleased(mouseX: Double, mouseY: Double, button: Int): Boolean {
+    override fun onMouseRelease(mouseX: Int, mouseY: Int, button: Int) {
         dragging = null
-        return super.mouseReleased(mouseX, mouseY, button)
     }
 
-    override fun mouseScrolled(mouseX: Double, mouseY: Double, horizontalAmount: Double, verticalAmount: Double): Boolean {
-        val hovered = HudManager.elements.values.firstOrNull { it.isHovered(mouseX.toFloat(), mouseY.toFloat()) }
-        if (hovered != null) {
-            val scaleDelta = if (verticalAmount > 0) 0.1f else -0.1f
-            hovered.scale = (hovered.scale + scaleDelta).coerceIn(0.2f, 5.0f)
-            return true
-        }
+    override fun onMouseScroll(horizontal: Double, vertical: Double) {
+        val hovered = HudManager.elements.values.firstOrNull { it.isHovered(KnitMouse.Scaled.x.toFloat(), KnitMouse.Scaled.y.toFloat()) }
 
-        return super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount)
+        if (hovered != null) {
+            val scaleDelta = if (vertical > 0) 0.1f else -0.1f
+            hovered.scale = (hovered.scale + scaleDelta).coerceIn(0.2f, 5.0f)
+        }
     }
 
     override fun shouldPause(): Boolean = false
