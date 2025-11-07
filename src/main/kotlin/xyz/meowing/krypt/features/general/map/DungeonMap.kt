@@ -23,6 +23,7 @@ object DungeonMap : Feature(
     private const val NAME = "Dungeon Map"
 
     var showPlayerHead by ConfigDelegate<Boolean>("dungeonMap.showPlayerHead")
+    var playerHeadsUnder by ConfigDelegate<Boolean>("dungeonMap.playerHeadsUnder")
     var iconClassColors by ConfigDelegate<Boolean>("dungeonMap.iconClassColors")
     var playerIconBorderColor by ConfigDelegate<Color>("dungeonMap.playerIconBorderColor")
     var playerIconBorderSize by ConfigDelegate<Double>("dungeonMap.playerIconBorderSize")
@@ -40,6 +41,7 @@ object DungeonMap : Feature(
     var checkmarkScale by ConfigDelegate<Double>("dungeonMap.checkmarkScale")
     var roomNameColor by ConfigDelegate<MCColorCode>("dungeonMap.roomNameColor")
     var secretsColor by ConfigDelegate<MCColorCode>("dungeonMap.secretsColor")
+    var coolText by ConfigDelegate<Boolean>("dungeonMap.coolText")
     var roomLabelScale by ConfigDelegate<Double>("dungeonMap.roomLabelScale")
 
     var showClearedRoomCheckmarks by ConfigDelegate<Boolean>("dungeonMap.showClearedRoomCheckmarks")
@@ -82,6 +84,13 @@ object DungeonMap : Feature(
                 "Show Player Heads",
                 ConfigElement(
                     "dungeonMap.showPlayerHead",
+                    ElementType.Switch(true)
+                )
+            )
+            .addFeatureOption(
+                "Player Heads Under Text",
+                ConfigElement(
+                    "dungeonMap.playerHeadsUnder",
                     ElementType.Switch(true)
                 )
             )
@@ -216,6 +225,13 @@ object DungeonMap : Feature(
                 ConfigElement(
                     "dungeonMap.secretsColor",
                     ElementType.MCColorPicker(MCColorCode.AQUA)
+                )
+            )
+            .addFeatureOption(
+                "Cool Text",
+                ConfigElement(
+                    "dungeonMap.coolText",
+                    ElementType.Switch(true)
                 )
             )
             .addFeatureOption(
@@ -410,10 +426,12 @@ object DungeonMap : Feature(
         val y = HudManager.getY(NAME)
         val scale = HudManager.getScale(NAME)
 
-        if (DungeonAPI.inBoss && bossMapEnabled) {
-            MapRenderer.renderBoss(context, x, y, scale)
-        } else {
+        if (!DungeonAPI.inBoss) {
             MapRenderer.render(context, x, y, scale)
+        } else if (bossMapEnabled && !DungeonAPI.floorCompleted) {
+            MapRenderer.renderBoss(context, x, y, scale)
+        } else if (scoreMapEnabled){
+            MapRenderer.renderScore(context, x, y, scale)
         }
     }
 }

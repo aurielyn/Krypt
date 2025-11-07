@@ -55,6 +55,24 @@ object MapRenderer {
         }
     }
 
+    fun renderScore(context: DrawContext, x: Float, y: Float, scale: Float) {
+        val matrix = context.matrices
+        context.pushPop {
+            //#if MC >= 1.21.7
+            //$$ matrix.translate(x, y)
+            //$$ matrix.scale(scale, scale)
+            //#else
+            matrix.translate(x, y, 0f)
+            matrix.scale(scale, scale, 1f)
+            //#endif
+
+            renderMapBackground(context)
+            ScoreMapRenderer.renderScoreMap(context)
+            if (DungeonMap.mapInfoUnder) renderInfoUnder(context, false)
+            if (DungeonMap.mapBorder) renderMapBorder(context)
+        }
+    }
+
     fun renderPreview(context: DrawContext, x: Float, y: Float) {
         val matrix = context.matrices
         context.pushPop {

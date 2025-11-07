@@ -15,6 +15,7 @@ import xyz.meowing.krypt.features.general.map.utils.Utils
 import xyz.meowing.krypt.utils.Render2D
 import xyz.meowing.krypt.utils.Render2D.pushPop
 import xyz.meowing.krypt.utils.Render2D.width
+import xyz.meowing.krypt.utils.StringUtils.removeFormatting
 import java.awt.Color
 import java.util.UUID
 
@@ -40,12 +41,13 @@ object Main {
             //#endif
 
             renderRooms(context)
+            if(!DungeonMap.playerHeadsUnder) renderPlayers(context)
             renderCheckmarks(context)
             renderClearedRoomCheckmarks(context)
             renderPuzzleCheckmarks(context)
             renderRoomLabels(context, RoomType.PUZZLE, DungeonMap.puzzleCheckmarkMode)
             renderRoomLabels(context, RoomType.NORMAL, DungeonMap.normalCheckmarkMode)
-            renderPlayers(context)
+            if(DungeonMap.playerHeadsUnder) renderPlayers(context)
         }
     }
 
@@ -195,10 +197,10 @@ object Main {
             val secrets = if (room.checkmark == Checkmark.GREEN) room.secrets else room.secretsFound
             val textColor = Utils.getTextColor(room.checkmark)
             val roomText = room.name ?: "???"
-            val secretText = "${DungeonMap.secretsColor.code}$secrets/${room.secrets}"
+            val secretText = "$secrets/${room.secrets}"
 
             val lines = buildList {
-                if (checkmarkMode in listOf(1, 3)) addAll(roomText.split(" ").map { "${DungeonMap.roomNameColor.code}$it" })
+                if (checkmarkMode in listOf(1, 3)) addAll(roomText.split(" ").map { it })
                 if (checkmarkMode in listOf(2, 3) && room.secrets != 0) add(secretText)
             }
 
@@ -219,7 +221,8 @@ object Main {
                 lines.forEachIndexed { i, line ->
                     val drawX = (-line.width() / 2).toFloat()
                     val drawY = (9 * i - (lines.size * 9) / 2).toFloat()
-                    Render2D.renderStringWithShadow(context, textColor + line, drawX, drawY, 1f)
+                    if(DungeonMap.coolText) drawShadowedText(context, line.removeFormatting(), drawX.toInt(), drawY.toInt(), 1f)
+                    Render2D.renderString(context, textColor + line, drawX, drawY, 1f)
                 }
             }
         }
@@ -242,7 +245,7 @@ object Main {
                     //#if MC >= 1.21.7
                     //$$ context.matrices.translate(x.toFloat(), y.toFloat())
                     //#else
-                    context.matrices.translate(x.toFloat(), y.toFloat(), 0f)
+                    context.matrices.translate(x.toFloat(), y.toFloat(), 1f)
                     //#endif
                     Utils.renderNametag(context, player.name, 1f / 1.3f)
                 }
