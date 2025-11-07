@@ -4,7 +4,7 @@ import net.minecraft.client.gui.DrawContext
 import xyz.meowing.knit.api.KnitClient.client
 import xyz.meowing.knit.api.scheduler.TickScheduler
 import xyz.meowing.krypt.annotations.Module
-import xyz.meowing.krypt.api.dungeons.Dungeon
+import xyz.meowing.krypt.api.dungeons.DungeonAPI
 import xyz.meowing.krypt.api.location.SkyBlockIsland
 import xyz.meowing.krypt.config.ui.types.ElementType
 import xyz.meowing.krypt.events.core.GuiEvent
@@ -27,7 +27,7 @@ object RoomSecrets: Feature(
         ConfigManager
         .addFeature("Room Secrets HUD",
             "Shows the secrets in the current dungeon room",
-            "Dungeons",
+            "General",
             ConfigElement(
                 "general.roomSecrets",
                 ElementType.Switch(false)
@@ -118,7 +118,7 @@ object RoomSecrets: Feature(
     }
 
     private fun getText(): String {
-        val room = Dungeon.currentRoom
+        val room = DungeonAPI.currentRoom
         //Krypt.LOGGER.info("Current room: ${room?.name}")
         val found = room?.secretsFound ?: 0
         val total = room?.secrets ?: 0

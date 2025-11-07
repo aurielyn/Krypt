@@ -1,6 +1,6 @@
 package xyz.meowing.krypt.api.dungeons.utils
 
-import xyz.meowing.krypt.api.dungeons.Dungeon
+import xyz.meowing.krypt.api.dungeons.DungeonAPI
 
 enum class DungeonClass(val displayName: String) {
     UNKNOWN("Unknown"),
@@ -19,8 +19,8 @@ enum class DungeonClass(val displayName: String) {
 }
 
 enum class DungeonKey(private val getter: () -> Int) {
-    WITHER(Dungeon::witherKeys),
-    BLOOD(Dungeon::bloodKeys),
+    WITHER(DungeonAPI::witherKeys),
+    BLOOD(DungeonAPI::bloodKeys),
     ;
 
     val current: Int get() = getter()

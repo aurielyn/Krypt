@@ -3,7 +3,7 @@ package xyz.meowing.krypt.api.dungeons.score
 import tech.thatgravyboat.skyblockapi.api.area.hub.ElectionAPI
 import tech.thatgravyboat.skyblockapi.api.data.Perk
 import tech.thatgravyboat.skyblockapi.utils.text.TextProperties.stripped
-import xyz.meowing.krypt.api.dungeons.Dungeon
+import xyz.meowing.krypt.api.dungeons.DungeonAPI
 import xyz.meowing.krypt.api.dungeons.utils.DungeonFloor
 import xyz.meowing.krypt.api.location.SkyBlockIsland
 import xyz.meowing.krypt.events.EventBus
@@ -97,12 +97,12 @@ object DungeonScore {
         msg.match(CLEAR_PERCENT_PATTERN)?.let {
             clearedPercent = it.groupValues[1].toIntOrNull() ?: clearedPercent
         }
-        secretsPercentNeeded = floorSecrets[Dungeon.floor?.name] ?: 1.0
+        secretsPercentNeeded = floorSecrets[DungeonAPI.floor?.name] ?: 1.0
     }
 
     /** Computes final score and all derived metrics */
     private fun calculateScore() = with(data) {
-        if (Dungeon.floor == null) return
+        if (DungeonAPI.floor == null) return
 
         val missingPuzzles = puzzleCount - puzzlesDone
 
@@ -111,8 +111,8 @@ object DungeonScore {
 
         val estimatedRooms = ((100.0 / clearedPercent) * completedRooms + 0.4)
         totalRooms = estimatedRooms.toInt().takeIf { it > 0 } ?: 36
-        adjustedRooms = completedRooms + if (!Dungeon.bloodKilledAll || !Dungeon.inBoss) 1 else 0
-        if (completedRooms <= totalRooms - 1 && !Dungeon.bloodKilledAll) adjustedRooms++
+        adjustedRooms = completedRooms + if (!DungeonAPI.bloodKilledAll || !DungeonAPI.inBoss) 1 else 0
+        if (completedRooms <= totalRooms - 1 && !DungeonAPI.bloodKilledAll) adjustedRooms++
 
         deathPenalty = (teamDeaths * -2) + if (hasSpiritPet && teamDeaths > 0) 1 else 0
         completionRatio = adjustedRooms.toDouble() / totalRooms
@@ -122,8 +122,8 @@ object DungeonScore {
         secretsScore = (40 * ((secretsFoundPercent / 100.0) / secretsPercentNeeded)).coerceIn(0.0, 40.0)
         exploreScore = if (clearedPercent == 0) 0.0 else (60 * completionRatio + secretsScore).coerceIn(0.0, 100.0)
         bonusScore = crypts.coerceAtMost(5) + if (MimicTrigger.mimicDead) 2 else 0 + if (hasPaul) 10 else 0
-        val timeOffset = dungeonSeconds - (floorTimes[Dungeon.floor?.name] ?: 0)
-        val speedScore = calculateSpeedScore(timeOffset, if (Dungeon.floor == DungeonFloor.E) 0.7 else 1.0)
+        val timeOffset = dungeonSeconds - (floorTimes[DungeonAPI.floor?.name] ?: 0)
+        val speedScore = calculateSpeedScore(timeOffset, if (DungeonAPI.floor == DungeonFloor.E) 0.7 else 1.0)
 
         score = (skillScore + exploreScore + speedScore + bonusScore).toInt()
         maxSecrets = ceil(totalSecrets * secretsPercentNeeded).toInt()

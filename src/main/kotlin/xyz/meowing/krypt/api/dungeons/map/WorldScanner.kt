@@ -2,9 +2,9 @@ package xyz.meowing.krypt.api.dungeons.map
 
 import xyz.meowing.knit.api.KnitClient
 import xyz.meowing.krypt.api.dungeons.utils.WorldScanUtils
-import xyz.meowing.krypt.api.dungeons.Dungeon.rooms
+import xyz.meowing.krypt.api.dungeons.DungeonAPI.rooms
 import xyz.meowing.krypt.api.dungeons.players.DungeonPlayer
-import xyz.meowing.krypt.api.dungeons.Dungeon
+import xyz.meowing.krypt.api.dungeons.DungeonAPI
 import xyz.meowing.krypt.api.dungeons.utils.RoomType
 import xyz.meowing.krypt.api.dungeons.utils.ScanUtils
 import xyz.meowing.krypt.api.location.SkyBlockIsland
@@ -41,10 +41,10 @@ object WorldScanner {
                 if (lastIdx == idx) return@registerIn
 
                 lastIdx = idx
-                Dungeon.currentRoom = Dungeon.getRoomAt(player.x.toInt(), player.z.toInt())
-                Dungeon.currentRoom?.explored = true
-                val (rmx, rmz) = Dungeon.currentRoom?.components?.firstOrNull() ?: return@registerIn
-                Dungeon.discoveredRooms.remove("$rmx/$rmz")
+                DungeonAPI.currentRoom = DungeonAPI.getRoomAt(player.x.toInt(), player.z.toInt())
+                DungeonAPI.currentRoom?.explored = true
+                val (rmx, rmz) = DungeonAPI.currentRoom?.components?.firstOrNull() ?: return@registerIn
+                DungeonAPI.discoveredRooms.remove("$rmx/$rmz")
             }
         }
     }
@@ -69,14 +69,14 @@ object WorldScanner {
             if (cx % 2 == 1 || cz % 2 == 1) {
                 if (roofHeight < 85) {
                     val comp = cx to cz
-                    val doorIdx = Dungeon.getDoorIdx(comp)
-                    val existingDoor = Dungeon.getDoorAtIdx(doorIdx)
+                    val doorIdx = DungeonAPI.getDoorIdx(comp)
+                    val existingDoor = DungeonAPI.getDoorAtIdx(doorIdx)
 
                     if (existingDoor == null) {
                         val door = Door(rx to rz, comp).apply {
                             rotation = if (cz % 2 == 1) 0 else 1
                         }
-                        Dungeon.addDoor(door)
+                        DungeonAPI.addDoor(door)
                     }
                 }
                 continue
@@ -84,7 +84,7 @@ object WorldScanner {
 
             val x = cx / 2
             val z = cz / 2
-            val idx = Dungeon.getRoomIdx(x to z)
+            val idx = DungeonAPI.getRoomIdx(x to z)
 
             var room = rooms[idx]
 
@@ -94,7 +94,7 @@ object WorldScanner {
             } else {
                 room = Room(x to z, roofHeight).scan()
                 rooms[idx] = room
-                Dungeon.uniqueRooms.add(room)
+                DungeonAPI.uniqueRooms.add(room)
             }
 
             // Scan neighbors *before* claiming this room index
@@ -110,7 +110,7 @@ object WorldScanner {
                 if (blockBelow == 0 || blockAbove != 0) continue
 
                 val neighborComp = Pair(x + cxoff, z + zoff)
-                val neighborIdx = Dungeon.getRoomIdx(neighborComp)
+                val neighborIdx = DungeonAPI.getRoomIdx(neighborComp)
                 if (neighborIdx !in rooms.indices) continue
 
                 val neighborRoom = rooms[neighborIdx]
@@ -119,7 +119,7 @@ object WorldScanner {
                     room.addComponent(neighborComp)
                     rooms[neighborIdx] = room
                 } else if (neighborRoom != room && neighborRoom.type != RoomType.ENTRANCE) {
-                    Dungeon.mergeRooms(neighborRoom, room)
+                    DungeonAPI.mergeRooms(neighborRoom, room)
                 }
             }
         }
@@ -128,7 +128,7 @@ object WorldScanner {
     fun checkPlayerState() {
         val world = KnitClient.world ?: return
 
-        Dungeon.players.forEach { player ->
+        DungeonAPI.players.forEach { player ->
             if (player == null) return@forEach
 
             val entity = world.players.find { it.name.string == player.name }
@@ -163,7 +163,7 @@ object WorldScanner {
     }
 
     fun checkDoorState() {
-        for (door in Dungeon.uniqueDoors) {
+        for (door in DungeonAPI.uniqueDoors) {
             if (door.opened) continue
             door.check()
         }
@@ -177,7 +177,7 @@ object WorldScanner {
             entity.iconX = clampMap(x, -200.0, -10.0, 0.0, ScanUtils.defaultMapSize.first.toDouble())
             entity.iconZ = clampMap(z, -200.0, -10.0, 0.0, ScanUtils.defaultMapSize.second.toDouble())
 
-            val currRoom = Dungeon.getRoomAt(x.toInt(), z.toInt())
+            val currRoom = DungeonAPI.getRoomAt(x.toInt(), z.toInt())
             entity.currRoom = currRoom
         }
 

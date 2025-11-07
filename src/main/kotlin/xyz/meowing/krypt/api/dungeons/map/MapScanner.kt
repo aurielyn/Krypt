@@ -4,8 +4,8 @@ import net.minecraft.item.map.MapDecoration
 import net.minecraft.item.map.MapDecorationTypes
 import net.minecraft.item.map.MapState
 import xyz.meowing.krypt.Krypt
-import xyz.meowing.krypt.api.dungeons.Dungeon
-import xyz.meowing.krypt.api.dungeons.Dungeon.rooms
+import xyz.meowing.krypt.api.dungeons.DungeonAPI
+import xyz.meowing.krypt.api.dungeons.DungeonAPI.rooms
 import xyz.meowing.krypt.api.dungeons.players.DungeonPlayer
 import xyz.meowing.krypt.api.dungeons.utils.Checkmark
 import xyz.meowing.krypt.api.dungeons.utils.DoorState
@@ -32,9 +32,9 @@ object MapScanner {
             var dplayer: DungeonPlayer? = null
 
             if (mapDecoration.type.value().equals(MapDecorationTypes.FRAME.value())) {
-                dplayer = Dungeon.players.firstOrNull()
+                dplayer = DungeonAPI.players.firstOrNull()
             } else {
-                val players = Dungeon.players
+                val players = DungeonAPI.players
                 while (i < players.size && (dplayer == null || !dplayer.dead)) {
                     dplayer = players[i]
                     i++
@@ -42,13 +42,13 @@ object MapScanner {
             }
 
             if (dplayer == null) {
-                dungeonPlayerError(key, "not found", i - 1, Dungeon.players, (state as AccessorMapState).decorations)
+                dungeonPlayerError(key, "not found", i - 1, DungeonAPI.players, (state as AccessorMapState).decorations)
                 continue
             } else if (dplayer.dead) {
-                dungeonPlayerError(key, "not alive", i - 1, Dungeon.players, (state as AccessorMapState).decorations)
+                dungeonPlayerError(key, "not alive", i - 1, DungeonAPI.players, (state as AccessorMapState).decorations)
                 continue
             } else if (dplayer.uuid == null) {
-                dungeonPlayerError(key, "has null uuid", i - 1, Dungeon.players, (state as AccessorMapState).decorations)
+                dungeonPlayerError(key, "has null uuid", i - 1, DungeonAPI.players, (state as AccessorMapState).decorations)
                 continue
             }
 
@@ -60,7 +60,7 @@ object MapScanner {
             dplayer.realZ = dplayer.iconZ?.let { clampMap(it, 0.0, 125.0, -200.0, -10.0) }
             dplayer.yaw = mapDecoration.yaw + 180f
 
-            dplayer.currRoom = Dungeon.getRoomAt(dplayer.realX!!.toInt(), dplayer.realZ!!.toInt())
+            dplayer.currRoom = DungeonAPI.getRoomAt(dplayer.realX!!.toInt(), dplayer.realZ!!.toInt())
             dplayer.currRoom?.players?.add(dplayer)
         }
     }
@@ -82,11 +82,11 @@ object MapScanner {
                 if (cx % 2 == 0 && cz % 2 == 0 && rcolor != 0.toByte()) {
                     val rmx = cx / 2
                     val rmz = cz / 2
-                    val roomIdx = Dungeon.getRoomIdx(rmx to rmz)
+                    val roomIdx = DungeonAPI.getRoomIdx(rmx to rmz)
 
                     val room = rooms[roomIdx] ?: Room(rmx to rmz).also {
                         rooms[roomIdx] = it
-                        Dungeon.uniqueRooms.add(it)
+                        DungeonAPI.uniqueRooms.add(it)
                     }
 
                     for ((dx, dz) in ScanUtils.mapDirections) {
@@ -117,7 +117,7 @@ object MapScanner {
                         val neighborCx = cx + dx * 2
                         val neighborCz = cz + dz * 2
                         val neighborComp = neighborCx / 2 to neighborCz / 2
-                        val neighborIdx = Dungeon.getRoomIdx(neighborComp)
+                        val neighborIdx = DungeonAPI.getRoomIdx(neighborComp)
                         if (neighborIdx !in rooms.indices) continue
 
                         val neighborRoom = rooms[neighborIdx]
@@ -125,7 +125,7 @@ object MapScanner {
                             room.addComponent(neighborComp)
                             rooms[neighborIdx] = room
                         } else if (neighborRoom != room && neighborRoom.type != RoomType.ENTRANCE) {
-                            Dungeon.mergeRooms(neighborRoom, room)
+                            DungeonAPI.mergeRooms(neighborRoom, room)
                         }
                     }
 
@@ -141,7 +141,7 @@ object MapScanner {
                     if (center == 119.toByte() || rcolor == 85.toByte()) {
                         room.explored = false
                         room.checkmark = Checkmark.UNEXPLORED
-                        Dungeon.discoveredRooms["$rmx/$rmz"] = Dungeon.DiscoveredRoom(x = rmx, z = rmz, room = room)
+                        DungeonAPI.discoveredRooms["$rmx/$rmz"] = DungeonAPI.DiscoveredRoom(x = rmx, z = rmz, room = room)
                         continue
                     }
 
@@ -156,7 +156,7 @@ object MapScanner {
                             if (room.checkmark != Checkmark.WHITE) roomCleared(room, Checkmark.WHITE)
                             check = Checkmark.WHITE
                         }
-                        rcolor == 18.toByte() && Dungeon.bloodSpawnedAll -> {
+                        rcolor == 18.toByte() && DungeonAPI.bloodSpawnedAll -> {
                             if (room.checkmark != Checkmark.WHITE) roomCleared(room, Checkmark.WHITE)
                             check = Checkmark.WHITE
                         }
@@ -169,7 +169,7 @@ object MapScanner {
 
                     check?.let { room.checkmark = it }
                     room.explored = true
-                    Dungeon.discoveredRooms.remove("$rmx/$rmz")
+                    DungeonAPI.discoveredRooms.remove("$rmx/$rmz")
                     continue
                 }
 
@@ -188,8 +188,8 @@ object MapScanner {
                     if (!isDoor) continue // skip false doors
 
                     val comp = cx to cz
-                    val doorIdx = Dungeon.getDoorIdx(comp)
-                    val door = Dungeon.getDoorAtIdx(doorIdx)
+                    val doorIdx = DungeonAPI.getDoorIdx(comp)
+                    val door = DungeonAPI.getDoorAtIdx(doorIdx)
 
                     val rx = ScanUtils.cornerStart.first + ScanUtils.halfRoomSize + cx * ScanUtils.halfCombinedSize
                     val rz = ScanUtils.cornerStart.second + ScanUtils.halfRoomSize + cz * ScanUtils.halfCombinedSize
@@ -206,7 +206,7 @@ object MapScanner {
                             setType(type)
                             setState(DoorState.DISCOVERED)
                         }
-                        Dungeon.addDoor(newDoor)
+                        DungeonAPI.addDoor(newDoor)
                     } else {
                         door.setState(DoorState.DISCOVERED)
                         door.setType(type)

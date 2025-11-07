@@ -90,11 +90,33 @@ object Render2D {
     }
 
     fun drawImage(ctx: DrawContext, image: Identifier, x: Int, y: Int, width: Int, height: Int) {
+        //#if MC >= 1.21.7
+        //$$ ctx.drawGuiTexture(net.minecraft.client.gl.RenderPipelines.GUI_TEXTURED, image, x, y, width, height)
+        //#else
         ctx.drawGuiTexture(RenderLayer::getGuiTextured, image, x, y, width, height)
+        //#endif
     }
 
     fun drawRect(ctx: DrawContext, x: Int, y: Int, width: Int, height: Int, color: Color = Color.WHITE) {
+        //#if MC >= 1.21.7
+        //$$ ctx.fill(net.minecraft.client.gl.RenderPipelines.GUI, x, y, x + width, y + height, color.rgb)
+        //#else
         ctx.fill(RenderLayer.getGui(), x, y, x + width, y + height, color.rgb)
+        //#endif
+    }
+
+    inline fun DrawContext.pushPop(block: () -> Unit) {
+        //#if MC >= 1.21.7
+        //$$ matrices.pushMatrix()
+        //#else
+        matrices.push()
+        //#endif
+        block()
+        //#if MC >= 1.21.7
+        //$$ matrices.popMatrix()
+        //#else
+        matrices.pop()
+        //#endif
     }
 
     fun String.width(): Int {

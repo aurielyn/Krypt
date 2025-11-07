@@ -6,7 +6,7 @@ import xyz.meowing.knit.api.events.Event
 import xyz.meowing.knit.api.scheduler.TickScheduler
 import xyz.meowing.knit.api.scheduler.TimeScheduler
 import xyz.meowing.krypt.Krypt
-import xyz.meowing.krypt.api.dungeons.Dungeon
+import xyz.meowing.krypt.api.dungeons.DungeonAPI
 import xyz.meowing.krypt.api.dungeons.utils.DungeonFloor
 import xyz.meowing.krypt.api.location.LocationAPI
 import xyz.meowing.krypt.api.location.SkyBlockArea
@@ -186,7 +186,7 @@ open class Feature(
 
     fun inDungeonFloor(): Boolean {
         if (dungeonFloors.isEmpty()) return true
-        return SkyBlockIsland.THE_CATACOMBS.inIsland() && Dungeon.floor in dungeonFloors
+        return SkyBlockIsland.THE_CATACOMBS.inIsland() && DungeonAPI.floor in dungeonFloors
     }
 
     fun hasIslands(): Boolean = islands.isNotEmpty()

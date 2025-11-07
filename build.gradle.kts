@@ -32,7 +32,7 @@ val clocheAction: Action<ExternalModuleDependency> = Action {
 		attribute(Attribute.of("earth.terrarium.cloche.modLoader", String::class.java), "fabric")
 		attribute(Attribute.of("earth.terrarium.cloche.minecraftVersion", String::class.java),
 			when (mcData.version) {
-				MinecraftVersions.VERSION_1_21_7 -> "1.21.8"
+				MinecraftVersions.VERSION_1_21_10 -> "1.21.9"
 				else -> mcData.toString().substringBefore("-")
 			}
 		)
@@ -45,7 +45,7 @@ dependencies {
 	modImplementation("net.fabricmc.fabric-api:fabric-api:${mcData.dependencies.fabric.fabricApiVersion}")
 	modImplementation("net.fabricmc:fabric-language-kotlin:${mcData.dependencies.fabric.fabricLanguageKotlinVersion}")
 
-	modImplementation(include("xyz.meowing:vexel-${mcData}:119")!!)
+	modImplementation(include("xyz.meowing:vexel-${mcData}:121")!!)
 
 	modImplementation(include("net.hypixel:mod-api:1.0.1")!!)
 	modImplementation(include("maven.modrinth:hypixel-mod-api:1.0.1+build.1+mc1.21")!!)
@@ -58,8 +58,8 @@ dependencies {
 	include("tech.thatgravyboat:skyblock-api:3.0.17", clocheAction)
 
 	when (mcData.version) {
-		MinecraftVersions.VERSION_1_21_9 -> modImplementation("com.terraformersmc:modmenu:16.0.0-rc.1")
-		MinecraftVersions.VERSION_1_21_7 -> modImplementation("com.terraformersmc:modmenu:15.0.0")
+		MinecraftVersions.VERSION_1_21_10 -> modImplementation("com.terraformersmc:modmenu:16.0.0-rc.1")
+		MinecraftVersions.VERSION_1_21_8 -> modImplementation("com.terraformersmc:modmenu:15.0.0")
 		MinecraftVersions.VERSION_1_21_5 -> modImplementation("com.terraformersmc:modmenu:14.0.0-rc.2")
 		else -> {}
 	}

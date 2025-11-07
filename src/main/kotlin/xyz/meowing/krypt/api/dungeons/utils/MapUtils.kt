@@ -1,7 +1,7 @@
 package xyz.meowing.krypt.api.dungeons.utils
 
-import xyz.meowing.krypt.api.dungeons.Dungeon
-import xyz.meowing.krypt.api.dungeons.Dungeon.inBoss
+import xyz.meowing.krypt.api.dungeons.DungeonAPI
+import xyz.meowing.krypt.api.dungeons.DungeonAPI.inBoss
 import net.minecraft.item.FilledMapItem
 import net.minecraft.item.map.MapDecoration
 import net.minecraft.item.map.MapDecorationTypes
@@ -75,7 +75,7 @@ object MapUtils {
         var x = (startIndex % 128) % mapGapSize
         var z = (startIndex / 128) % mapGapSize
 
-        val floor = Dungeon.floor?.floorNumber?: return false
+        val floor = DungeonAPI.floor?.floorNumber?: return false
         if (floor in listOf(0, 1)) x += mapGapSize
         if (floor == 0) z += mapGapSize
 

@@ -15,7 +15,6 @@ object WorldScanUtils {
 
     fun getCore(x: Int, z: Int): Int {
         val sb = StringBuilder(150)
-        val chunk = KnitClient.world!!.getChunk(x shr 4, z shr 4)
         val height = getHighestY(x, z)?.coerceIn(11..140) ?: 140 .coerceIn(11..140)
 
         sb.append(CharArray(140 - height) { '0' })

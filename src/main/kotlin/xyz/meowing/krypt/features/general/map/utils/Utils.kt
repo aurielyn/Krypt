@@ -1,4 +1,4 @@
-package xyz.meowing.krypt.features.stellanav.utils
+package xyz.meowing.krypt.features.general.map.utils
 
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
@@ -11,28 +11,31 @@ import xyz.meowing.krypt.Krypt
 import xyz.meowing.krypt.api.dungeons.utils.Checkmark
 import xyz.meowing.krypt.api.dungeons.utils.DoorType
 import xyz.meowing.krypt.api.dungeons.utils.RoomType
+import xyz.meowing.krypt.features.general.map.DungeonMap
 import xyz.meowing.krypt.utils.Render2D
+import xyz.meowing.krypt.utils.Render2D.pushPop
 import xyz.meowing.krypt.utils.Render2D.width
 import java.awt.Color
 import java.io.InputStreamReader
 
-object utils {
-    fun oscale(floor: Int?): Float {
+object Utils {
+    fun scale(floor: Int?): Float {
         if (floor == null) return 1f
-        return when {
-            floor == 0 -> 6f / 4f
-            floor in 1..3 -> 6f / 5f
+        return when (floor) {
+            0 -> 6f / 4f
+            in 1..3 -> 6f / 5f
             else -> 1f
         }
     }
 
-    val prevewMap = Identifier.of(Krypt.NAMESPACE, "stellanav/defaultmap")
-    val greenCheck = Identifier.of(Krypt.NAMESPACE, "stellanav/clear/bloommapgreencheck")
-    val whiteCheck =Identifier.of(Krypt.NAMESPACE, "stellanav/clear/bloommapwhitecheck")
-    val failedRoom = Identifier.of(Krypt.NAMESPACE, "stellanav/clear/bloommapfailedroom")
-    val questionMark = Identifier.of(Krypt.NAMESPACE, "stellanav/clear/bloommapquestionmark")
-    val GreenMarker = Identifier.of(Krypt.NAMESPACE, "stellanav/markerself")
-    val WhiteMarker = Identifier.of(Krypt.NAMESPACE, "stellanav/markerother")
+    val defaultMap: Identifier = Identifier.of(Krypt.NAMESPACE, "krypt/default_map")
+    val markerSelf: Identifier = Identifier.of(Krypt.NAMESPACE, "krypt/marker_self")
+    val markerOther: Identifier = Identifier.of(Krypt.NAMESPACE, "krypt/marker_other")
+
+    val greenCheck: Identifier = Identifier.of(Krypt.NAMESPACE, "krypt/clear/green_check")
+    val whiteCheck: Identifier = Identifier.of(Krypt.NAMESPACE, "krypt/clear/white_check")
+    val failedRoom: Identifier = Identifier.of(Krypt.NAMESPACE, "krypt/clear/failed_room")
+    val questionMark: Identifier = Identifier.of(Krypt.NAMESPACE, "krypt/clear/question_mark")
 
     fun getCheckmarks(checkmark: Checkmark): Identifier? = when (checkmark) {
         Checkmark.GREEN -> greenCheck
@@ -60,33 +63,32 @@ object utils {
     )
 
     fun getClassColor(dClass: String?): Color = when (dClass) {
-        "Healer"  -> Color(240, 70, 240, 255) // Change all these to config settings
-        "Mage"    -> Color(70, 210, 210, 255)
-        "Berserk" -> Color(70, 210, 210, 255)
-        "Archer"  -> Color(254, 223, 0, 255)
-        "Tank"    -> Color(30, 170, 50, 255)
-        else      -> Color(0, 0, 0, 255)
+        "Healer" -> DungeonMap.healerColor
+        "Mage" -> DungeonMap.mageColor
+        "Berserk" -> DungeonMap.berserkColor
+        "Archer" -> DungeonMap.archerColor
+        "Tank" -> DungeonMap.tankColor
+        else -> Color(0, 0, 0, 255)
     }
 
     val roomTypeColors: Map<RoomType, Color>
         get() = mapOf(
-            RoomType.NORMAL to Color(107, 58, 17, 255), // Change all these to config settings
-            RoomType.PUZZLE to Color(117, 0, 133, 255),
-            RoomType.TRAP to Color(216, 127, 51, 255),
-            RoomType.YELLOW to Color(254, 223, 0, 255),
-            RoomType.BLOOD to Color(255, 0, 0, 255),
-            RoomType.FAIRY to Color(224, 0, 255, 255),
-            RoomType.ENTRANCE to Color(20, 133, 0, 255),
+            RoomType.NORMAL to DungeonMap.normalRoomColor,
+            RoomType.PUZZLE to DungeonMap.puzzleRoomColor,
+            RoomType.TRAP to DungeonMap.trapRoomColor,
+            RoomType.YELLOW to DungeonMap.yellowRoomColor,
+            RoomType.BLOOD to DungeonMap.bloodRoomColor,
+            RoomType.FAIRY to DungeonMap.fairyRoomColor,
+            RoomType.ENTRANCE to DungeonMap.entranceRoomColor,
         )
 
     val doorTypeColors: Map<DoorType, Color>
         get() = mapOf(
-            DoorType.NORMAL to Color(80, 40, 10, 255), // Change all these to config settings
-            DoorType.WITHER to Color(0, 0, 0, 255),
-            DoorType.BLOOD to Color(255, 0, 0, 255),
-            DoorType.ENTRANCE to Color(0, 204, 0, 255)
+            DoorType.NORMAL to DungeonMap.normalDoorColor,
+            DoorType.WITHER to DungeonMap.witherDoorColor,
+            DoorType.BLOOD to DungeonMap.bloodDoorColor,
+            DoorType.ENTRANCE to DungeonMap.entranceDoorColor
         )
-
 
     data class BossMapData(
         val image: String,
@@ -144,20 +146,29 @@ object utils {
             0f to scale, 0f to -scale
         )
 
-        matrix.push()
-        matrix.scale(scale, scale, 1f)
-        matrix.translate(0f, 12f, 0f)
+        context.pushPop {
+            //#if MC >= 1.21.7
+            //$$ matrix.scale(scale, scale)
+            //$$ matrix.translate(0f, 12f)
+            //#else
+            matrix.scale(scale, scale, 1f)
+            matrix.translate(0f, 12f, 0f)
+            //#endif
 
-        for ((dx, dy) in offsets) {
-            matrix.push()
-            matrix.translate(dx, dy, 0f)
-            Render2D.renderString(context, "§0$name", drawX.toFloat(), drawY.toFloat(), 1f)
-            matrix.pop()
+            for ((dx, dy) in offsets) {
+                context.pushPop {
+                    //#if MC >= 1.21.7
+                    //$$ matrix.translate(dx, dy)
+                    //#else
+                    matrix.translate(dx, dy, 0f)
+                    //#endif
+                    Render2D.renderString(context, "§0$name", drawX.toFloat(), drawY.toFloat(), 1f)
+                }
+            }
+
+
+            Render2D.renderString(context, name, drawX.toFloat(), drawY.toFloat(), 1f)
         }
-
-
-        Render2D.renderString(context, name, drawX.toFloat(), drawY.toFloat(), 1f)
-        matrix.pop()
     }
 
     fun typeToColor(type: RoomType): String = when (type) {

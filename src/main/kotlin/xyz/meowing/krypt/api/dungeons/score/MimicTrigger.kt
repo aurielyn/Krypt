@@ -3,7 +3,7 @@ package xyz.meowing.krypt.api.dungeons.score
 import net.minecraft.entity.EquipmentSlot
 import net.minecraft.entity.mob.ZombieEntity
 import xyz.meowing.krypt.annotations.Module
-import xyz.meowing.krypt.api.dungeons.Dungeon
+import xyz.meowing.krypt.api.dungeons.DungeonAPI
 import xyz.meowing.krypt.api.location.SkyBlockIsland
 import xyz.meowing.krypt.events.EventBus
 import xyz.meowing.krypt.events.core.ChatEvent
@@ -25,7 +25,7 @@ object MimicTrigger {
 
     init {
         EventBus.registerIn<ChatEvent.Receive>(SkyBlockIsland.THE_CATACOMBS) { event ->
-            if (Dungeon.floor?.floorNumber !in listOf(6, 7) || Dungeon.floor == null) return@registerIn
+            if (DungeonAPI.floor?.floorNumber !in listOf(6, 7) || DungeonAPI.floor == null) return@registerIn
 
             val msg = event.message.string.removeFormatting()
             val match = MIMIC_PATTERN.matchEntire(msg) ?: return@registerIn
@@ -35,8 +35,8 @@ object MimicTrigger {
         }
 
         EventBus.registerIn<EntityEvent.Death>(SkyBlockIsland.THE_CATACOMBS) { event ->
+            if (DungeonAPI.floor?.floorNumber !in listOf(6, 7) || mimicDead) return@registerIn
             val mcEntity = event.entity
-            if (Dungeon.floor?.floorNumber !in listOf(6, 7) || mimicDead) return@registerIn
 
             if (mcEntity !is ZombieEntity) return@registerIn
             if (

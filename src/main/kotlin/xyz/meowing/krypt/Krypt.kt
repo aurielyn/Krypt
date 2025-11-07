@@ -4,7 +4,6 @@ import net.fabricmc.api.ClientModInitializer
 import org.apache.logging.log4j.LogManager
 import xyz.meowing.knit.api.KnitChat
 import xyz.meowing.knit.api.text.KnitText
-import xyz.meowing.krypt.api.dungeons.Dungeon
 import xyz.meowing.krypt.events.EventBus
 import xyz.meowing.krypt.events.core.ServerEvent
 import xyz.meowing.krypt.managers.config.ConfigManager

@@ -4,7 +4,7 @@ import net.minecraft.client.gui.DrawContext
 import xyz.meowing.knit.api.KnitClient.client
 import xyz.meowing.knit.api.scheduler.TickScheduler
 import xyz.meowing.krypt.annotations.Module
-import xyz.meowing.krypt.api.dungeons.Dungeon
+import xyz.meowing.krypt.api.dungeons.DungeonAPI
 import xyz.meowing.krypt.api.location.SkyBlockIsland
 import xyz.meowing.krypt.config.ConfigDelegate
 import xyz.meowing.krypt.config.ui.types.ElementType
@@ -29,7 +29,7 @@ object RoomName: Feature(
             .addFeature(
                 "Room Name Hud",
                 "Displays the current rooms name",
-                "Dungeons",
+                "General",
                 ConfigElement(
                     "general.roomName",
                     ElementType.Switch(false)
@@ -60,9 +60,9 @@ object RoomName: Feature(
     }
 
     private fun renderHud(context: DrawContext) {
-        if (Dungeon.inBoss) return
+        if (DungeonAPI.inBoss) return
 
-        val text = "${if (chroma) "§z" else ""}${Dungeon.currentRoom?.name ?: "No Room Found"}"
+        val text = "${if (chroma) "§z" else ""}${DungeonAPI.currentRoom?.name ?: "No Room Found"}"
         val x = HudManager.getX(NAME)
         val y = HudManager.getY(NAME)
         val scale = HudManager.getScale(NAME)

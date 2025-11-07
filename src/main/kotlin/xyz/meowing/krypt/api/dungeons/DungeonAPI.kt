@@ -1,3 +1,5 @@
+@file:Suppress("UNUSED")
+
 package xyz.meowing.krypt.api.dungeons
 
 import tech.thatgravyboat.skyblockapi.utils.regex.RegexUtils.find
@@ -26,7 +28,7 @@ import xyz.meowing.krypt.events.core.TickEvent
 import xyz.meowing.krypt.utils.StringUtils.removeFormatting
 
 @Module
-object Dungeon {
+object DungeonAPI {
     private val watcherSpawnedAllRegex = Regex("""\[BOSS] The Watcher: That will be enough for now\.""")
     private val watcherKilledAllRegex = Regex("\\[BOSS] The Watcher: You have proven yourself\\. You may pass\\.")
 

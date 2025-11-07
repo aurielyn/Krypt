@@ -1,13 +1,9 @@
 package xyz.meowing.krypt.hud
 
-import com.google.gson.reflect.TypeToken
 import com.mojang.serialization.Codec
 import com.mojang.serialization.DataResult
 import net.minecraft.client.gui.DrawContext
-import xyz.meowing.knit.Knit
 import xyz.meowing.krypt.api.data.StoredFile
-import xyz.meowing.krypt.events.EventBus
-import xyz.meowing.krypt.utils.DataUtils
 import kotlin.collections.component1
 import kotlin.collections.component2
 import kotlin.collections.set
