@@ -3,17 +3,19 @@ package xyz.meowing.krypt.api.dungeons.utils
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import xyz.meowing.krypt.Krypt
+import xyz.meowing.krypt.annotations.Module
 import xyz.meowing.krypt.utils.NetworkUtils
 import java.io.File
 import java.io.FileNotFoundException
 
+@Module
 object RoomRegistry {
     private val byCore = mutableMapOf<Int, RoomMetadata>()
     private val allRooms = mutableListOf<RoomMetadata>()
     private const val ROOM_DATA_URL = "https://raw.githubusercontent.com/Skytils/SkytilsMod/refs/heads/2.x/mod/src/main/resources/assets/catlas/rooms.json"
     private val LOCAL_ROOMS_FILE = File("config/krypt/rooms.json")
 
-    fun loadFromRemote() {
+    init {
         NetworkUtils.fetchJson<List<RoomMetadata>>(
             url = ROOM_DATA_URL,
             onSuccess = { rooms ->

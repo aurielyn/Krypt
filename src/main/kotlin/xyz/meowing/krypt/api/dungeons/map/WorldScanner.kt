@@ -1,6 +1,7 @@
 package xyz.meowing.krypt.api.dungeons.map
 
 import xyz.meowing.knit.api.KnitClient
+import xyz.meowing.krypt.annotations.Module
 import xyz.meowing.krypt.api.dungeons.utils.WorldScanUtils
 import xyz.meowing.krypt.api.dungeons.DungeonAPI.rooms
 import xyz.meowing.krypt.api.dungeons.players.DungeonPlayer
@@ -9,15 +10,19 @@ import xyz.meowing.krypt.api.dungeons.utils.RoomType
 import xyz.meowing.krypt.api.dungeons.utils.ScanUtils
 import xyz.meowing.krypt.api.location.SkyBlockIsland
 import xyz.meowing.krypt.events.EventBus
+import xyz.meowing.krypt.events.core.DungeonEvent
 import xyz.meowing.krypt.events.core.TickEvent
 import xyz.meowing.krypt.utils.WorldUtils
 
+@Module
 object WorldScanner {
     val availableComponents = ScanUtils.getScanCords().toMutableList()
     var lastIdx: Int? = null
+    private var tickCounter = 0
 
-    fun init() {
+    init {
         EventBus.registerIn<TickEvent.Client>(SkyBlockIsland.THE_CATACOMBS) {
+            if (++tickCounter % 5 != 0) return@registerIn
             val player = KnitClient.player ?: return@registerIn
 
             // checking player states
@@ -37,6 +42,10 @@ object WorldScanner {
 
                 val prevRoom = lastIdx?.let { rooms[it] }
                 val currRoom = rooms.getOrNull(idx)
+
+                if (prevRoom != null && currRoom != null && prevRoom != currRoom) {
+                    EventBus.post(DungeonEvent.Room.Change(prevRoom, currRoom))
+                }
 
                 if (lastIdx == idx) return@registerIn
 

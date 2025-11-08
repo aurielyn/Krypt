@@ -18,7 +18,11 @@ object BossMapRenderer {
 
     fun renderBossMap(context: DrawContext) {
         val matrix = context.matrices
+        //#if MC >= 1.21.9
+        //$$ val playerPos = KnitPlayer.player?.entityPos ?: return
+        //#else
         val playerPos = KnitPlayer.player?.pos ?: return
+        //#endif
         val bossMap = Utils.BossMapRegistry.getBossMap(DungeonAPI.floor?.floorNumber ?: return, playerPos) ?: return
         val texture = bossMap.image
 

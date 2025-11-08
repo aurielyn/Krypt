@@ -72,7 +72,7 @@ object DungeonMap : Feature(
     override fun addConfig() {
         ConfigManager
             .addFeature(
-                "Dungeon Map",
+                "Dungeon map",
                 "Enables the dungeon map",
                 "Map",
                 ConfigElement(
@@ -81,49 +81,49 @@ object DungeonMap : Feature(
                 )
             )
             .addFeatureOption(
-                "Show Player Heads",
+                "Show player heads",
                 ConfigElement(
                     "dungeonMap.showPlayerHead",
                     ElementType.Switch(true)
                 )
             )
             .addFeatureOption(
-                "Player Heads Under Text",
+                "Player heads under text",
                 ConfigElement(
                     "dungeonMap.playerHeadsUnder",
                     ElementType.Switch(true)
                 )
             )
             .addFeatureOption(
-                "Class Colored Icons",
+                "Class colored icons",
                 ConfigElement(
                     "dungeonMap.iconClassColors",
                     ElementType.Switch(true)
                 )
             )
             .addFeatureOption(
-                "Player Icon Border Color",
+                "Player icon border color",
                 ConfigElement(
                     "dungeonMap.playerIconBorderColor",
                     ElementType.ColorPicker(Color(0, 0, 0, 255))
                 )
             )
             .addFeatureOption(
-                "Player Icon Border Size",
+                "Player icon border size",
                 ConfigElement(
                     "dungeonMap.playerIconBorderSize",
                     ElementType.Slider(0.0, 0.5, 0.2, true)
                 )
             )
             .addFeatureOption(
-                "Show Own Player",
+                "Show own player",
                 ConfigElement(
                     "dungeonMap.showOwnPlayer",
                     ElementType.Switch(true)
                 )
             )
             .addFeatureOption(
-                "Show Player Nametags",
+                "Show player nametags",
                 ConfigElement(
                     "dungeonMap.showPlayerNametags",
                     ElementType.Switch(true)
@@ -132,7 +132,7 @@ object DungeonMap : Feature(
 
         ConfigManager
             .addFeature(
-                "Class Colors",
+                "Class colors",
                 "Configure class icon colors",
                 "Map",
                 ConfigElement(
@@ -141,35 +141,35 @@ object DungeonMap : Feature(
                 )
             )
             .addFeatureOption(
-                "Healer Color",
+                "Healer color",
                 ConfigElement(
                     "dungeonMap.healerColor",
                     ElementType.ColorPicker(Color(240, 70, 240, 255))
                 )
             )
             .addFeatureOption(
-                "Mage Color",
+                "Mage color",
                 ConfigElement(
                     "dungeonMap.mageColor",
                     ElementType.ColorPicker(Color(70, 210, 210, 255))
                 )
             )
             .addFeatureOption(
-                "Berserk Color",
+                "Berserk color",
                 ConfigElement(
                     "dungeonMap.berserkColor",
                     ElementType.ColorPicker(Color(70, 210, 210, 255))
                 )
             )
             .addFeatureOption(
-                "Archer Color",
+                "Archer color",
                 ConfigElement(
                     "dungeonMap.archerColor",
                     ElementType.ColorPicker(Color(254, 223, 0, 255))
                 )
             )
             .addFeatureOption(
-                "Tank Color",
+                "Tank color",
                 ConfigElement(
                     "dungeonMap.tankColor",
                     ElementType.ColorPicker(Color(30, 170, 50, 255))
@@ -178,7 +178,7 @@ object DungeonMap : Feature(
 
         ConfigManager
             .addFeature(
-                "Room Labels",
+                "Room labels",
                 "Configure room label display",
                 "Map",
                 ConfigElement(
@@ -187,7 +187,7 @@ object DungeonMap : Feature(
                 )
             )
             .addFeatureOption(
-                "Puzzle Room Labels",
+                "Puzzle room",
                 ConfigElement(
                     "dungeonMap.puzzleCheckmarkMode",
                     ElementType.Dropdown(
@@ -197,7 +197,7 @@ object DungeonMap : Feature(
                 )
             )
             .addFeatureOption(
-                "Normal Room Labels",
+                "Normal room",
                 ConfigElement(
                     "dungeonMap.normalCheckmarkMode",
                     ElementType.Dropdown(
@@ -207,49 +207,49 @@ object DungeonMap : Feature(
                 )
             )
             .addFeatureOption(
-                "Checkmark Scale",
+                "Checkmark scale",
                 ConfigElement(
                     "dungeonMap.checkmarkScale",
                     ElementType.Slider(0.5, 2.0, 1.0, true)
                 )
             )
             .addFeatureOption(
-                "Room Name Color",
+                "Room name color",
                 ConfigElement(
                     "dungeonMap.roomNameColor",
                     ElementType.MCColorPicker(MCColorCode.WHITE)
                 )
             )
             .addFeatureOption(
-                "Secrets Text Color",
+                "Secrets text color",
                 ConfigElement(
                     "dungeonMap.secretsColor",
                     ElementType.MCColorPicker(MCColorCode.AQUA)
                 )
             )
             .addFeatureOption(
-                "Cool Text",
+                "Cool text",
                 ConfigElement(
                     "dungeonMap.coolText",
                     ElementType.Switch(true)
                 )
             )
             .addFeatureOption(
-                "Room Label Scale",
+                "Room label scale",
                 ConfigElement(
                     "dungeonMap.roomLabelScale",
                     ElementType.Slider(0.5, 2.0, 1.0, true)
                 )
             )
             .addFeatureOption(
-                "Show Cleared Room Checkmarks",
+                "Show room checkmarks",
                 ConfigElement(
                     "dungeonMap.showClearedRoomCheckmarks",
                     ElementType.Switch(false)
                 )
             )
             .addFeatureOption(
-                "Cleared Room Checkmark Scale",
+                "Room checkmark scale",
                 ConfigElement(
                     "dungeonMap.clearedRoomCheckmarkScale",
                     ElementType.Slider(0.5, 2.0, 1.0, true)
@@ -258,7 +258,7 @@ object DungeonMap : Feature(
 
         ConfigManager
             .addFeature(
-                "Room Colors",
+                "Room colors",
                 "Configure room type colors",
                 "Map",
                 ConfigElement(
@@ -267,49 +267,49 @@ object DungeonMap : Feature(
                 )
             )
             .addFeatureOption(
-                "Normal Room Color",
+                "Normal room",
                 ConfigElement(
                     "dungeonMap.normalRoomColor",
                     ElementType.ColorPicker(Color(107, 58, 17, 255))
                 )
             )
             .addFeatureOption(
-                "Puzzle Room Color",
+                "Puzzle room",
                 ConfigElement(
                     "dungeonMap.puzzleRoomColor",
                     ElementType.ColorPicker(Color(117, 0, 133, 255))
                 )
             )
             .addFeatureOption(
-                "Trap Room Color",
+                "Trap room",
                 ConfigElement(
                     "dungeonMap.trapRoomColor",
                     ElementType.ColorPicker(Color(216, 127, 51, 255))
                 )
             )
             .addFeatureOption(
-                "Yellow Room Color",
+                "Yellow room",
                 ConfigElement(
                     "dungeonMap.yellowRoomColor",
                     ElementType.ColorPicker(Color(254, 223, 0, 255))
                 )
             )
             .addFeatureOption(
-                "Blood Room Color",
+                "Blood room",
                 ConfigElement(
                     "dungeonMap.bloodRoomColor",
                     ElementType.ColorPicker(Color(255, 0, 0, 255))
                 )
             )
             .addFeatureOption(
-                "Fairy Room Color",
+                "Fairy room",
                 ConfigElement(
                     "dungeonMap.fairyRoomColor",
                     ElementType.ColorPicker(Color(224, 0, 255, 255))
                 )
             )
             .addFeatureOption(
-                "Entrance Room Color",
+                "Entrance room",
                 ConfigElement(
                     "dungeonMap.entranceRoomColor",
                     ElementType.ColorPicker(Color(20, 133, 0, 255))
@@ -318,7 +318,7 @@ object DungeonMap : Feature(
 
         ConfigManager
             .addFeature(
-                "Door Colors",
+                "Door colors",
                 "Configure door type colors",
                 "Map",
                 ConfigElement(
@@ -327,28 +327,28 @@ object DungeonMap : Feature(
                 )
             )
             .addFeatureOption(
-                "Normal Door Color",
+                "Normal door",
                 ConfigElement(
                     "dungeonMap.normalDoorColor",
                     ElementType.ColorPicker(Color(80, 40, 10, 255))
                 )
             )
             .addFeatureOption(
-                "Wither Door Color",
+                "Wither door",
                 ConfigElement(
                     "dungeonMap.witherDoorColor",
                     ElementType.ColorPicker(Color(0, 0, 0, 255))
                 )
             )
             .addFeatureOption(
-                "Blood Door Color",
+                "Blood door",
                 ConfigElement(
                     "dungeonMap.bloodDoorColor",
                     ElementType.ColorPicker(Color(255, 0, 0, 255))
                 )
             )
             .addFeatureOption(
-                "Entrance Door Color",
+                "Entrance door",
                 ConfigElement(
                     "dungeonMap.entranceDoorColor",
                     ElementType.ColorPicker(Color(0, 204, 0, 255))
@@ -417,7 +417,14 @@ object DungeonMap : Feature(
     }
 
     override fun initialize() {
-        HudManager.registerCustom(NAME, 148, 148, { MapRenderer.renderPreview(it, 0f, 0f) }, "dungeonMap")
+        HudManager.registerCustom(
+            NAME,
+            148,
+            158,
+            { MapRenderer.renderPreview(it, 0f, 0f) },
+            "dungeonMap"
+        )
+
         register<GuiEvent.RenderHUD> { event -> renderMap(event.context) }
     }
 

@@ -11,7 +11,6 @@ import net.minecraft.item.map.MapState
 import xyz.meowing.knit.api.KnitClient
 import xyz.meowing.knit.api.KnitPlayer
 
-
 object ScoreMapRenderer {
     var cachedRenderState = MapRenderState()
 
@@ -46,11 +45,11 @@ object ScoreMapRenderer {
 
     fun renderScoreMap(context: DrawContext){
         val matrix = context.matrices
-        val renderState = getCurrentMapRender() ?: cachedRenderState
+        val renderState = getCurrentMapRender() ?: cachedRenderState.takeIf { it.texture != null } ?: return
 
         //#if MC >= 1.21.7
         //$$  matrix.pushMatrix()
-        //$$  matrix.translate(5f, 5f,)
+        //$$  matrix.translate(5f, 5f)
         //$$  context.drawMap(renderState)
         //$$  matrix.popMatrix()
         //#else
@@ -58,7 +57,7 @@ object ScoreMapRenderer {
 
         matrix.push()
         matrix.translate(5f, 5f, 5f)
-        KnitClient.client.mapRenderer.draw(renderState, matrix, consumer,true, LightmapTextureManager.MAX_LIGHT_COORDINATE)
+        KnitClient.client.mapRenderer.draw(renderState, matrix, consumer, true, LightmapTextureManager.MAX_LIGHT_COORDINATE)
         matrix.pop()
         //#endif
     }

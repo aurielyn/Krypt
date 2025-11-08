@@ -108,10 +108,15 @@ class Panel(
             true
         }
 
-        category.features.sortedBy { it.featureName }.forEachIndexed { index, feature ->
-            val isLast = index == category.features.size - 1
-            sections.add(SectionButton(feature, sectionsContainer, onConfigUpdate, isLast))
-        }
+        category.features
+            .let {
+                if (category.name.equals("map", true)) it
+                else it.sortedBy { cat -> cat.featureName }
+            }
+            .forEachIndexed { index, feature ->
+                val isLast = index == category.features.size - 1
+                sections.add(SectionButton(feature, sectionsContainer, onConfigUpdate, isLast))
+            }
 
         updateVisibility()
     }

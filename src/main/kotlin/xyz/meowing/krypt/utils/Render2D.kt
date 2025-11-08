@@ -6,6 +6,7 @@ import net.minecraft.client.gui.PlayerSkinDrawer
 import net.minecraft.client.render.RenderLayer
 import net.minecraft.client.util.DefaultSkinHelper
 import net.minecraft.item.ItemStack
+import net.minecraft.text.Text
 import net.minecraft.util.Colors
 import net.minecraft.util.Identifier
 import xyz.meowing.knit.api.KnitClient.client
@@ -26,11 +27,11 @@ object Render2D {
 
     fun renderString(
         context: DrawContext,
-        text: String,
+        text: Text,
         x: Float,
         y: Float,
         scale: Float,
-        colors: Int = 0xFFFFFF,
+        colors: Int = -1,
         textStyle: TextStyle = TextStyle.DEFAULT
     ) {
         //#if MC >= 1.21.7
@@ -59,6 +60,16 @@ object Render2D {
         context.matrices.pop()
         //#endif
     }
+
+    fun renderString(
+        context: DrawContext,
+        text: String,
+        x: Float,
+        y: Float,
+        scale: Float,
+        colors: Int = -1,
+        textStyle: TextStyle = TextStyle.DEFAULT
+    ) = renderString(context, Text.literal(text), x, y, scale, colors, textStyle)
 
     fun renderStringWithShadow(context: DrawContext, text: String, x: Float, y: Float, scale: Float, colors: Int = Colors.WHITE) {
         renderString(context, text, x, y, scale, colors, TextStyle.DROP_SHADOW)

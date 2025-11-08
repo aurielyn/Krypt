@@ -8,12 +8,14 @@ import net.minecraft.item.map.MapDecorationTypes
 import net.minecraft.item.map.MapState
 import net.minecraft.network.packet.s2c.play.MapUpdateS2CPacket
 import xyz.meowing.knit.api.KnitClient
+import xyz.meowing.krypt.annotations.Module
 import xyz.meowing.krypt.api.dungeons.map.MapScanner
 import xyz.meowing.krypt.api.location.SkyBlockIsland
 import xyz.meowing.krypt.events.EventBus
 import xyz.meowing.krypt.events.core.PacketEvent
 import xyz.meowing.krypt.events.core.TickEvent
 
+@Module
 object MapUtils {
     val MapDecoration.mapX get() = (this.x() + 128) shr 1
     val MapDecoration.mapZ get() = (this.z + 128) shr 1
@@ -28,13 +30,15 @@ object MapUtils {
     var mapData: MapState? = null
     var guessMapData: MapState? = null
 
-    fun init() {
+    init {
         EventBus.registerIn<PacketEvent.Received>(SkyBlockIsland.THE_CATACOMBS) { event->
-            if (event.packet is MapUpdateS2CPacket && mapData == null) {
+            val packet = event.packet as? MapUpdateS2CPacket ?: return@registerIn
+
+            if (mapData == null) {
                 val world = KnitClient.world ?: return@registerIn
-                val id = event.packet.mapId.id
+                val id = packet.mapId.id
                 if (id and 1000 == 0) {
-                    val guess = FilledMapItem.getMapState(event.packet.mapId, world) ?: return@registerIn
+                    val guess = FilledMapItem.getMapState(packet.mapId, world) ?: return@registerIn
                     if (guess.decorations.any {it.type == MapDecorationTypes.FRAME }) {
                         guessMapData = guess
                     }

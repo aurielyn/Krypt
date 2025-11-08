@@ -166,7 +166,6 @@ object Utils {
                 }
             }
 
-
             Render2D.renderString(context, name, drawX.toFloat(), drawY.toFloat(), 1f)
         }
     }

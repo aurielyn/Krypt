@@ -29,6 +29,12 @@ sealed class DungeonEvent {
         val floor: DungeonFloor
     ) : Event()
 
+    sealed class Room {
+        class Change(
+            val old: xyz.meowing.krypt.api.dungeons.map.Room,
+            val new: xyz.meowing.krypt.api.dungeons.map.Room
+        ) : Event()
+    }
 
     /**
      * Posted when a key is picked up

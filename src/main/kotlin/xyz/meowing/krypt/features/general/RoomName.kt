@@ -67,6 +67,6 @@ object RoomName: Feature(
         val y = HudManager.getY(NAME)
         val scale = HudManager.getScale(NAME)
 
-        Render2D.renderString(context,text, x, y, scale)
+        Render2D.renderString(context, text, x, y, scale)
     }
 }

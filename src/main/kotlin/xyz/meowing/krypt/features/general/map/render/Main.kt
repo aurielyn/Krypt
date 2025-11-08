@@ -25,42 +25,23 @@ object Main {
     private const val SPACING = ROOM_SIZE + GAP_SIZE
 
     fun renderMap(context: DrawContext) {
-        val matrix = context.matrices
         val mapOffset = if (DungeonAPI.floor?.floorNumber == 1) 10.6f else 0f
         val mapScale = Utils.scale(DungeonAPI.floor?.floorNumber)
 
         context.pushPop {
-            //#if MC >= 1.21.7
-            //$ matrix.translate(5f, 5f)
-            //$ matrix.translate(mapOffset, 0f)
-            //$ matrix.scale(mapScale, mapScale)
-            //#else
-            matrix.translate(5f, 5f, 0f)
-            matrix.translate(mapOffset, 0f, 0f)
-            matrix.scale(mapScale, mapScale, 1f)
-            //#endif
+            translateAndScale(context, 5f, 5f, mapScale, mapOffset, 0f)
 
             renderRooms(context)
-            if(!DungeonMap.playerHeadsUnder) renderPlayers(context)
+            if (!DungeonMap.playerHeadsUnder) renderPlayers(context)
             renderCheckmarks(context)
-            renderClearedRoomCheckmarks(context)
-            renderPuzzleCheckmarks(context)
-            renderRoomLabels(context, RoomType.PUZZLE, DungeonMap.puzzleCheckmarkMode)
-            renderRoomLabels(context, RoomType.NORMAL, DungeonMap.normalCheckmarkMode)
-            if(DungeonMap.playerHeadsUnder) renderPlayers(context)
+            renderRoomLabels(context)
+            if (DungeonMap.playerHeadsUnder) renderPlayers(context)
         }
     }
 
-    fun renderRooms(context: DrawContext) {
+    private fun renderRooms(context: DrawContext) {
         DungeonAPI.discoveredRooms.values.forEach { room ->
-            Render2D.drawRect(
-                context,
-                room.x * SPACING,
-                room.z * SPACING,
-                ROOM_SIZE,
-                ROOM_SIZE,
-                Color(65 / 255f, 65 / 255f, 65 / 255f, 1f)
-            )
+            Render2D.drawRect(context, room.x * SPACING, room.z * SPACING, ROOM_SIZE, ROOM_SIZE, Color(65 / 255f, 65 / 255f, 65 / 255f, 1f))
         }
 
         DungeonAPI.uniqueRooms.forEach { room ->
@@ -86,149 +67,99 @@ object Main {
         }
     }
 
-    fun renderCheckmarks(context: DrawContext) {
-        val scale = DungeonMap.checkmarkScale.toFloat()
-
+    private fun renderCheckmarks(context: DrawContext) {
         DungeonAPI.discoveredRooms.values.forEach { room ->
             val x = room.x * SPACING + ROOM_SIZE / 2 - 5
             val y = room.z * SPACING + ROOM_SIZE / 2 - 6
 
             context.pushPop {
-                //#if MC >= 1.21.7
-                //$$ context.matrices.translate(x.toFloat(), y.toFloat())
-                //$$ context.matrices.scale(scale, scale)
-                //#else
-                context.matrices.translate(x.toFloat(), y.toFloat(), 0f)
-                context.matrices.scale(scale, scale, 1f)
-                //#endif
+                translateAndScale(context, x.toFloat(), y.toFloat(), DungeonMap.checkmarkScale.toFloat())
                 Render2D.drawImage(context, Utils.questionMark, 0, 0, 10, 12)
             }
         }
 
         DungeonAPI.uniqueRooms.forEach { room ->
             if (!room.explored) return@forEach
-            val checkmark = Utils.getCheckmarks(room.checkmark) ?: return@forEach
-            if (room.type in setOf(RoomType.NORMAL, RoomType.RARE) && room.secrets != 0) return@forEach
-            if (room.type == RoomType.PUZZLE || room.type == RoomType.ENTRANCE) return@forEach
 
             val (centerX, centerZ) = room.center()
             val x = (centerX * SPACING).toInt() + ROOM_SIZE / 2 - 6
             val y = (centerZ * SPACING).toInt() + ROOM_SIZE / 2 - 6
 
+            val baseCheckmark = when (room.type) {
+                RoomType.ENTRANCE -> null
+                RoomType.PUZZLE -> null
+                in setOf(RoomType.NORMAL, RoomType.RARE) if room.secrets != 0 -> null
+                else -> Utils.getCheckmarks(room.checkmark)
+            }
+
+            val clearedCheckmark = when {
+                !DungeonMap.showClearedRoomCheckmarks || room.checkmark == Checkmark.UNEXPLORED -> null
+
+                room.type == RoomType.PUZZLE -> when (room.checkmark) {
+                    Checkmark.GREEN -> Utils.greenCheck
+                    Checkmark.WHITE -> Utils.whiteCheck
+                    Checkmark.FAILED -> Utils.failedRoom
+                    else -> null
+                }
+
+                room.checkmark in listOf(Checkmark.GREEN, Checkmark.WHITE) -> {
+                    if (room.secretsFound == room.secrets) Utils.greenCheck else Utils.whiteCheck
+                }
+
+                else -> null
+            }
+
+
+            val checkmark = clearedCheckmark ?: baseCheckmark ?: return@forEach
+            val scale = if (clearedCheckmark != null) DungeonMap.clearedRoomCheckmarkScale.toFloat() else DungeonMap.checkmarkScale.toFloat()
+
             context.pushPop {
-                //#if MC >= 1.21.7
-                //$$ context.matrices.translate(x.toFloat(), y.toFloat())
-                //$$ context.matrices.scale(scale, scale)
-                //#else
-                context.matrices.translate(x.toFloat(), y.toFloat(), 0f)
-                context.matrices.scale(scale, scale, 1f)
-                //#endif
+                translateAndScale(context, x.toFloat(), y.toFloat(), scale)
                 Render2D.drawImage(context, checkmark, 0, 0, 12, 12)
             }
         }
     }
 
-    fun renderClearedRoomCheckmarks(context: DrawContext) {
-        if (!DungeonMap.showClearedRoomCheckmarks) return
-
-        val scale = DungeonMap.clearedRoomCheckmarkScale.toFloat()
-
+    private fun renderRoomLabels(context: DrawContext) {
         DungeonAPI.uniqueRooms.forEach { room ->
-            if (!room.explored || room.checkmark == Checkmark.UNEXPLORED) return@forEach
+            if (!room.explored) return@forEach
 
-            val isClear = room.checkmark == Checkmark.GREEN || room.checkmark == Checkmark.WHITE
-            if (!isClear) return@forEach
-
-            val checkmark = if (room.secretsFound == room.secrets) Utils.greenCheck else Utils.whiteCheck
-
-            val (centerX, centerZ) = room.center()
-            val x = (centerX * SPACING).toInt() + ROOM_SIZE / 2 - 6
-            val y = (centerZ * SPACING).toInt() + ROOM_SIZE / 2 - 6
-
-            context.pushPop {
-                //#if MC >= 1.21.7
-                //$ context.matrices.translate(x.toFloat(), y.toFloat())
-                //$ context.matrices.scale(scale, scale)
-                //#else
-                context.matrices.translate(x.toFloat(), y.toFloat(), 0f)
-                context.matrices.scale(scale, scale, 1f)
-                //#endif
-                Render2D.drawImage(context, checkmark, 0, 0, 12, 12)
-            }
-        }
-    }
-
-    fun renderPuzzleCheckmarks(context: DrawContext) {
-        if (!DungeonMap.showClearedRoomCheckmarks) return
-
-        val scale = DungeonMap.clearedRoomCheckmarkScale.toFloat()
-
-        DungeonAPI.uniqueRooms.forEach { room ->
-            if (!room.explored || room.type != RoomType.PUZZLE) return@forEach
-
-            val checkmark = when (room.checkmark) {
-                Checkmark.GREEN -> Utils.greenCheck
-                Checkmark.WHITE -> Utils.whiteCheck
-                Checkmark.FAILED -> Utils.failedRoom
+            val checkmarkMode = when (room.type) {
+                RoomType.PUZZLE -> DungeonMap.puzzleCheckmarkMode
+                RoomType.NORMAL, RoomType.RARE -> DungeonMap.normalCheckmarkMode
                 else -> return@forEach
             }
 
-            val (centerX, centerZ) = room.center()
-            val x = (centerX * SPACING).toInt() + ROOM_SIZE / 2 - 6
-            val y = (centerZ * SPACING).toInt() + ROOM_SIZE / 2 - 6
-
-            context.pushPop {
-                //#if MC >= 1.21.7
-                //$ context.matrices.translate(x.toFloat(), y.toFloat())
-                //$ context.matrices.scale(scale, scale)
-                //#else
-                context.matrices.translate(x.toFloat(), y.toFloat(), 0f)
-                context.matrices.scale(scale, scale, 1f)
-                //#endif
-                Render2D.drawImage(context, checkmark, 0, 0, 12, 12)
-            }
-        }
-    }
-
-    fun renderRoomLabels(context: DrawContext, type: RoomType, checkmarkMode: Int) {
-        DungeonAPI.uniqueRooms.forEach { room ->
-            if (!room.explored || room.type != type || checkmarkMode < 1) return@forEach
+            if (checkmarkMode < 1) return@forEach
 
             val secrets = if (room.checkmark == Checkmark.GREEN) room.secrets else room.secretsFound
-            val textColor = Utils.getTextColor(room.checkmark)
+            val roomNameColor = DungeonMap.roomNameColor.code
+            val secretsColor = DungeonMap.secretsColor.code
             val roomText = room.name ?: "???"
             val secretText = "$secrets/${room.secrets}"
 
             val lines = buildList {
-                if (checkmarkMode in listOf(1, 3)) addAll(roomText.split(" ").map { it })
-                if (checkmarkMode in listOf(2, 3) && room.secrets != 0) add(secretText)
+                if (checkmarkMode in listOf(1, 3)) addAll(roomText.split(" ").map { roomNameColor + it })
+                if (checkmarkMode in listOf(2, 3) && room.secrets != 0) add(secretsColor + secretText)
             }
 
             val (centerX, centerZ) = room.center()
-            val x = (centerX * SPACING).toInt() + ROOM_SIZE / 2
-            val y = (centerZ * SPACING).toInt() + ROOM_SIZE / 2
             val scale = (0.75f * DungeonMap.roomLabelScale).toFloat()
 
             context.pushPop {
-                //#if MC >= 1.21.7
-                //$ context.matrices.translate(x.toFloat(), y.toFloat())
-                //$ context.matrices.scale(scale, scale)
-                //#else
-                context.matrices.translate(x.toFloat(), y.toFloat(), 0f)
-                context.matrices.scale(scale, scale, 1f)
-                //#endif
+                translateAndScale(context, (centerX * SPACING).toFloat() + ROOM_SIZE / 2, (centerZ * SPACING).toFloat() + ROOM_SIZE / 2, scale)
 
                 lines.forEachIndexed { i, line ->
                     val drawX = (-line.width() / 2).toFloat()
                     val drawY = (9 * i - (lines.size * 9) / 2).toFloat()
-                    if(DungeonMap.coolText) drawShadowedText(context, line.removeFormatting(), drawX.toInt(), drawY.toInt(), 1f)
-                    Render2D.renderString(context, textColor + line, drawX, drawY, 1f)
+                    if (DungeonMap.coolText) drawShadowedText(context, line.removeFormatting(), drawX.toInt(), drawY.toInt(), 1f)
+                    Render2D.renderString(context, line, drawX, drawY, 1f)
                 }
             }
         }
     }
 
-    fun renderPlayers(context: DrawContext) {
+    private fun renderPlayers(context: DrawContext) {
         for (player in DungeonAPI.players) {
             if (player == null || (player.dead && player.name != KnitPlayer.name)) continue
 
@@ -242,11 +173,7 @@ object Main {
 
             if (DungeonAPI.holdingLeaps && DungeonMap.showPlayerNametags && !ownName) {
                 context.pushPop {
-                    //#if MC >= 1.21.7
-                    //$$ context.matrices.translate(x.toFloat(), y.toFloat())
-                    //#else
-                    context.matrices.translate(x.toFloat(), y.toFloat(), 1f)
-                    //#endif
+                    translateAndScale(context, x.toFloat(), y.toFloat(), 1f)
                     Utils.renderNametag(context, player.name, 1f / 1.3f)
                 }
             }
@@ -255,7 +182,7 @@ object Main {
         }
     }
 
-    fun renderRoomConnectors(context: DrawContext, room: Room) {
+    private fun renderRoomConnectors(context: DrawContext, room: Room) {
         val directions = listOf(Pair(1, 0), Pair(-1, 0), Pair(0, 1), Pair(0, -1))
 
         for ((x, z) in room.components) {
@@ -283,7 +210,7 @@ object Main {
         }
     }
 
-    fun Room.center(): Pair<Double, Double> {
+    private fun Room.center(): Pair<Double, Double> {
         val minX = components.minOf { it.first }
         val minZ = components.minOf { it.second }
         val maxX = components.maxOf { it.first }
@@ -301,21 +228,18 @@ object Main {
         return Pair(minX + width / 2.0, centerZ)
     }
 
-    fun drawShadowedText(context: DrawContext, text: String, x: Int, y: Int, scale: Float) {
+    private fun drawShadowedText(context: DrawContext, text: String, x: Int, y: Int, scale: Float) {
         val offsets = listOf(Pair(scale, 0f), Pair(-scale, 0f), Pair(0f, scale), Pair(0f, -scale))
+
         for ((dx, dy) in offsets) {
             context.pushPop {
-                //#if MC >= 1.21.7
-                //$$ context.matrices.translate(dx, dy)
-                //#else
-                context.matrices.translate(dx, dy, 0f)
-                //#endif
+                translateAndScale(context, dx, dy, 1f)
                 Render2D.renderString(context, "§0$text", x.toFloat(), y.toFloat(), 1f)
             }
         }
     }
 
-    fun renderPlayerIcon(context: DrawContext, player: DungeonPlayer, x: Double, y: Double, rotation: Float) {
+    private fun renderPlayerIcon(context: DrawContext, player: DungeonPlayer, x: Double, y: Double, rotation: Float) {
         context.pushPop {
             val matrix = context.matrices
 
@@ -346,5 +270,19 @@ object Main {
                 Render2D.drawImage(context, head, -4, -5, 7, 10)
             }
         }
+    }
+
+    private fun translateAndScale(context: DrawContext, x: Float, y: Float, scale: Float, offsetX: Float = 0f, offsetY: Float = 0f) {
+        val matrix = context.matrices
+
+        //#if MC >= 1.21.7
+        //$$ matrix.translate(x, y)
+        //$$ if (offsetX != 0f || offsetY != 0f) matrix.translate(offsetX, offsetY)
+        //$$ if (scale != 1f) matrix.scale(scale, scale)
+        //#else
+        matrix.translate(x, y, 0f)
+        if (offsetX != 0f || offsetY != 0f) matrix.translate(offsetX, offsetY, 0f)
+        if (scale != 1f) matrix.scale(scale, scale, 1f)
+        //#endif
     }
 }

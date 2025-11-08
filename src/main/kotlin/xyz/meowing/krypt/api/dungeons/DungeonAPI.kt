@@ -182,10 +182,6 @@ object DungeonAPI {
             updateHudLines()
             updateHeldItem()
         }
-
-        RoomRegistry.loadFromRemote()
-        WorldScanner.init()
-        MapUtils.init()
     }
 
     /** Clears all dungeon state */
