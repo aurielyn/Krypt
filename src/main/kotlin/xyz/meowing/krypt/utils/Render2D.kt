@@ -14,6 +14,10 @@ import java.awt.Color
 import java.util.Optional
 import java.util.UUID
 
+//#if MC >= 1.21.9
+//$$ import com.mojang.authlib.GameProfile
+//#endif
+
 object Render2D {
     enum class TextStyle {
         DROP_SHADOW,
@@ -81,9 +85,15 @@ object Render2D {
     }
 
     fun drawPlayerHead(context: DrawContext, x: Int, y: Int, size: Int, uuid: UUID) {
+        //#if MC >= 1.21.9
+        //$$ val textures = client.skinProvider.fetchSkinTextures(GameProfile(uuid, null))
+        //#else
         val textures = SkullBlockEntity.fetchProfileByUuid(uuid)
+        //#endif
             .getNow(Optional.empty())
+            //#if MC < 1.21.9
             .map(client.skinProvider::getSkinTextures)
+            //#endif
             .orElseGet { DefaultSkinHelper.getSkinTextures(uuid) }
 
         PlayerSkinDrawer.draw(context, textures, x, y, size)
