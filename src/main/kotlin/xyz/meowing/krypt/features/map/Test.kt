@@ -7,6 +7,8 @@ import net.minecraft.component.type.MapIdComponent
 import net.minecraft.item.FilledMapItem
 import net.minecraft.network.packet.s2c.play.MapUpdateS2CPacket
 import net.minecraft.util.Identifier
+import net.minecraft.util.math.RotationAxis
+import tech.thatgravyboat.skyblockapi.utils.text.TextProperties.stripped
 import xyz.meowing.knit.api.KnitClient.client
 import xyz.meowing.krypt.Krypt
 import xyz.meowing.krypt.annotations.Module
@@ -25,7 +27,10 @@ import xyz.meowing.krypt.events.core.DungeonEvent
 import xyz.meowing.krypt.events.core.GuiEvent
 import xyz.meowing.krypt.events.core.PacketEvent
 import xyz.meowing.krypt.events.core.TickEvent
+import xyz.meowing.krypt.utils.Render2D
+import xyz.meowing.krypt.utils.Render2D.pushPop
 import java.awt.Color
+import java.util.UUID
 
 @Module
 object DungeonMapRenderer {
@@ -34,6 +39,8 @@ object DungeonMapRenderer {
     private val CheckMarkWhite = Identifier.of("krypt", "krypt/clear/white_check")
     private val CheckMarkCross = Identifier.of("krypt", "krypt/clear/failed_room")
     private val CheckMarkQuestion = Identifier.of("krypt", "krypt/clear/question_mark")
+    private val MarkerSelf = Identifier.of("krypt", "krypt/marker_self")
+    private val MarkerOther = Identifier.of("krypt", "krypt/marker_other")
 
     init {
         EventBus.registerIn<GuiEvent.RenderHUD>(SkyBlockIsland.THE_CATACOMBS) { event ->
@@ -88,6 +95,7 @@ object DungeonMapRenderer {
         drawMapBackground(context)
         renderRooms(context)
         renderCheckmarks(context)
+        renderPlayerHeads(context)
 
         matrix.pop()
     }
@@ -152,7 +160,6 @@ object DungeonMapRenderer {
 
     private fun renderCheckmarks(context: DrawContext) {
         val matrix = context.matrices
-        val processedRooms = mutableSetOf<String>()
 
         matrix.push()
         matrix.translate(MapUtils.startCorner.first.toFloat(), MapUtils.startCorner.second.toFloat(), 0f)
@@ -160,12 +167,7 @@ object DungeonMapRenderer {
         for (y in 0..10 step 2) {
             for (x in 0..10 step 2) {
                 val room = DungeonAPI.dungeonList[y * 11 + x] as? Room ?: continue
-                if (room.isSeparator) continue
-                if (room.state == RoomState.UNDISCOVERED) continue
-
-                val roomKey = "${room.x},${room.z}"
-                if (roomKey in processedRooms) continue
-                processedRooms.add(roomKey)
+                if (room.isSeparator || room.state == RoomState.UNDISCOVERED) continue
 
                 val checkmarkSize = 10.0
                 val size = MapUtils.mapRoomSize + HotbarMapColorParser.quarterRoom
@@ -177,6 +179,65 @@ object DungeonMapRenderer {
         }
 
         matrix.pop()
+    }
+
+    private fun renderPlayerHeads(context: DrawContext) {
+        val matrix = context.matrices
+        context.pushPop {
+            matrix.translate(MapUtils.startCorner.first.toFloat(), MapUtils.startCorner.second.toFloat(), 0f)
+
+            DungeonAPI.teammates.filterNot { it.dead }.forEach { player ->
+                val entity = player.entity
+
+                if (entity != null) {
+                    val pos = entity.lastRenderPos
+                    val (x, z) = MapUtils.coordsToMap(pos)
+                    val yaw = entity.yaw + 180f
+                    drawPlayerHead(
+                        context,
+                        player.entity?.uuid,
+                        x,
+                        z,
+                        yaw,
+                        player.name == client.player?.name?.stripped
+                    )
+                } else {
+                    val mapX = player.mapIcon.mapX - 10 // weird offset?
+                    val mapZ = player.mapIcon.mapZ - 10 // weird offset?
+                    val yaw = player.mapIcon.yaw
+                    if (mapX == 0f && mapZ == 0f) return@forEach
+
+                    drawPlayerHead(
+                        context,
+                        player.entity?.uuid,
+                        mapX,
+                        mapZ,
+                        yaw,
+                        player.name == client.player?.name?.stripped
+                    )
+                }
+            }
+        }
+    }
+
+    private fun drawPlayerHead(context: DrawContext, uuid: UUID?, x: Float, z: Float, yaw: Float, isSelf: Boolean) {
+        val matrix = context.matrices
+
+        context.pushPop {
+            matrix.translate(x, z, 0f)
+            matrix.multiply(RotationAxis.POSITIVE_Z.rotationDegrees(yaw))
+
+            if (DungeonMap.showPlayerHead) {
+                val borderColor = DungeonMap.playerIconBorderColor
+                Render2D.drawRect(context, -6, -6, 12, 12, borderColor)
+                val borderSize = DungeonMap.playerIconBorderSize.toFloat()
+                matrix.scale(1f - borderSize, 1f - borderSize, 1f)
+                Render2D.drawPlayerHead(context, -6, -6, 12, uuid ?: UUID(0, 0))
+            } else {
+                val marker = if (isSelf) MarkerSelf else MarkerOther
+                Render2D.drawImage(context, marker, -4, -5, 7, 10)
+            }
+        }
     }
 
     private fun getCheckmark(state: RoomState) = when (state) {
