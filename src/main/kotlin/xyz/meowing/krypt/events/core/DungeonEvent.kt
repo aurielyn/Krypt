@@ -1,8 +1,10 @@
 package xyz.meowing.krypt.events.core
 
 import xyz.meowing.knit.api.events.Event
-import xyz.meowing.krypt.api.dungeons.utils.DungeonFloor
-import xyz.meowing.krypt.api.dungeons.utils.DungeonKey
+import xyz.meowing.krypt.api.dungeons.core.enums.DungeonFloor
+import xyz.meowing.krypt.api.dungeons.core.enums.DungeonKey
+import xyz.meowing.krypt.api.dungeons.core.enums.DungeonPlayer
+import xyz.meowing.krypt.api.dungeons.core.map.RoomState
 
 sealed class DungeonEvent {
     /**
@@ -15,6 +17,12 @@ sealed class DungeonEvent {
         val floor: DungeonFloor
     ) : Event()
 
+    /**
+     * Posted when the dungeon ends.
+     *
+     * @see xyz.meowing.krypt.api.dungeons.DungeonAPI
+     * @since 1.2.0
+     */
     class End(
         val floor: DungeonFloor
     ) : Event()
@@ -31,8 +39,15 @@ sealed class DungeonEvent {
 
     sealed class Room {
         class Change(
-            val old: xyz.meowing.krypt.api.dungeons.map.Room,
-            val new: xyz.meowing.krypt.api.dungeons.map.Room
+            val old: xyz.meowing.krypt.api.dungeons.core.map.Room?,
+            val new: xyz.meowing.krypt.api.dungeons.core.map.Room?
+        ) : Event()
+
+        class StateChange(
+            val room: xyz.meowing.krypt.api.dungeons.core.map.Room,
+            val oldState: RoomState,
+            val newState: RoomState,
+            val roomPlayers: List<DungeonPlayer>
         ) : Event()
     }
 

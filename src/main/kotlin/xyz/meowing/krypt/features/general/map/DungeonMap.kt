@@ -2,14 +2,12 @@ package xyz.meowing.krypt.features.general.map
 
 import net.minecraft.client.gui.DrawContext
 import xyz.meowing.krypt.annotations.Module
-import xyz.meowing.krypt.api.dungeons.DungeonAPI
 import xyz.meowing.krypt.api.location.SkyBlockIsland
 import xyz.meowing.krypt.config.ConfigDelegate
 import xyz.meowing.krypt.config.ui.elements.MCColorCode
 import xyz.meowing.krypt.config.ui.types.ElementType
 import xyz.meowing.krypt.events.core.GuiEvent
 import xyz.meowing.krypt.features.Feature
-import xyz.meowing.krypt.features.general.map.render.MapRenderer
 import xyz.meowing.krypt.hud.HudManager
 import xyz.meowing.krypt.managers.config.ConfigElement
 import xyz.meowing.krypt.managers.config.ConfigManager
@@ -56,6 +54,7 @@ object DungeonMap : Feature(
     var entranceRoomColor by ConfigDelegate<Color>("dungeonMap.entranceRoomColor")
 
     var normalDoorColor by ConfigDelegate<Color>("dungeonMap.normalDoorColor")
+    var unopenedDoorColor by ConfigDelegate<Color>("dungeonMap.unopenedDoorColor")
     var witherDoorColor by ConfigDelegate<Color>("dungeonMap.witherDoorColor")
     var bloodDoorColor by ConfigDelegate<Color>("dungeonMap.bloodDoorColor")
     var entranceDoorColor by ConfigDelegate<Color>("dungeonMap.entranceDoorColor")
@@ -334,6 +333,13 @@ object DungeonMap : Feature(
                 )
             )
             .addFeatureOption(
+                "Unopened door",
+                ConfigElement(
+                    "dungeonMap.unopenedDoorColor",
+                    ElementType.ColorPicker(Color(65, 65, 65, 255))
+                )
+            )
+            .addFeatureOption(
                 "Wither door",
                 ConfigElement(
                     "dungeonMap.witherDoorColor",
@@ -421,7 +427,7 @@ object DungeonMap : Feature(
             NAME,
             148,
             158,
-            { MapRenderer.renderPreview(it, 0f, 0f) },
+            { /*MapRenderer.renderPreview(it, 0f, 0f)*/ },
             "dungeonMap"
         )
 
@@ -432,13 +438,5 @@ object DungeonMap : Feature(
         val x = HudManager.getX(NAME)
         val y = HudManager.getY(NAME)
         val scale = HudManager.getScale(NAME)
-
-        if (!DungeonAPI.inBoss) {
-            MapRenderer.render(context, x, y, scale)
-        } else if (bossMapEnabled && !DungeonAPI.floorCompleted) {
-            MapRenderer.renderBoss(context, x, y, scale)
-        } else if (scoreMapEnabled){
-            MapRenderer.renderScore(context, x, y, scale)
-        }
     }
 }

@@ -1,6 +1,7 @@
 package xyz.meowing.krypt.events
 
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientWorldEvents
 import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents
 import net.minecraft.network.packet.Packet
@@ -13,6 +14,7 @@ import xyz.meowing.krypt.annotations.Module
 import xyz.meowing.krypt.api.location.SkyBlockIsland
 import xyz.meowing.krypt.events.core.ChatEvent
 import xyz.meowing.krypt.events.core.GameEvent
+import xyz.meowing.krypt.events.core.LocationEvent
 import xyz.meowing.krypt.events.core.PacketEvent
 import xyz.meowing.krypt.events.core.ServerEvent
 import xyz.meowing.krypt.managers.events.EventBusManager
@@ -50,6 +52,9 @@ object EventBus : EventBus(true) {
             post(GameEvent.Stop())
         }
 
+        ClientWorldEvents.AFTER_CLIENT_WORLD_CHANGE.register { _, _ ->
+            post(LocationEvent.WorldChange())
+        }
     }
 
     fun onPacketReceived(packet: Packet<*>): Boolean {

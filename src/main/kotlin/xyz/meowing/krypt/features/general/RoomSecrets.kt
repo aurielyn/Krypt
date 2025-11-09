@@ -5,6 +5,8 @@ import xyz.meowing.knit.api.KnitClient.client
 import xyz.meowing.knit.api.scheduler.TickScheduler
 import xyz.meowing.krypt.annotations.Module
 import xyz.meowing.krypt.api.dungeons.DungeonAPI
+import xyz.meowing.krypt.api.dungeons.core.handlers.DungeonScanner
+import xyz.meowing.krypt.api.dungeons.core.handlers.WorldScanner
 import xyz.meowing.krypt.api.location.SkyBlockIsland
 import xyz.meowing.krypt.config.ui.types.ElementType
 import xyz.meowing.krypt.events.core.GuiEvent
@@ -118,25 +120,25 @@ object RoomSecrets: Feature(
     }
 
     private fun getText(): String {
-        val room = DungeonAPI.currentRoom
-        //Krypt.LOGGER.info("Current room: ${room?.name}")
-        val found = room?.secretsFound ?: 0
-        val total = room?.secrets ?: 0
-        var text: String
+//        val room = WorldScanner.currentRoom
+//        //Krypt.LOGGER.info("Current room: ${room?.name}")
+//        val found = room?.secretsFound ?: 0
+//        val total = room?.secrets ?: 0
+//        var text: String
+//
+//        if ((found == 0 || found == -1) && total == 0) {
+//            text = "§7None"
+//            return text
+//        }
+//
+//        val percent = found.toFloat() / total.toFloat()
+//
+//        text = when {
+//            percent < 0.5f -> "§c$found§7/§c$total"
+//            percent <   1f -> "§e$found§7/§e$total"
+//            else           -> "§a$found§7/§a$total"
+//        }
 
-        if ((found == 0 || found == -1) && total == 0) {
-            text = "§7None"
-            return text
-        }
-
-        val percent = found.toFloat() / total.toFloat()
-
-        text = when {
-            percent < 0.5f -> "§c$found§7/§c$total"
-            percent <   1f -> "§e$found§7/§e$total"
-            else           -> "§a$found§7/§a$total"
-        }
-
-        return text
+        return "e"
     }
 }

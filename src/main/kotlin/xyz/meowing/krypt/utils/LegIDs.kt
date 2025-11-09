@@ -566,4 +566,6 @@ object LegIDs {
         Krypt.LOGGER.error("[LegacyID] Unmatched state: ${state.block} → ${state.entries}")
         return -1
     }
+
+    fun BlockState.getLegID(): Int = getLegacyId(this)
 }
