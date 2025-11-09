@@ -8,6 +8,7 @@ import net.minecraft.item.FilledMapItem
 import net.minecraft.network.packet.s2c.play.MapUpdateS2CPacket
 import net.minecraft.util.Identifier
 import xyz.meowing.knit.api.KnitClient.client
+import xyz.meowing.krypt.Krypt
 import xyz.meowing.krypt.annotations.Module
 import xyz.meowing.krypt.api.dungeons.DungeonAPI
 import xyz.meowing.krypt.api.dungeons.core.handlers.DungeonScanner
@@ -20,6 +21,7 @@ import xyz.meowing.krypt.api.dungeons.core.map.Unknown
 import xyz.meowing.krypt.api.dungeons.core.utils.MapUtils
 import xyz.meowing.krypt.api.location.SkyBlockIsland
 import xyz.meowing.krypt.events.EventBus
+import xyz.meowing.krypt.events.core.DungeonEvent
 import xyz.meowing.krypt.events.core.GuiEvent
 import xyz.meowing.krypt.events.core.PacketEvent
 import xyz.meowing.krypt.events.core.TickEvent
@@ -62,6 +64,15 @@ object DungeonMapRenderer {
                 } else {
                     MapUpdater.updateRooms(mapState)
                     MapUpdater.updatePlayers(mapState)
+                }
+            }
+        }
+
+        EventBus.registerIn<DungeonEvent.Room.StateChange>(SkyBlockIsland.THE_CATACOMBS) {
+            DungeonAPI.teammates.forEach { player ->
+                Krypt.LOGGER.info("Player ${player.name} cleard rooms")
+                player.clearedRooms.forEach { clearRecord ->
+                    Krypt.LOGGER.info("Room ${clearRecord.room.data.name} with state ${clearRecord.state} in ${clearRecord.clearTime}. Solo: ${clearRecord.solo}")
                 }
             }
         }

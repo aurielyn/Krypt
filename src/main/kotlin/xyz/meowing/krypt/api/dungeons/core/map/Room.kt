@@ -1,6 +1,8 @@
 package xyz.meowing.krypt.api.dungeons.core.map
 
+import xyz.meowing.krypt.Krypt
 import xyz.meowing.krypt.api.dungeons.DungeonAPI
+import xyz.meowing.krypt.api.dungeons.core.enums.DungeonPlayer
 import xyz.meowing.krypt.api.dungeons.core.handlers.DungeonScanner
 import xyz.meowing.krypt.api.dungeons.core.handlers.WorldScanner
 import xyz.meowing.krypt.events.EventBus
@@ -15,6 +17,7 @@ class Room(override val x: Int, override val z: Int, var data: RoomData): Tile {
     var isSeparator = false
     var rotation: Int? = null
     var highestBlock: Int? = null
+    var timeOpened: Long = 0
 
     override var state: RoomState by Delegates.observable(RoomState.UNDISCOVERED) { _, oldValue, newValue ->
         if (uniqueRoom?.mainRoom != this) return@observable
@@ -22,7 +25,31 @@ class Room(override val x: Int, override val z: Int, var data: RoomData): Tile {
         if (data.name == "Unknown") return@observable
 
         val roomPlayers = DungeonAPI.teammates.filter {
-            WorldScanner.getRoomFromPos(it.mapIcon.getRealPos())?.data?.name == data.name
+            val pos = it.entity?.blockPos ?: it.mapIcon.getRealPos()
+            WorldScanner.getRoomFromPos(pos)?.data?.name == data.name
+        }
+
+        when (state) {
+            RoomState.DISCOVERED -> {
+                timeOpened = System.currentTimeMillis()
+            }
+
+            RoomState.CLEARED, RoomState.GREEN -> {
+                Krypt.LOGGER.info("Room ${data.name} cleared by ${roomPlayers.size} players")
+                val time = System.currentTimeMillis() - timeOpened
+                val solo = roomPlayers.size == 1
+
+                roomPlayers.forEach { player ->
+                    player.clearedRooms.add(DungeonPlayer.RoomClearRecord(this, state, time, solo))
+
+                    if (state == RoomState.CLEARED) {
+                        if (solo) player.minRooms++
+                        player.maxRooms++
+                    }
+                }
+            }
+
+            else -> {}
         }
 
         EventBus.post(DungeonEvent.Room.StateChange(this, oldValue, newValue, roomPlayers))
