@@ -5,6 +5,8 @@ import net.minecraft.util.math.Vec3d
 import xyz.meowing.krypt.api.dungeons.DungeonAPI
 import xyz.meowing.krypt.api.dungeons.core.handlers.DungeonScanner
 import xyz.meowing.krypt.api.dungeons.core.handlers.HotbarMapColorParser
+import xyz.meowing.krypt.events.EventBus
+import xyz.meowing.krypt.events.core.LocationEvent
 import xyz.meowing.krypt.utils.StringUtils.equalsOneOf
 
 object MapUtils {
@@ -22,6 +24,13 @@ object MapUtils {
     var mapRoomSize = 16
     var coordMultiplier = 0.625
     var calibrated = false
+
+    fun reset() {
+        calibrated = false
+        coordMultiplier = 0.625
+        mapRoomSize = 16
+        startCorner = Pair(5, 5)
+    }
 
     fun calibrateMap(): Boolean {
         val (start, size) = findEntranceCorner()

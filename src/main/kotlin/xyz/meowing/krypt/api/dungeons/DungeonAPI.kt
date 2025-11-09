@@ -23,6 +23,7 @@ import xyz.meowing.krypt.api.dungeons.core.map.RoomState
 import xyz.meowing.krypt.api.dungeons.core.map.Tile
 import xyz.meowing.krypt.api.dungeons.core.map.UniqueRoom
 import xyz.meowing.krypt.api.dungeons.core.map.Unknown
+import xyz.meowing.krypt.api.dungeons.core.utils.MapUtils
 import xyz.meowing.krypt.api.location.SkyBlockIsland
 import xyz.meowing.krypt.events.EventBus
 import xyz.meowing.krypt.events.core.ChatEvent
@@ -136,7 +137,7 @@ object DungeonAPI {
     var mapData: MapState? = null
 
     init {
-        EventBus.register<LocationEvent.IslandChange> { reset() }
+        EventBus.register<LocationEvent.WorldChange> { reset() }
 
         EventBus.registerIn<TablistEvent.Change>(SkyBlockIsland.THE_CATACOMBS) { event ->
             val firstColumn = event.new.firstOrNull() ?: return@registerIn
@@ -355,5 +356,7 @@ object DungeonAPI {
         mapData = null
         uniqueRooms.clear()
         puzzles.clear()
+
+        MapUtils.reset()
     }
 }

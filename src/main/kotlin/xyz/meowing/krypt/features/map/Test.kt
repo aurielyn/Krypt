@@ -218,8 +218,10 @@ object DungeonMapRenderer {
 
             if (DungeonMap.showPlayerHead) {
                 val borderColor = DungeonMap.playerIconBorderColor
-                Render2D.drawRect(context, -6, -6, 12, 12, borderColor)
                 val borderSize = DungeonMap.playerIconBorderSize.toFloat()
+
+                Render2D.drawRect(context, -6, -6, 12, 12, borderColor)
+
                 matrix.scale(1f - borderSize, 1f - borderSize, 1f)
                 Render2D.drawPlayerHead(context, -6, -6, 12, uuid ?: UUID(0, 0))
             } else {
