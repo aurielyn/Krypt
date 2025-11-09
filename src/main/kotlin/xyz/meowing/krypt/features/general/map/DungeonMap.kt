@@ -56,6 +56,7 @@ object DungeonMap : Feature(
     var entranceRoomColor by ConfigDelegate<Color>("dungeonMap.entranceRoomColor")
 
     var normalDoorColor by ConfigDelegate<Color>("dungeonMap.normalDoorColor")
+    val unopenedDoorColor by ConfigDelegate<Color>("dungeonMap.unopenedDoorColor")
     var witherDoorColor by ConfigDelegate<Color>("dungeonMap.witherDoorColor")
     var bloodDoorColor by ConfigDelegate<Color>("dungeonMap.bloodDoorColor")
     var entranceDoorColor by ConfigDelegate<Color>("dungeonMap.entranceDoorColor")
@@ -331,6 +332,13 @@ object DungeonMap : Feature(
                 ConfigElement(
                     "dungeonMap.normalDoorColor",
                     ElementType.ColorPicker(Color(80, 40, 10, 255))
+                )
+            )
+            .addFeatureOption(
+                "Unopened door",
+                ConfigElement(
+                    "dungeonMap.unopenedDoorColor",
+                    ElementType.ColorPicker(Color(65, 65, 65, 255))
                 )
             )
             .addFeatureOption(

@@ -1,12 +1,14 @@
-package xyz.meowing.krypt.api.dungeons.map
+package xyz.meowing.krypt.api.dungeons.handlers
 
 import xyz.meowing.knit.api.KnitClient
 import xyz.meowing.krypt.annotations.Module
 import xyz.meowing.krypt.api.dungeons.utils.WorldScanUtils
 import xyz.meowing.krypt.api.dungeons.DungeonAPI.rooms
-import xyz.meowing.krypt.api.dungeons.players.DungeonPlayer
+import xyz.meowing.krypt.api.dungeons.enums.DungeonPlayer
 import xyz.meowing.krypt.api.dungeons.DungeonAPI
-import xyz.meowing.krypt.api.dungeons.utils.RoomType
+import xyz.meowing.krypt.api.dungeons.enums.map.Door
+import xyz.meowing.krypt.api.dungeons.enums.map.Room
+import xyz.meowing.krypt.api.dungeons.enums.map.RoomType
 import xyz.meowing.krypt.api.dungeons.utils.ScanUtils
 import xyz.meowing.krypt.api.location.SkyBlockIsland
 import xyz.meowing.krypt.events.EventBus
@@ -16,7 +18,7 @@ import xyz.meowing.krypt.utils.WorldUtils
 
 @Module
 object WorldScanner {
-    val availableComponents = ScanUtils.getScanCords().toMutableList()
+    val availableComponents = ScanUtils.getScanCoord().toMutableList()
     var lastIdx: Int? = null
     private var tickCounter = 0
 
@@ -36,7 +38,7 @@ object WorldScanner {
                 // Scan dungeon
                 scan()
 
-                // Rotation & door state updates
+                // Rotation & door state update
                 checkRoomState()
                 checkDoorState()
 
@@ -60,7 +62,7 @@ object WorldScanner {
 
     fun reset() {
         availableComponents.clear()
-        availableComponents += ScanUtils.getScanCords()
+        availableComponents += ScanUtils.getScanCoord()
         lastIdx = null
     }
 
@@ -70,7 +72,7 @@ object WorldScanner {
         for (idx in availableComponents.indices.reversed()) {
             val (cx, cz, rxz) = availableComponents[idx]
             val (rx, rz) = rxz
-            if (!WorldScanUtils.isChunkLoaded(rx,0,rz)) continue
+            if (!WorldScanUtils.isChunkLoaded(rx, rz)) continue
             val roofHeight = WorldScanUtils.getHighestY(rx, rz) ?: continue
             availableComponents.removeAt(idx)
 
@@ -107,7 +109,7 @@ object WorldScanner {
             }
 
             // Scan neighbors *before* claiming this room index
-            for ((dx, dz, cxoff, zoff) in ScanUtils.directions) {
+            for ((dx, dz, cxOff, zOff) in ScanUtils.directions) {
                 val nx = rx + dx
                 val nz = rz + dz
                 val blockBelow = WorldUtils.getBlockNumericId(nx, roofHeight, nz)
@@ -118,7 +120,7 @@ object WorldScanner {
                 }
                 if (blockBelow == 0 || blockAbove != 0) continue
 
-                val neighborComp = Pair(x + cxoff, z + zoff)
+                val neighborComp = Pair(x + cxOff, z + zOff)
                 val neighborIdx = DungeonAPI.getRoomIdx(neighborComp)
                 if (neighborIdx !in rooms.indices) continue
 

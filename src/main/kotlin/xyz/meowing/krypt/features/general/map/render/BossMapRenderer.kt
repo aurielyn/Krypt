@@ -4,7 +4,8 @@ import net.minecraft.client.gui.DrawContext
 import net.minecraft.util.math.RotationAxis
 import xyz.meowing.knit.api.KnitPlayer
 import xyz.meowing.krypt.api.dungeons.DungeonAPI
-import xyz.meowing.krypt.api.dungeons.players.DungeonPlayer
+import xyz.meowing.krypt.api.dungeons.enums.DungeonClass
+import xyz.meowing.krypt.api.dungeons.enums.DungeonPlayer
 import xyz.meowing.krypt.features.general.map.DungeonMap
 import xyz.meowing.krypt.features.general.map.utils.Utils
 import xyz.meowing.krypt.utils.Render2D
@@ -100,9 +101,9 @@ object BossMapRenderer {
             //#endif
 
             if (DungeonMap.showPlayerHead) {
-                val borderColor = if (DungeonMap.iconClassColors) Utils.getClassColor(player.dungeonClass?.displayName) else DungeonMap.playerIconBorderColor
+                val borderColor = if (DungeonMap.iconClassColors) player.dungeonClass?.color else DungeonMap.playerIconBorderColor
 
-                Render2D.drawRect(context, -6, -6, 12, 12, borderColor)
+                Render2D.drawRect(context, -6, -6, 12, 12, borderColor ?: DungeonClass.defaultColor)
 
                 val borderSize = DungeonMap.playerIconBorderSize.toFloat()
                 //#if MC >= 1.21.7

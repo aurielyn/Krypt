@@ -4,12 +4,13 @@ import net.minecraft.client.gui.DrawContext
 import net.minecraft.util.math.RotationAxis
 import xyz.meowing.knit.api.KnitPlayer
 import xyz.meowing.krypt.api.dungeons.DungeonAPI
-import xyz.meowing.krypt.api.dungeons.map.Room
-import xyz.meowing.krypt.api.dungeons.players.DungeonPlayer
-import xyz.meowing.krypt.api.dungeons.utils.Checkmark
-import xyz.meowing.krypt.api.dungeons.utils.DoorState
-import xyz.meowing.krypt.api.dungeons.utils.DoorType
-import xyz.meowing.krypt.api.dungeons.utils.RoomType
+import xyz.meowing.krypt.api.dungeons.enums.DungeonClass
+import xyz.meowing.krypt.api.dungeons.enums.map.Room
+import xyz.meowing.krypt.api.dungeons.enums.DungeonPlayer
+import xyz.meowing.krypt.api.dungeons.enums.map.Checkmark
+import xyz.meowing.krypt.api.dungeons.enums.map.DoorState
+import xyz.meowing.krypt.api.dungeons.enums.map.DoorType
+import xyz.meowing.krypt.api.dungeons.enums.map.RoomType
 import xyz.meowing.krypt.features.general.map.DungeonMap
 import xyz.meowing.krypt.features.general.map.utils.Utils
 import xyz.meowing.krypt.utils.Render2D
@@ -46,7 +47,7 @@ object Main {
 
         DungeonAPI.uniqueRooms.forEach { room ->
             if (!room.explored) return@forEach
-            val color = Utils.roomTypeColors[room.type] ?: return@forEach
+            val color = room.type.color
 
             room.components.forEach { (x, z) ->
                 Render2D.drawRect(context, x * SPACING, z * SPACING, ROOM_SIZE, ROOM_SIZE, color)
@@ -57,9 +58,8 @@ object Main {
 
         DungeonAPI.uniqueDoors.forEach { door ->
             if (door.state != DoorState.DISCOVERED) return@forEach
-            val type = if (door.opened) DoorType.NORMAL else door.type
-            val color = Utils.doorTypeColors[type] ?: return@forEach
-            val (cx, cy) = door.getComp().let { it.first / 2 * SPACING to it.second / 2 * SPACING }
+            val color = door.color
+            val (cx, cy) = door.componentPos.let { it.first / 2 * SPACING to it.second / 2 * SPACING }
             val vert = door.rotation == 0
             val (w, h) = if (vert) 6 to 4 else 4 to 6
             val (x, y) = if (vert) cx + 6 to cy + 18 else cx + 18 to cy + 6
@@ -71,10 +71,9 @@ object Main {
         DungeonAPI.discoveredRooms.values.forEach { room ->
             val x = room.x * SPACING + ROOM_SIZE / 2 - 5
             val y = room.z * SPACING + ROOM_SIZE / 2 - 6
-
             context.pushPop {
                 translateAndScale(context, x.toFloat(), y.toFloat(), DungeonMap.checkmarkScale.toFloat())
-                Render2D.drawImage(context, Utils.questionMark, 0, 0, 10, 12)
+                Render2D.drawImage(context, Checkmark.questionMark, 0, 0, 10, 12)
             }
         }
 
@@ -85,33 +84,23 @@ object Main {
             val x = (centerX * SPACING).toInt() + ROOM_SIZE / 2 - 6
             val y = (centerZ * SPACING).toInt() + ROOM_SIZE / 2 - 6
 
-            val baseCheckmark = when (room.type) {
-                RoomType.ENTRANCE -> null
-                RoomType.PUZZLE -> null
-                in setOf(RoomType.NORMAL, RoomType.RARE) if room.secrets != 0 -> null
-                else -> Utils.getCheckmarks(room.checkmark)
-            }
+            val showCleared = DungeonMap.showClearedRoomCheckmarks && room.checkmark != Checkmark.UNEXPLORED
 
-            val clearedCheckmark = when {
-                !DungeonMap.showClearedRoomCheckmarks || room.checkmark == Checkmark.UNEXPLORED -> null
+            val checkmark = when {
+                showCleared && room.type == RoomType.PUZZLE -> room.checkmark.image
 
-                room.type == RoomType.PUZZLE -> when (room.checkmark) {
-                    Checkmark.GREEN -> Utils.greenCheck
-                    Checkmark.WHITE -> Utils.whiteCheck
-                    Checkmark.FAILED -> Utils.failedRoom
-                    else -> null
+                showCleared && room.checkmark in listOf(Checkmark.GREEN, Checkmark.WHITE) -> {
+                    if (room.secretsFound == room.secrets) Checkmark.greenCheck else Checkmark.whiteCheck
                 }
 
-                room.checkmark in listOf(Checkmark.GREEN, Checkmark.WHITE) -> {
-                    if (room.secretsFound == room.secrets) Utils.greenCheck else Utils.whiteCheck
-                }
+                room.type in listOf(RoomType.ENTRANCE, RoomType.PUZZLE) -> null
 
-                else -> null
-            }
+                room.type == RoomType.NORMAL && room.secrets != 0 -> null
 
+                else -> room.checkmark.image
+            } ?: return@forEach
 
-            val checkmark = clearedCheckmark ?: baseCheckmark ?: return@forEach
-            val scale = if (clearedCheckmark != null) DungeonMap.clearedRoomCheckmarkScale.toFloat() else DungeonMap.checkmarkScale.toFloat()
+            val scale = if (showCleared) DungeonMap.clearedRoomCheckmarkScale.toFloat() else DungeonMap.checkmarkScale.toFloat()
 
             context.pushPop {
                 translateAndScale(context, x.toFloat(), y.toFloat(), scale)
@@ -126,7 +115,7 @@ object Main {
 
             val checkmarkMode = when (room.type) {
                 RoomType.PUZZLE -> DungeonMap.puzzleCheckmarkMode
-                RoomType.NORMAL, RoomType.RARE -> DungeonMap.normalCheckmarkMode
+                RoomType.NORMAL -> DungeonMap.normalCheckmarkMode
                 else -> return@forEach
             }
 
@@ -199,14 +188,14 @@ object Main {
                 val drawX = if (isVertical) cx else cx + ROOM_SIZE
                 val drawY = if (isVertical) cy + ROOM_SIZE else cy
 
-                Render2D.drawRect(context, drawX, drawY, w, h, Utils.roomTypeColors[room.type] ?: Color.GRAY)
+                Render2D.drawRect(context, drawX, drawY, w, h, room.type.color)
             }
         }
 
         if (room.components.size == 4 && room.shape == "2x2") {
             val x = room.components[0].first * SPACING + ROOM_SIZE
             val y = room.components[0].second * SPACING + ROOM_SIZE
-            Render2D.drawRect(context, x, y, GAP_SIZE, GAP_SIZE, Utils.roomTypeColors[room.type] ?: Color.GRAY)
+            Render2D.drawRect(context, x, y, GAP_SIZE, GAP_SIZE, room.type.color)
         }
     }
 
@@ -254,9 +243,9 @@ object Main {
             //#endif
 
             if (DungeonMap.showPlayerHead) {
-                val borderColor = if (DungeonMap.iconClassColors) Utils.getClassColor(player.dungeonClass?.displayName) else DungeonMap.playerIconBorderColor
+                val borderColor = if (DungeonMap.iconClassColors) player.dungeonClass?.color else DungeonMap.playerIconBorderColor
 
-                Render2D.drawRect(context, -6, -6, 12, 12, borderColor)
+                Render2D.drawRect(context, -6, -6, 12, 12, borderColor ?: DungeonClass.defaultColor)
 
                 val borderSize = DungeonMap.playerIconBorderSize.toFloat()
                 //#if MC >= 1.21.7

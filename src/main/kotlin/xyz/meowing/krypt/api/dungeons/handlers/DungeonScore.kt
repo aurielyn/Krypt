@@ -1,16 +1,17 @@
-package xyz.meowing.krypt.api.dungeons.score
+package xyz.meowing.krypt.api.dungeons.handlers
 
 import tech.thatgravyboat.skyblockapi.api.area.hub.ElectionAPI
 import tech.thatgravyboat.skyblockapi.api.data.Perk
 import tech.thatgravyboat.skyblockapi.utils.text.TextProperties.stripped
+import xyz.meowing.krypt.annotations.Module
 import xyz.meowing.krypt.api.dungeons.DungeonAPI
-import xyz.meowing.krypt.api.dungeons.utils.DungeonFloor
+import xyz.meowing.krypt.api.dungeons.enums.DungeonFloor
+import xyz.meowing.krypt.api.dungeons.enums.ScoreData
 import xyz.meowing.krypt.api.location.SkyBlockIsland
 import xyz.meowing.krypt.events.EventBus
 import xyz.meowing.krypt.events.core.ScoreboardEvent
 import xyz.meowing.krypt.events.core.TablistEvent
 import xyz.meowing.krypt.utils.StringUtils.removeFormatting
-import xyz.meowing.krypt.annotations.Module
 import kotlin.math.ceil
 import kotlin.math.floor
 

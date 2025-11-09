@@ -1,12 +1,13 @@
-package xyz.meowing.krypt.api.dungeons.players
+package xyz.meowing.krypt.api.dungeons.enums
 
-import net.minecraft.entity.player.PlayerEntity
-import xyz.meowing.knit.api.KnitClient.world
-import xyz.meowing.krypt.api.dungeons.map.MapScanner.RoomClearInfo
-import xyz.meowing.krypt.api.dungeons.map.Room
-import xyz.meowing.krypt.api.dungeons.utils.DungeonClass
+import net.minecraft.entity.Entity
+import tech.thatgravyboat.skyblockapi.utils.text.TextProperties.stripped
+import xyz.meowing.knit.api.KnitClient
+import xyz.meowing.krypt.api.dungeons.handlers.MapScanner
+import xyz.meowing.krypt.api.dungeons.enums.map.Room
+import xyz.meowing.krypt.api.dungeons.enums.map.RoomClearInfo
 import xyz.meowing.krypt.api.hypixel.HypixelAPI
-import java.util.*
+import java.util.UUID
 
 class DungeonPlayer(
     val name: String,
@@ -37,10 +38,7 @@ class DungeonPlayer(
 
     val secrets get() = (currSecrets ?: initSecrets ?: 0) - (initSecrets ?: 0)
 
-    val entity: PlayerEntity? = world?.entities
-        ?.asSequence()
-        ?.filterIsInstance<PlayerEntity>()
-        ?.find { it.gameProfile.name == name }
+    val entity: Entity? = KnitClient.world?.entities?.find { it.name.stripped == name }
 
     val uuid: UUID? get() = entity?.uuid
 

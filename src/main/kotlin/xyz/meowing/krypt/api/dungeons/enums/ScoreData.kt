@@ -1,4 +1,4 @@
-package xyz.meowing.krypt.api.dungeons.score
+package xyz.meowing.krypt.api.dungeons.enums
 
 data class ScoreData(
     // Raw stats

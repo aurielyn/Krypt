@@ -1,7 +1,5 @@
-package xyz.meowing.krypt.api.dungeons.utils
+package xyz.meowing.krypt.api.dungeons.handlers
 
-import xyz.meowing.krypt.api.dungeons.DungeonAPI
-import xyz.meowing.krypt.api.dungeons.DungeonAPI.inBoss
 import net.minecraft.item.FilledMapItem
 import net.minecraft.item.map.MapDecoration
 import net.minecraft.item.map.MapDecorationTypes
@@ -9,7 +7,8 @@ import net.minecraft.item.map.MapState
 import net.minecraft.network.packet.s2c.play.MapUpdateS2CPacket
 import xyz.meowing.knit.api.KnitClient
 import xyz.meowing.krypt.annotations.Module
-import xyz.meowing.krypt.api.dungeons.map.MapScanner
+import xyz.meowing.krypt.api.dungeons.DungeonAPI
+import xyz.meowing.krypt.api.dungeons.utils.ScanUtils
 import xyz.meowing.krypt.api.location.SkyBlockIsland
 import xyz.meowing.krypt.events.EventBus
 import xyz.meowing.krypt.events.core.PacketEvent
@@ -53,7 +52,7 @@ object MapUtils {
                 }
 
                 calibrated = calibrateDungeonMap()
-            } else if (!inBoss) {
+            } else if (!DungeonAPI.inBoss) {
                 (mapData ?: guessMapData)?.let {
                     MapScanner.updatePlayers(it)
                     MapScanner.scan(it)

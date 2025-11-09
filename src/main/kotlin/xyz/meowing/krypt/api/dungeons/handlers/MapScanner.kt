@@ -1,4 +1,4 @@
-package xyz.meowing.krypt.api.dungeons.map
+package xyz.meowing.krypt.api.dungeons.handlers
 
 import net.minecraft.item.map.MapDecoration
 import net.minecraft.item.map.MapDecorationTypes
@@ -6,25 +6,21 @@ import net.minecraft.item.map.MapState
 import xyz.meowing.krypt.Krypt
 import xyz.meowing.krypt.api.dungeons.DungeonAPI
 import xyz.meowing.krypt.api.dungeons.DungeonAPI.rooms
-import xyz.meowing.krypt.api.dungeons.players.DungeonPlayer
-import xyz.meowing.krypt.api.dungeons.utils.Checkmark
-import xyz.meowing.krypt.api.dungeons.utils.DoorState
-import xyz.meowing.krypt.api.dungeons.utils.DoorType
-import xyz.meowing.krypt.api.dungeons.utils.MapUtils
-import xyz.meowing.krypt.api.dungeons.utils.MapUtils.mapX
-import xyz.meowing.krypt.api.dungeons.utils.MapUtils.mapZ
-import xyz.meowing.krypt.api.dungeons.utils.MapUtils.yaw
-import xyz.meowing.krypt.api.dungeons.utils.RoomType
+import xyz.meowing.krypt.api.dungeons.enums.DungeonPlayer
+import xyz.meowing.krypt.api.dungeons.enums.map.Checkmark
+import xyz.meowing.krypt.api.dungeons.enums.map.Door
+import xyz.meowing.krypt.api.dungeons.enums.map.DoorState
+import xyz.meowing.krypt.api.dungeons.enums.map.DoorType
+import xyz.meowing.krypt.api.dungeons.enums.map.Room
+import xyz.meowing.krypt.api.dungeons.enums.map.RoomClearInfo
+import xyz.meowing.krypt.api.dungeons.enums.map.RoomType
+import xyz.meowing.krypt.api.dungeons.handlers.MapUtils.mapX
+import xyz.meowing.krypt.api.dungeons.handlers.MapUtils.mapZ
+import xyz.meowing.krypt.api.dungeons.handlers.MapUtils.yaw
 import xyz.meowing.krypt.api.dungeons.utils.ScanUtils
 import xyz.meowing.krypt.mixins.AccessorMapState
 
 object MapScanner {
-    data class RoomClearInfo(
-        val time: Long,
-        val room: Room,
-        val solo: Boolean
-    )
-
     fun updatePlayers(state: MapState) {
         var i = 1
 

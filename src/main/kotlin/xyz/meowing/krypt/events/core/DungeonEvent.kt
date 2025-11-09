@@ -1,8 +1,8 @@
 package xyz.meowing.krypt.events.core
 
 import xyz.meowing.knit.api.events.Event
-import xyz.meowing.krypt.api.dungeons.utils.DungeonFloor
-import xyz.meowing.krypt.api.dungeons.utils.DungeonKey
+import xyz.meowing.krypt.api.dungeons.enums.DungeonFloor
+import xyz.meowing.krypt.api.dungeons.enums.DungeonKey
 
 sealed class DungeonEvent {
     /**
@@ -31,8 +31,8 @@ sealed class DungeonEvent {
 
     sealed class Room {
         class Change(
-            val old: xyz.meowing.krypt.api.dungeons.map.Room,
-            val new: xyz.meowing.krypt.api.dungeons.map.Room
+            val old: xyz.meowing.krypt.api.dungeons.enums.map.Room,
+            val new: xyz.meowing.krypt.api.dungeons.enums.map.Room
         ) : Event()
     }
 

@@ -8,9 +8,9 @@ import net.minecraft.util.Identifier
 import net.minecraft.util.math.Vec3d
 import xyz.meowing.knit.api.KnitClient
 import xyz.meowing.krypt.Krypt
-import xyz.meowing.krypt.api.dungeons.utils.Checkmark
-import xyz.meowing.krypt.api.dungeons.utils.DoorType
-import xyz.meowing.krypt.api.dungeons.utils.RoomType
+import xyz.meowing.krypt.api.dungeons.enums.map.Checkmark
+import xyz.meowing.krypt.api.dungeons.enums.map.DoorType
+import xyz.meowing.krypt.api.dungeons.enums.map.RoomType
 import xyz.meowing.krypt.features.general.map.DungeonMap
 import xyz.meowing.krypt.utils.Render2D
 import xyz.meowing.krypt.utils.Render2D.pushPop
@@ -32,27 +32,6 @@ object Utils {
     val markerSelf: Identifier = Identifier.of(Krypt.NAMESPACE, "krypt/marker_self")
     val markerOther: Identifier = Identifier.of(Krypt.NAMESPACE, "krypt/marker_other")
 
-    val greenCheck: Identifier = Identifier.of(Krypt.NAMESPACE, "krypt/clear/green_check")
-    val whiteCheck: Identifier = Identifier.of(Krypt.NAMESPACE, "krypt/clear/white_check")
-    val failedRoom: Identifier = Identifier.of(Krypt.NAMESPACE, "krypt/clear/failed_room")
-    val questionMark: Identifier = Identifier.of(Krypt.NAMESPACE, "krypt/clear/question_mark")
-
-    fun getCheckmarks(checkmark: Checkmark): Identifier? = when (checkmark) {
-        Checkmark.GREEN -> greenCheck
-        Checkmark.WHITE -> whiteCheck
-        Checkmark.FAILED -> failedRoom
-        Checkmark.UNEXPLORED -> questionMark
-        else -> null
-    }
-
-    fun getTextColor(check: Checkmark?): String = when (check) {
-        null -> "§7"
-        Checkmark.WHITE -> "§f"
-        Checkmark.GREEN -> "§a"
-        Checkmark.FAILED -> "§c"
-        else -> "§7"
-    }
-
     val roomTypes = mapOf(
         63 to "Normal",
         30 to "Entrance",
@@ -61,34 +40,6 @@ object Utils {
         66 to "Puzzle",
         62 to "Trap"
     )
-
-    fun getClassColor(dClass: String?): Color = when (dClass) {
-        "Healer" -> DungeonMap.healerColor
-        "Mage" -> DungeonMap.mageColor
-        "Berserk" -> DungeonMap.berserkColor
-        "Archer" -> DungeonMap.archerColor
-        "Tank" -> DungeonMap.tankColor
-        else -> Color(0, 0, 0, 255)
-    }
-
-    val roomTypeColors: Map<RoomType, Color>
-        get() = mapOf(
-            RoomType.NORMAL to DungeonMap.normalRoomColor,
-            RoomType.PUZZLE to DungeonMap.puzzleRoomColor,
-            RoomType.TRAP to DungeonMap.trapRoomColor,
-            RoomType.YELLOW to DungeonMap.yellowRoomColor,
-            RoomType.BLOOD to DungeonMap.bloodRoomColor,
-            RoomType.FAIRY to DungeonMap.fairyRoomColor,
-            RoomType.ENTRANCE to DungeonMap.entranceRoomColor,
-        )
-
-    val doorTypeColors: Map<DoorType, Color>
-        get() = mapOf(
-            DoorType.NORMAL to DungeonMap.normalDoorColor,
-            DoorType.WITHER to DungeonMap.witherDoorColor,
-            DoorType.BLOOD to DungeonMap.bloodDoorColor,
-            DoorType.ENTRANCE to DungeonMap.entranceDoorColor
-        )
 
     data class BossMapData(
         val image: String,
@@ -177,7 +128,6 @@ object Utils {
         RoomType.YELLOW   -> "e"
         RoomType.BLOOD    -> "c"
         RoomType.FAIRY    -> "d"
-        RoomType.RARE     -> "b"
         RoomType.ENTRANCE -> "a"
         RoomType.UNKNOWN  -> "f"
     }
@@ -189,7 +139,6 @@ object Utils {
         RoomType.YELLOW   -> "Yellow"
         RoomType.BLOOD    -> "Blood"
         RoomType.FAIRY    -> "Fairy"
-        RoomType.RARE     -> "Rare"
         RoomType.ENTRANCE -> "Entrance"
         RoomType.UNKNOWN  -> "Unknown"
     }

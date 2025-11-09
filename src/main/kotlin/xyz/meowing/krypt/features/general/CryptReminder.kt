@@ -4,7 +4,7 @@ import xyz.meowing.knit.api.KnitChat
 import xyz.meowing.knit.api.scheduler.TimeScheduler
 import xyz.meowing.krypt.annotations.Module
 import xyz.meowing.krypt.api.dungeons.DungeonAPI
-import xyz.meowing.krypt.api.dungeons.score.DungeonScore
+import xyz.meowing.krypt.api.dungeons.handlers.DungeonScore
 import xyz.meowing.krypt.api.location.LocationAPI
 import xyz.meowing.krypt.api.location.SkyBlockIsland
 import xyz.meowing.krypt.config.ConfigDelegate

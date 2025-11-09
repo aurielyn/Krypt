@@ -3,7 +3,7 @@ package xyz.meowing.krypt.events.core
 import net.hypixel.data.region.Environment
 import net.hypixel.data.type.ServerType
 import xyz.meowing.knit.api.events.Event
-import xyz.meowing.krypt.api.dungeons.utils.DungeonFloor
+import xyz.meowing.krypt.api.dungeons.enums.DungeonFloor
 import xyz.meowing.krypt.api.location.SkyBlockArea
 import xyz.meowing.krypt.api.location.SkyBlockIsland
 

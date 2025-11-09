@@ -1,15 +1,21 @@
-package xyz.meowing.krypt.api.dungeons.players
+package xyz.meowing.krypt.api.dungeons.handlers
 
 import tech.thatgravyboat.skyblockapi.utils.text.TextProperties.stripped
 import xyz.meowing.knit.api.KnitPlayer
 import xyz.meowing.krypt.Krypt
 import xyz.meowing.krypt.annotations.Module
-import xyz.meowing.krypt.api.dungeons.utils.DungeonClass
+import xyz.meowing.krypt.api.dungeons.enums.DungeonClass
+import xyz.meowing.krypt.api.dungeons.enums.DungeonPlayer
 import xyz.meowing.krypt.api.location.SkyBlockIsland
 import xyz.meowing.krypt.events.EventBus
 import xyz.meowing.krypt.events.core.ChatEvent
 import xyz.meowing.krypt.events.core.TablistEvent
+import kotlin.text.get
 
+/**
+ * Inspired by Skyblocker's implementation.
+ * Original File: [GitHub](https://github.com/SkyblockerMod/Skyblocker/blob/master/src/main/java/de/hysky/skyblocker/skyblock/dungeon/secrets/DungeonPlayerManager.java)
+ */
 @Module
 object DungeonPlayerManager {
     val playerTabPattern = Regex("\\[\\d+] (?:\\[[A-Za-z]+] )?(?<name>[A-Za-z0-9_]+) (?:.+ )?\\((?<class>\\S+) ?(?<level>[LXVI0]+)?\\)")
@@ -65,7 +71,6 @@ object DungeonPlayerManager {
 
     fun getPlayer(name: String): DungeonPlayer? {
         return players
-            .asSequence()
             .filterNotNull()
             .firstOrNull { it.name == name }
     }

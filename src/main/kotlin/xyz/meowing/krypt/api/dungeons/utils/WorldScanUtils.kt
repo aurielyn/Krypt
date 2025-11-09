@@ -6,7 +6,7 @@ import xyz.meowing.krypt.utils.WorldUtils
 object WorldScanUtils {
     val blacklist = setOf(5, 54, 146)
 
-    fun isChunkLoaded(x: Int, y: Int, z: Int): Boolean {
+    fun isChunkLoaded(x: Int, z: Int): Boolean {
         val world = KnitClient.world ?: return false
         val chunkX = x shr 4
         val chunkZ = z shr 4
@@ -39,7 +39,6 @@ object WorldScanUtils {
         return sb.toString().hashCode()
     }
 
-
     fun getHighestY(x: Int, z: Int): Int? {
         for (y in 255 downTo 0) {
             val id = WorldUtils.getBlockNumericId(x, y, z)
@@ -48,7 +47,7 @@ object WorldScanUtils {
         return null
     }
 
-    fun componentToRealCoords(x: Int, z: Int, includeDoors: Boolean = false): Pair<Int, Int> {
+    fun componentToRealCoord(x: Int, z: Int, includeDoors: Boolean = false): Pair<Int, Int> {
         val (x0, z0) = ScanUtils.cornerStart
         val offset = if (includeDoors) ScanUtils.halfCombinedSize else ScanUtils.roomDoorCombinedSize
         return Pair(x0 + ScanUtils.halfRoomSize + offset * x, z0 + ScanUtils.halfRoomSize + offset * z)
@@ -61,7 +60,7 @@ object WorldScanUtils {
         return Pair(((x - x0 + 0.5).toInt() shr shift), ((z - z0 + 0.5).toInt() shr shift))
     }
 
-    fun rotateCoords(pos: Triple<Int, Int, Int>, degree: Int): Triple<Int, Int, Int> {
+    fun rotateCoord(pos: Triple<Int, Int, Int>, degree: Int): Triple<Int, Int, Int> {
         val d = (degree + 360) % 360
         return when (d) {
             0   -> pos

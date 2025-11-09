@@ -1,7 +1,8 @@
+@file:Suppress("ConstPropertyName")
+
 package xyz.meowing.krypt.api.dungeons.utils
 
 object ScanUtils {
-    // Dungeon grid constants
     val cornerStart = Pair(-200, -200)
     val cornerEnd   = Pair(-10, -10)
 
@@ -27,28 +28,7 @@ object ScanUtils {
         0 to -1  // North
     )
 
-    val roomTypeMap = mapOf(
-        "normal" to RoomType.NORMAL,
-        "puzzle" to RoomType.PUZZLE,
-        "trap" to RoomType.TRAP,
-        "champion" to RoomType.YELLOW,
-        "blood" to RoomType.BLOOD,
-        "fairy" to RoomType.FAIRY,
-        "rare" to RoomType.RARE,
-        "entrance" to RoomType.ENTRANCE
-    )
-
-    val mapColorToRoomType = mapOf(
-        18 to RoomType.BLOOD,
-        30 to RoomType.ENTRANCE,
-        63 to RoomType.NORMAL,
-        82 to RoomType.FAIRY,
-        62 to RoomType.TRAP,
-        74 to RoomType.YELLOW,
-        66 to RoomType.PUZZLE
-    )
-
-    fun getScanCords(): List<Triple<Int, Int, Pair<Int, Int>>> {
+    fun getScanCoord(): List<Triple<Int, Int, Pair<Int, Int>>> {
         val cords = mutableListOf<Triple<Int, Int, Pair<Int, Int>>>()
 
         for (z in 0..<11) {

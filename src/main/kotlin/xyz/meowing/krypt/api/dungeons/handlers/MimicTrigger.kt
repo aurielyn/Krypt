@@ -1,4 +1,4 @@
-package xyz.meowing.krypt.api.dungeons.score
+package xyz.meowing.krypt.api.dungeons.handlers
 
 import net.minecraft.entity.EquipmentSlot
 import net.minecraft.entity.mob.ZombieEntity

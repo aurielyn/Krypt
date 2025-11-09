@@ -1,8 +1,8 @@
-package xyz.meowing.krypt.api.dungeons.utils
+package xyz.meowing.krypt.api.dungeons.enums.map
 
 data class RoomMetadata(
     val name: String,
-    val type: String,
+    val type: RoomType,
     val cores: List<Int>,
     val secrets: Int = 0,
     val crypts: Int = 0,

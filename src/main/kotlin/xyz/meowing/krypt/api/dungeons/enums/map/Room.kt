@@ -1,13 +1,10 @@
-package xyz.meowing.krypt.api.dungeons.map
+package xyz.meowing.krypt.api.dungeons.enums.map
 
-import xyz.meowing.krypt.api.dungeons.utils.WorldScanUtils
-import xyz.meowing.krypt.api.dungeons.players.DungeonPlayer
 import net.minecraft.block.Blocks
-import xyz.meowing.krypt.api.dungeons.utils.Checkmark
-import xyz.meowing.krypt.api.dungeons.utils.RoomMetadata
-import xyz.meowing.krypt.api.dungeons.utils.RoomRegistry
-import xyz.meowing.krypt.api.dungeons.utils.RoomType
+import xyz.meowing.krypt.api.dungeons.enums.DungeonPlayer
+import xyz.meowing.krypt.api.dungeons.handlers.RoomRegistry
 import xyz.meowing.krypt.api.dungeons.utils.ScanUtils
+import xyz.meowing.krypt.api.dungeons.utils.WorldScanUtils
 import xyz.meowing.krypt.utils.WorldUtils
 
 class Room(
@@ -57,7 +54,7 @@ class Room(
     fun update() {
         components.sortWith(compareBy({ it.first }, { it.second }))
         realComponents.clear()
-        realComponents += components.map { WorldScanUtils.componentToRealCoords(it.first, it.second) }
+        realComponents += components.map { WorldScanUtils.componentToRealCoord(it.first, it.second) }
         scan()
         shape = WorldScanUtils.getRoomShape(components)
         corner = null
@@ -83,16 +80,17 @@ class Room(
     fun loadFromData(data: RoomMetadata) {
         roomData = data
         name = data.name
-        type = ScanUtils.roomTypeMap[data.type.lowercase()] ?: RoomType.NORMAL
+        @Suppress("USELESS_ELVIS")
+        type = data.type ?: RoomType.NORMAL
         secrets = data.secrets
         crypts = data.crypts
     }
 
     fun loadFromMapColor(color: Byte): Room {
-        type = ScanUtils.mapColorToRoomType[color.toInt()] ?: RoomType.UNKNOWN
+        type = RoomType.fromMapColor(color.toInt()) ?: RoomType.UNKNOWN
         when (type) {
-            RoomType.BLOOD -> RoomRegistry.getAll().find { it.name == "Blood" }?.let { loadFromData(it) }
-            RoomType.ENTRANCE -> RoomRegistry.getAll().find { it.name == "Entrance" }?.let { loadFromData(it) }
+            RoomType.BLOOD -> RoomRegistry.getAll().find { it.type == RoomType.BLOOD }?.let { loadFromData(it) }
+            RoomType.ENTRANCE -> RoomRegistry.getAll().find { it.type == RoomType.ENTRANCE }?.let { loadFromData(it) }
             else -> {}
         }
         return this
@@ -121,7 +119,7 @@ class Room(
                 val nx = x + dx
                 val nz = z + dz
 
-                if (!WorldScanUtils.isChunkLoaded(nx, currentHeight, nz)) continue
+                if (!WorldScanUtils.isChunkLoaded(nx, nz)) continue
                 val state = WorldUtils.getBlockStateAt(nx, currentHeight, nz) ?: continue
                 if (state.isOf(Blocks.BLUE_TERRACOTTA)) {
                     rotation = jdx * 90
@@ -140,19 +138,16 @@ class Room(
             (pos.second - corner!!.second).toInt(),
             (pos.third - corner!!.third).toInt()
         )
-        return WorldScanUtils.rotateCoords(rel, rotation!!)
+        return WorldScanUtils.rotateCoord(rel, rotation!!)
     }
 
     fun toWorldPos(local: Triple<Int, Int, Int>): Triple<Double, Double, Double>? {
         if (corner == null || rotation == null) return null
-        val rotated = WorldScanUtils.rotateCoords(local, 360 - rotation!!)
+        val rotated = WorldScanUtils.rotateCoord(local, 360 - rotation!!)
         return Triple(
             rotated.first + corner!!.first,
             rotated.second + corner!!.second,
             rotated.third + corner!!.third
         )
     }
-
-    fun getRoomCoord(pos: Triple<Double, Double, Double>) = fromWorldPos(pos)
-    fun getRealCoord(local: Triple<Int, Int, Int>) = toWorldPos(local)
 }

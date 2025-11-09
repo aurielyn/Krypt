@@ -1,9 +1,10 @@
-package xyz.meowing.krypt.api.dungeons.utils
+package xyz.meowing.krypt.api.dungeons.handlers
 
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import xyz.meowing.krypt.Krypt
 import xyz.meowing.krypt.annotations.Module
+import xyz.meowing.krypt.api.dungeons.enums.map.RoomMetadata
 import xyz.meowing.krypt.utils.NetworkUtils
 import java.io.File
 import java.io.FileNotFoundException
@@ -12,12 +13,11 @@ import java.io.FileNotFoundException
 object RoomRegistry {
     private val byCore = mutableMapOf<Int, RoomMetadata>()
     private val allRooms = mutableListOf<RoomMetadata>()
-    private const val ROOM_DATA_URL = "https://raw.githubusercontent.com/Skytils/SkytilsMod/refs/heads/2.x/mod/src/main/resources/assets/catlas/rooms.json"
     private val LOCAL_ROOMS_FILE = File("config/krypt/rooms.json")
 
     init {
         NetworkUtils.fetchJson<List<RoomMetadata>>(
-            url = ROOM_DATA_URL,
+            url = "https://raw.githubusercontent.com/Noamm9/NoammAddons/refs/heads/data/rooms.json",
             onSuccess = { rooms ->
                 populateRooms(rooms)
                 Krypt.LOGGER.info("RoomRegistry: Loaded ${rooms.size} rooms from Skytils")

@@ -6,18 +6,17 @@ import tech.thatgravyboat.skyblockapi.utils.regex.RegexUtils.find
 import tech.thatgravyboat.skyblockapi.utils.regex.matchWhen
 import xyz.meowing.knit.api.KnitPlayer
 import xyz.meowing.krypt.annotations.Module
-import xyz.meowing.krypt.api.dungeons.map.Door
-import xyz.meowing.krypt.api.dungeons.map.Room
-import xyz.meowing.krypt.api.dungeons.map.WorldScanner
-import xyz.meowing.krypt.api.dungeons.players.DungeonPlayer
-import xyz.meowing.krypt.api.dungeons.players.DungeonPlayerManager
-import xyz.meowing.krypt.api.dungeons.score.DungeonScore
-import xyz.meowing.krypt.api.dungeons.score.MimicTrigger
-import xyz.meowing.krypt.api.dungeons.utils.DungeonClass
-import xyz.meowing.krypt.api.dungeons.utils.DungeonFloor
-import xyz.meowing.krypt.api.dungeons.utils.DungeonKey
-import xyz.meowing.krypt.api.dungeons.utils.MapUtils
-import xyz.meowing.krypt.api.dungeons.utils.RoomRegistry
+import xyz.meowing.krypt.api.dungeons.enums.DungeonClass
+import xyz.meowing.krypt.api.dungeons.enums.DungeonFloor
+import xyz.meowing.krypt.api.dungeons.enums.DungeonKey
+import xyz.meowing.krypt.api.dungeons.enums.map.Door
+import xyz.meowing.krypt.api.dungeons.enums.map.Room
+import xyz.meowing.krypt.api.dungeons.handlers.WorldScanner
+import xyz.meowing.krypt.api.dungeons.enums.DungeonPlayer
+import xyz.meowing.krypt.api.dungeons.handlers.DungeonPlayerManager
+import xyz.meowing.krypt.api.dungeons.handlers.DungeonScore
+import xyz.meowing.krypt.api.dungeons.handlers.MimicTrigger
+import xyz.meowing.krypt.api.dungeons.handlers.MapUtils
 import xyz.meowing.krypt.api.dungeons.utils.WorldScanUtils
 import xyz.meowing.krypt.api.location.SkyBlockIsland
 import xyz.meowing.krypt.events.EventBus
@@ -279,7 +278,7 @@ object DungeonAPI {
 
     /** Adds a door to the map and tracks it as unique */
     fun addDoor(door: Door) {
-        val idx = getDoorIdx(door.getComp())
+        val idx = getDoorIdx(door.componentPos)
         if (idx in doors.indices) {
             doors[idx] = door
             uniqueDoors += door
