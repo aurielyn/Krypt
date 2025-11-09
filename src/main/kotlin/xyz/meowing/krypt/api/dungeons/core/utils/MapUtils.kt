@@ -13,8 +13,8 @@ object MapUtils {
     val MapDecoration.yaw get() = rotation * 22.5f
 
     fun coordsToMap(vec: Vec3d): Pair<Float, Float> {
-        val x = ((vec.x - DungeonScanner.startX + 15) * coordMultiplier + startCorner.first).toFloat()
-        val z = ((vec.z - DungeonScanner.startZ + 15) * coordMultiplier + startCorner.second).toFloat()
+        val x = ((vec.x - DungeonScanner.startX) * coordMultiplier + startCorner.first).toFloat()
+        val z = ((vec.z - DungeonScanner.startZ) * coordMultiplier + startCorner.second).toFloat()
         return Pair(x, z)
     }
 

@@ -173,6 +173,10 @@ object DungeonAPI {
                     teammates += player
                 } ?: continue
 
+                teammates.filterNot { it.dead }.forEachIndexed { i, teammate ->
+                    teammate.mapIcon.icon = "icon-$i"
+                }
+
                 deadTeammateRegex.find(stripped, "name") { (name) ->
                     var dungeonPlayer = teammates.find { it.name == name }
 

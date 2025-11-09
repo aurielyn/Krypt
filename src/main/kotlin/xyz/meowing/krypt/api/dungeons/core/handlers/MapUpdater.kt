@@ -23,9 +23,10 @@ object MapUpdater {
         if (DungeonAPI.teammates.isEmpty()) return
         val mapDecorations = (mapData as AccessorMapState).decorations.entries.toList()
         val teammates = DungeonAPI.teammates.filterNot { it.dead }
+
         teammates.forEach { teammate ->
             val decoration = mapDecorations.find { it.key == teammate.mapIcon.icon }?.value ?: return@forEach
-            smoothUpdatePlayer(teammate.mapIcon, decoration.mapX, decoration.mapZ, decoration.yaw)
+            smoothUpdatePlayer(teammate.mapIcon, decoration.mapX, decoration.mapZ, decoration.yaw - 180f)
         }
     }
 
@@ -55,7 +56,7 @@ object MapUpdater {
             val startZ = player.mapZ
             val startYaw = player.yaw
 
-            val animationDuration = 350L
+            val animationDuration = 250L
             val startTime = System.currentTimeMillis()
             var progress = 0f
 
