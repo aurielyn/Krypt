@@ -3,6 +3,7 @@
     "package": "xyz.meowing.krypt.mixins",
     "compatibilityLevel": "JAVA_21",
     "mixins": [
+        "MixinEntity",
         "MixinLivingEntity"
     ],
     "injectors": {
@@ -14,6 +15,7 @@
     "client": [
         "AccessorMapState",
         "MixinClientConnection",
+        "MixinEntityRenderDispatcher",
         "MixinGameRenderer"
     ]
 }

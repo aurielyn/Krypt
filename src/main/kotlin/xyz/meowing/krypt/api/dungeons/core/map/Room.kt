@@ -5,7 +5,7 @@ import xyz.meowing.krypt.api.dungeons.core.handlers.DungeonScanner
 import xyz.meowing.krypt.api.dungeons.core.handlers.WorldScanner
 import xyz.meowing.krypt.events.EventBus
 import xyz.meowing.krypt.events.core.DungeonEvent
-import xyz.meowing.krypt.features.general.map.DungeonMap
+import xyz.meowing.krypt.features.map.DungeonMap
 import xyz.meowing.krypt.utils.WorldUtils.getBlockStateAt
 import java.awt.Color
 import kotlin.properties.Delegates

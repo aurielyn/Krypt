@@ -1,6 +1,6 @@
 package xyz.meowing.krypt.api.dungeons.core.map
 
-import xyz.meowing.krypt.features.general.map.DungeonMap
+import xyz.meowing.krypt.features.map.DungeonMap
 import java.awt.Color
 
 class Door(override val x: Int, override val z: Int, var type: DoorType): Tile {

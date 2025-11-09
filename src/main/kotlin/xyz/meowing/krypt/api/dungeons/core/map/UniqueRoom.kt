@@ -3,7 +3,7 @@ package xyz.meowing.krypt.api.dungeons.core.map
 import xyz.meowing.krypt.api.dungeons.DungeonAPI
 
 class UniqueRoom(arrX: Int, arrY: Int, room: Room) {
-    val name = room.data.name
+    var name = room.data.name
     private var topLeft = Pair(arrX, arrY)
     private var center = Pair(arrX, arrY)
     var mainRoom = room
@@ -17,6 +17,7 @@ class UniqueRoom(arrX: Int, arrY: Int, room: Room) {
     fun addTile(x: Int, y: Int, tile: Room) {
         tiles.removeIf { it.x == tile.x && it.z == tile.z }
         tiles.add(tile)
+        tile.uniqueRoom = this
 
         if (x < topLeft.first || (x == topLeft.first && y < topLeft.second)) {
             topLeft = Pair(x, y)

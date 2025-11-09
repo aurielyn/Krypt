@@ -1,15 +1,13 @@
-package xyz.meowing.krypt.features.general.map
+package xyz.meowing.krypt.features.map
 
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.render.RenderLayer
 import net.minecraft.component.DataComponentTypes
 import net.minecraft.component.type.MapIdComponent
 import net.minecraft.item.FilledMapItem
-import net.minecraft.item.map.MapState
 import net.minecraft.network.packet.s2c.play.MapUpdateS2CPacket
 import net.minecraft.util.Identifier
 import xyz.meowing.knit.api.KnitClient.client
-import xyz.meowing.krypt.Krypt
 import xyz.meowing.krypt.annotations.Module
 import xyz.meowing.krypt.api.dungeons.DungeonAPI
 import xyz.meowing.krypt.api.dungeons.core.handlers.DungeonScanner
@@ -18,7 +16,6 @@ import xyz.meowing.krypt.api.dungeons.core.handlers.MapUpdater
 import xyz.meowing.krypt.api.dungeons.core.map.Door
 import xyz.meowing.krypt.api.dungeons.core.map.Room
 import xyz.meowing.krypt.api.dungeons.core.map.RoomState
-import xyz.meowing.krypt.api.dungeons.core.map.Tile
 import xyz.meowing.krypt.api.dungeons.core.map.Unknown
 import xyz.meowing.krypt.api.dungeons.core.utils.MapUtils
 import xyz.meowing.krypt.api.location.SkyBlockIsland
@@ -92,7 +89,9 @@ object DungeonMapRenderer {
             DungeonMap.mapBackgroundColor.rgb
         )
 
-        val borderWidth = 2
+        if (!DungeonMap.mapBorder) return
+
+        val borderWidth = DungeonMap.mapBorderWidth
         val color = DungeonMap.mapBorderColor.rgb
 
         context.fill(RenderLayer.getGui(), -borderWidth, -borderWidth, MAP_SIZE + borderWidth, 0, color)
@@ -118,45 +117,20 @@ object DungeonMapRenderer {
                 val xEven = x and 1 == 0
                 val yEven = y and 1 == 0
 
+                val xOffset = (x shr 1) * (MapUtils.mapRoomSize + connectorSize)
+                val yOffset = (y shr 1) * (MapUtils.mapRoomSize + connectorSize)
+
                 when {
                     xEven && yEven -> {
-                        if (tile is Room) {
-                            val xOffset = (x shr 1) * (MapUtils.mapRoomSize + connectorSize)
-                            val yOffset = (y shr 1) * (MapUtils.mapRoomSize + connectorSize)
-
-                            drawRect(
-                                context,
-                                xOffset,
-                                yOffset,
-                                MapUtils.mapRoomSize,
-                                MapUtils.mapRoomSize,
-                                color
-                            )
-                        }
+                        drawRect(context, xOffset, yOffset, MapUtils.mapRoomSize, MapUtils.mapRoomSize, color)
                     }
 
                     !xEven && !yEven -> {
-                        val xOffset = (x shr 1) * (MapUtils.mapRoomSize + connectorSize)
-                        val yOffset = (y shr 1) * (MapUtils.mapRoomSize + connectorSize)
-
-                        drawRect(
-                            context,
-                            xOffset,
-                            yOffset,
-                            MapUtils.mapRoomSize + connectorSize,
-                            MapUtils.mapRoomSize + connectorSize,
-                            color
-                        )
+                        drawRect(context, xOffset, yOffset, MapUtils.mapRoomSize + connectorSize, MapUtils.mapRoomSize + connectorSize, color)
                     }
 
                     else -> {
-                        val xOffset = (x shr 1) * (MapUtils.mapRoomSize + connectorSize)
-                        val yOffset = (y shr 1) * (MapUtils.mapRoomSize + connectorSize)
-
-                        drawRoomConnector(
-                            context,
-                            xOffset, yOffset, connectorSize, tile is Door, !xEven, color
-                        )
+                        drawRoomConnector(context, xOffset, yOffset, connectorSize, tile is Door, !xEven, color)
                     }
                 }
             }
@@ -167,20 +141,28 @@ object DungeonMapRenderer {
 
     private fun renderCheckmarks(context: DrawContext) {
         val matrix = context.matrices
+        val processedRooms = mutableSetOf<String>()
 
         matrix.push()
         matrix.translate(MapUtils.startCorner.first.toFloat(), MapUtils.startCorner.second.toFloat(), 0f)
 
-        DungeonAPI.uniqueRooms.forEach { unq ->
-            val room = unq.mainRoom
-            if (room.state == RoomState.UNDISCOVERED || room.state == RoomState.UNOPENED) return@forEach
+        for (y in 0..10 step 2) {
+            for (x in 0..10 step 2) {
+                val room = DungeonAPI.dungeonList[y * 11 + x] as? Room ?: continue
+                if (room.isSeparator) continue
+                if (room.state == RoomState.UNDISCOVERED) continue
 
-            val size = MapUtils.mapRoomSize + HotbarMapColorParser.quarterRoom
-            val checkPos = unq.getCheckmarkPosition()
-            val xOffset = (checkPos.first / 2f) * size
-            val yOffset = (checkPos.second / 2f) * size
+                val roomKey = "${room.x},${room.z}"
+                if (roomKey in processedRooms) continue
+                processedRooms.add(roomKey)
 
-            drawCheckmark(context, room, xOffset, yOffset, 10.0)
+                val checkmarkSize = 10.0
+                val size = MapUtils.mapRoomSize + HotbarMapColorParser.quarterRoom
+                val xOffset = (x / 2f) * size + (MapUtils.mapRoomSize - checkmarkSize) / 2
+                val yOffset = (y / 2f) * size + (MapUtils.mapRoomSize - checkmarkSize) / 2
+
+                drawCheckmark(context, room, xOffset.toFloat(), yOffset.toFloat(), checkmarkSize)
+            }
         }
 
         matrix.pop()
@@ -194,18 +176,15 @@ object DungeonMapRenderer {
         else -> null
     }
 
-    private fun drawCheckmark(context: DrawContext, tile: Tile, xOffset: Float, yOffset: Float, checkmarkSize: Double) {
-        val room = tile as? Room ?: return
-
+    private fun drawCheckmark(context: DrawContext, room: Room, xOffset: Float, yOffset: Float, checkmarkSize: Double) {
         getCheckmark(room.state)?.let { texture ->
-            val x = (xOffset + (MapUtils.mapRoomSize - checkmarkSize) / 2).toInt()
-            val y = (yOffset + (MapUtils.mapRoomSize - checkmarkSize) / 2).toInt()
-
             context.drawGuiTexture(
                 RenderLayer::getGuiTextured,
                 texture,
-                x, y,
-                checkmarkSize.toInt(), checkmarkSize.toInt()
+                xOffset.toInt(),
+                yOffset.toInt(),
+                checkmarkSize.toInt(),
+                checkmarkSize.toInt()
             )
         }
     }
@@ -223,14 +202,14 @@ object DungeonMapRenderer {
 
         if (doorway) {
             val width = 6
-            var x1 = if (vertical) x + MapUtils.mapRoomSize else x
-            var y1 = if (vertical) y else y + MapUtils.mapRoomSize
-
-            if (vertical) y1 += doorwayOffset else x1 += doorwayOffset
+            val x1 = if (vertical) x + MapUtils.mapRoomSize else x
+            val y1 = if (vertical) y else y + MapUtils.mapRoomSize
+            val xFinal = if (vertical) x1 else x1 + doorwayOffset
+            val yFinal = if (vertical) y1 + doorwayOffset else y1
 
             drawRect(
                 context,
-                x1, y1,
+                xFinal, yFinal,
                 if (vertical) doorWidth else width,
                 if (vertical) width else doorWidth,
                 color

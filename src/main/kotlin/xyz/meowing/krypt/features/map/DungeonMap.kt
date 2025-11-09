@@ -1,4 +1,4 @@
-package xyz.meowing.krypt.features.general.map
+package xyz.meowing.krypt.features.map
 
 import net.minecraft.client.gui.DrawContext
 import xyz.meowing.krypt.annotations.Module

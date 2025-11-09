@@ -13,7 +13,6 @@ import xyz.meowing.krypt.api.dungeons.core.utils.MapUtils.mapZ
 import xyz.meowing.krypt.api.dungeons.core.utils.MapUtils.yaw
 import xyz.meowing.krypt.mixins.AccessorMapState
 import xyz.meowing.krypt.utils.StringUtils.equalsOneOf
-import xyz.meowing.krypt.Krypt
 import java.util.concurrent.ConcurrentHashMap
 
 object MapUpdater {
@@ -93,13 +92,15 @@ object MapUpdater {
 
                 if (room is Unknown) {
                     DungeonAPI.dungeonList[index] = mapTile
-                    if (mapTile is Room) {
-                        val connected = HotbarMapColorParser.getConnected(x, z)
-                        connected.firstOrNull { it.data.name != "Unknown" }?.let {
-                            mapTile.addToUnique(z, x, it.data.name)
-                        }
+
+                    if (mapTile is Room && !mapTile.isSeparator) {
+                        ensureRoomInUniqueSet(mapTile, x, z)
                     }
                     continue
+                }
+
+                if (room is Room && !room.isSeparator) {
+                    ensureRoomInUniqueSet(room, x, z)
                 }
 
                 if (mapTile.state.ordinal < room.state.ordinal) {
@@ -143,6 +144,16 @@ object MapUpdater {
                 }
             }
         }
+    }
+
+    private fun ensureRoomInUniqueSet(room: Room, x: Int, z: Int) {
+        if (room.uniqueRoom != null) return
+
+        val existingUnique = DungeonAPI.uniqueRooms.find { unique ->
+            unique.tiles.any { it.x == room.x && it.z == room.z }
+        }
+
+        if (existingUnique != null) room.uniqueRoom = existingUnique else room.addToUnique(z, x)
     }
 
     private fun lerp(prev: Number, newPos: Number, partialTicks: Number): Double {
