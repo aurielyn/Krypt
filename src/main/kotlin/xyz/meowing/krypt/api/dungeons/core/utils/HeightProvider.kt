@@ -4,6 +4,7 @@ import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap
 import net.minecraft.network.packet.s2c.play.UnloadChunkS2CPacket
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.ChunkSectionPos
+import net.minecraft.world.chunk.Chunk
 import xyz.meowing.krypt.annotations.Module
 import xyz.meowing.krypt.events.EventBus
 import xyz.meowing.krypt.events.core.LocationEvent
@@ -44,16 +45,48 @@ object HeightProvider {
             val endZ = chunk.pos.endZ
             val mut = BlockPos.Mutable()
 
-            for (x in startX..endX) {
-                for (z in startZ..endZ) {
-                    mut.set(x, 0, z)
-                    for (y in highestY downTo lowestY) {
-                        if (!chunk.getBlockState(mut.setY(y)).isAir) {
-                            heightMap[BlockPos.asLong(x, 0, z)] = y
-                            break
-                        }
-                    }
-                }
+            var left = lowestY
+            var right = highestY
+
+            while (left < right) {
+                var mid = (left + right) / 2
+
+                if (chunk.getBlockState(BlockPos(startX, mid, startZ)).isAir)
+                    right = mid - 1
+                else
+                    left = mid + 1
+            }
+
+            fun findHeightHorizontal(x: Int, y: Int, z: Int) {
+                var y = y
+                if(chunk.getBlockState(BlockPos(x, y, z)).isAir)
+                    while(chunk.getBlockState(BlockPos(x, y - 1, z)).isAir)
+                        y--
+                else
+                    while(chunk.getBlockState(BlockPos(x, y + 1, z)).isAir)
+                        y++
+
+                heightMap[BlockPos.asLong(x, 0, z)] = y
+
+                if(z + 1 <= endZ)
+                    findHeightHorizontal(x, y, z)
+            }
+
+            fun findHeightVertical(x: Int, y: Int, z: Int) {
+                var y = y
+                if(chunk.getBlockState(BlockPos(x, y, z)).isAir)
+                    while(chunk.getBlockState(BlockPos(x, y - 1, z)).isAir)
+                        y--
+                else
+                    while(chunk.getBlockState(BlockPos(x, y + 1, z)).isAir)
+                        y++
+
+                heightMap[BlockPos.asLong(x, 0, z)] = y
+
+                if(x + 1 <= endX)
+                    findHeightVertical(x + 1, y, z)
+
+                findHeightHorizontal(x, y, z + 1)
             }
         }
 
