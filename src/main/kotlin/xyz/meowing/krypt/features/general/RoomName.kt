@@ -5,6 +5,7 @@ import xyz.meowing.knit.api.KnitClient.client
 import xyz.meowing.knit.api.scheduler.TickScheduler
 import xyz.meowing.krypt.annotations.Module
 import xyz.meowing.krypt.api.dungeons.DungeonAPI
+import xyz.meowing.krypt.api.dungeons.core.handlers.WorldScanner
 import xyz.meowing.krypt.api.location.SkyBlockIsland
 import xyz.meowing.krypt.config.ConfigDelegate
 import xyz.meowing.krypt.config.ui.types.ElementType
@@ -62,7 +63,7 @@ object RoomName: Feature(
     private fun renderHud(context: DrawContext) {
         if (DungeonAPI.inBoss) return
 
-        val text = "${if (chroma) "§z" else ""}${DungeonAPI.roomId ?: "No Room Found"}"
+        val text = "${if (chroma) "§z" else ""}${WorldScanner.currentRoom?.data?.name ?: "No Room Found"}"
         val x = HudManager.getX(NAME)
         val y = HudManager.getY(NAME)
         val scale = HudManager.getScale(NAME)

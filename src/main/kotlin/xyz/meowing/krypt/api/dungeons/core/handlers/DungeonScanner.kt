@@ -3,12 +3,11 @@ package xyz.meowing.krypt.api.dungeons.core.handlers
 import net.minecraft.block.Blocks
 import net.minecraft.client.MinecraftClient
 import net.minecraft.util.math.BlockPos
-import net.minecraft.world.Heightmap
 import xyz.meowing.krypt.api.dungeons.DungeonAPI
 import xyz.meowing.krypt.api.dungeons.core.map.*
+import xyz.meowing.krypt.api.dungeons.core.utils.HeightProvider
 import xyz.meowing.krypt.events.EventBus
 import xyz.meowing.krypt.events.core.LocationEvent
-import xyz.meowing.krypt.utils.LegIDs.getLegID
 import kotlin.math.floor
 
 object DungeonScanner {
@@ -83,15 +82,14 @@ object DungeonScanner {
 
     private fun scanRoom(x: Int, z: Int, row: Int, column: Int): Tile? {
         val world = mc.world ?: return null
-        val chunk = world.getChunk(x shr 4, z shr 4)
-        val height = chunk.sampleHeightmap(Heightmap.Type.MOTION_BLOCKING, x and 15, z and 15)
-
-        if (height == 0) return null
+        val height = (HeightProvider.getHeight(x, z)) + 1
+        if (height <= 0) return null
 
         val rowEven = row and 1 == 0
         val columnEven = column and 1 == 0
 
         return when {
+            // Scanning a room
             rowEven && columnEven -> {
                 val roomCore = WorldScanner.getCore(x, z)
                 Room(x, z, WorldScanner.getRoomData(roomCore) ?: return null).apply {
@@ -102,6 +100,7 @@ object DungeonScanner {
                 }
             }
 
+            // Can only be the center "block" of a 2x2 room.
             !rowEven && !columnEven -> {
                 DungeonAPI.dungeonList[column - 1 + (row - 1) * 11].let {
                     if (it is Room) {
@@ -113,14 +112,16 @@ object DungeonScanner {
                 }
             }
 
-            height == 68 || height == 74 || height == 82 -> {
+            // Doorway between rooms
+            // Old trap has a single block at 82
+            height == 74 || height == 82 -> {
                 val blockState = world.getBlockState(BlockPos(x, 69, z))
                 val adjacentRoom = getAdjacentRoom(row, column, rowEven) as? Room
 
-                val doorType = when {
-                    blockState.block == Blocks.COAL_BLOCK -> DoorType.WITHER
-                    blockState.getLegID() == 97 -> DoorType.ENTRANCE
-                    blockState.getLegID() == 159 -> DoorType.BLOOD
+                val doorType = when (blockState.block) {
+                    Blocks.COAL_BLOCK -> DoorType.WITHER
+                    Blocks.INFESTED_CHISELED_STONE_BRICKS -> DoorType.ENTRANCE
+                    Blocks.RED_TERRACOTTA -> DoorType.BLOOD
                     else -> DoorType.NORMAL
                 }
 
@@ -131,6 +132,7 @@ object DungeonScanner {
                 }
             }
 
+            // Connection between large rooms
             else -> {
                 DungeonAPI.dungeonList[if (rowEven) row * 11 + column - 1 else (row - 1) * 11 + column].let {
                     when {
