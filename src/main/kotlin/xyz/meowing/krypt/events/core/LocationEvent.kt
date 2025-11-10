@@ -30,6 +30,8 @@ sealed class LocationEvent {
         val new: DungeonFloor?
     ) : Event()
 
+    class WorldChange : Event()
+
     class HypixelJoin(
         val environment: Environment
     ) : Event() {

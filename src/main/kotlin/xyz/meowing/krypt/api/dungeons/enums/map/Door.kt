@@ -13,9 +13,7 @@ class Door(val worldPos: Pair<Int, Int>, val componentPos: Pair<Int, Int>) {
 
     val color: Color
         get() {
-            return if (state == DoorState.UNDISCOVERED) {
-                DungeonMap.unopenedDoorColor
-            } else when (this.type) {
+            return when (this.type) {
                 DoorType.BLOOD -> DungeonMap.bloodDoorColor
                 DoorType.ENTRANCE -> DungeonMap.entranceDoorColor
                 DoorType.WITHER -> DungeonMap.witherDoorColor
