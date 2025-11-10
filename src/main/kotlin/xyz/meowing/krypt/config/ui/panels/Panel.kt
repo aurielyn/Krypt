@@ -13,7 +13,7 @@ import xyz.meowing.krypt.ui.Theme
 import kotlin.math.max
 
 class Panel(
-    category: CategoryElement,
+    private val category: CategoryElement,
     initialX: Float,
     initialY: Float,
     private val onConfigUpdate: (String, Any) -> Unit
@@ -78,11 +78,18 @@ class Panel(
     companion object {
         const val WIDTH = 240f
         const val HEADER_HEIGHT = 32f
+        private val panelPositions = mutableMapOf<String, Pair<Float, Float>>()
     }
 
     init {
         setSizing(WIDTH, Size.Pixels, 0f, Size.Auto)
-        setPositioning(initialX, Pos.ScreenPixels, initialY, Pos.ScreenPixels)
+
+        val savedPosition = panelPositions[category.name]
+        if (savedPosition != null) {
+            setPositioning(savedPosition.first, Pos.ScreenPixels, savedPosition.second, Pos.ScreenPixels)
+        } else {
+            setPositioning(initialX, Pos.ScreenPixels, initialY, Pos.ScreenPixels)
+        }
 
         header.onClick { _, _, button ->
             if (button == 0) {
@@ -94,17 +101,28 @@ class Panel(
         }
 
         header.onMouseRelease { _, _, button ->
-            if (button == 0) dragging = false
+            if (button == 0) {
+                dragging = false
+                savePosition()
+            }
             true
         }
 
-
-        category.features.forEachIndexed { index, feature ->
-            val isLast = index == category.features.size - 1
-            sections.add(SectionButton(feature, sectionsContainer, onConfigUpdate, isLast))
-        }
+        category.features
+            .let {
+                if (category.name.equals("map", true)) it
+                else it.sortedBy { cat -> cat.featureName }
+            }
+            .forEachIndexed { index, feature ->
+                val isLast = index == category.features.size - 1
+                sections.add(SectionButton(feature, sectionsContainer, onConfigUpdate, isLast))
+            }
 
         updateVisibility()
+    }
+
+    private fun savePosition() {
+        panelPositions[category.name] = Pair(x, y)
     }
 
     private fun updateVisibility() {
@@ -124,7 +142,10 @@ class Panel(
                 { background.scrollOffset = it },
                 maxScroll,
                 100,
-                EasingType.EASE_OUT
+                EasingType.EASE_OUT,
+                onComplete = {
+                    isAnimating = false
+                }
             )
         }
     }

@@ -1,10 +1,23 @@
 package xyz.meowing.krypt.utils
 
+import net.minecraft.block.entity.SkullBlockEntity
 import net.minecraft.client.gui.DrawContext
+import net.minecraft.client.gui.PlayerSkinDrawer
+import net.minecraft.client.render.RenderLayer
+import net.minecraft.client.util.DefaultSkinHelper
 import net.minecraft.item.ItemStack
+import net.minecraft.text.Text
 import net.minecraft.util.Colors
+import net.minecraft.util.Identifier
+import tech.thatgravyboat.skyblockapi.utils.extentions.stripColor
 import xyz.meowing.knit.api.KnitClient.client
-import xyz.meowing.krypt.utils.StringUtils.removeFormatting
+import java.awt.Color
+import java.util.Optional
+import java.util.UUID
+
+//#if MC >= 1.21.9
+//$$ import com.mojang.authlib.GameProfile
+//#endif
 
 object Render2D {
     enum class TextStyle {
@@ -14,11 +27,11 @@ object Render2D {
 
     fun renderString(
         context: DrawContext,
-        text: String,
+        text: Text,
         x: Float,
         y: Float,
         scale: Float,
-        colors: Int = 0xFFFFFF,
+        colors: Int = -1,
         textStyle: TextStyle = TextStyle.DEFAULT
     ) {
         //#if MC >= 1.21.7
@@ -48,6 +61,16 @@ object Render2D {
         //#endif
     }
 
+    fun renderString(
+        context: DrawContext,
+        text: String,
+        x: Float,
+        y: Float,
+        scale: Float,
+        colors: Int = -1,
+        textStyle: TextStyle = TextStyle.DEFAULT
+    ) = renderString(context, Text.literal(text), x, y, scale, colors, textStyle)
+
     fun renderStringWithShadow(context: DrawContext, text: String, x: Float, y: Float, scale: Float, colors: Int = Colors.WHITE) {
         renderString(context, text, x, y, scale, colors, TextStyle.DROP_SHADOW)
     }
@@ -72,9 +95,54 @@ object Render2D {
         //#endif
     }
 
+    fun drawPlayerHead(context: DrawContext, x: Int, y: Int, size: Int, uuid: UUID) {
+        //#if MC >= 1.21.9
+        //$$ val textures = client.skinProvider.fetchSkinTextures(GameProfile(uuid, null))
+        //#else
+        val textures = SkullBlockEntity.fetchProfileByUuid(uuid)
+        //#endif
+            .getNow(Optional.empty())
+            //#if MC < 1.21.9
+            .map(client.skinProvider::getSkinTextures)
+            //#endif
+            .orElseGet { DefaultSkinHelper.getSkinTextures(uuid) }
+
+        PlayerSkinDrawer.draw(context, textures, x, y, size)
+    }
+
+    fun drawImage(ctx: DrawContext, image: Identifier, x: Int, y: Int, width: Int, height: Int) {
+        //#if MC >= 1.21.7
+        //$$ ctx.drawGuiTexture(net.minecraft.client.gl.RenderPipelines.GUI_TEXTURED, image, x, y, width, height)
+        //#else
+        ctx.drawGuiTexture(RenderLayer::getGuiTextured, image, x, y, width, height)
+        //#endif
+    }
+
+    fun drawRect(ctx: DrawContext, x: Int, y: Int, width: Int, height: Int, color: Color = Color.WHITE) {
+        //#if MC >= 1.21.7
+        //$$ ctx.fill(net.minecraft.client.gl.RenderPipelines.GUI, x, y, x + width, y + height, color.rgb)
+        //#else
+        ctx.fill(RenderLayer.getGui(), x, y, x + width, y + height, color.rgb)
+        //#endif
+    }
+
+    inline fun DrawContext.pushPop(block: () -> Unit) {
+        //#if MC >= 1.21.7
+        //$$ matrices.pushMatrix()
+        //#else
+        matrices.push()
+        //#endif
+        block()
+        //#if MC >= 1.21.7
+        //$$ matrices.popMatrix()
+        //#else
+        matrices.pop()
+        //#endif
+    }
+
     fun String.width(): Int {
         val lines = split('\n')
-        return lines.maxOf { client.textRenderer.getWidth(it.removeFormatting()) }
+        return lines.maxOf { client.textRenderer.getWidth(it.stripColor()) }
     }
 
     fun String.height(): Int {

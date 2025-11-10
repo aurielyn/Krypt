@@ -1,8 +1,8 @@
 package xyz.meowing.krypt.events.core
 
 import xyz.meowing.knit.api.events.Event
-import xyz.meowing.krypt.api.dungeons.DungeonFloor
-import xyz.meowing.krypt.api.dungeons.DungeonKey
+import xyz.meowing.krypt.api.dungeons.enums.DungeonFloor
+import xyz.meowing.krypt.api.dungeons.enums.DungeonKey
 
 sealed class DungeonEvent {
     /**
@@ -15,6 +15,10 @@ sealed class DungeonEvent {
         val floor: DungeonFloor
     ) : Event()
 
+    class End(
+        val floor: DungeonFloor
+    ) : Event()
+
     /**
      * Posted when the player loads into a Dungeon.
      *
@@ -24,6 +28,13 @@ sealed class DungeonEvent {
     class Enter(
         val floor: DungeonFloor
     ) : Event()
+
+    sealed class Room {
+        class Change(
+            val old: xyz.meowing.krypt.api.dungeons.enums.map.Room,
+            val new: xyz.meowing.krypt.api.dungeons.enums.map.Room
+        ) : Event()
+    }
 
     /**
      * Posted when a key is picked up

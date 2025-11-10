@@ -1,8 +1,10 @@
 {
     "required": true,
-    "package": "xyz.meowing.krypt.mixin",
+    "package": "xyz.meowing.krypt.mixins",
     "compatibilityLevel": "JAVA_21",
     "mixins": [
+        "MixinEntity",
+        "MixinLivingEntity"
     ],
     "injectors": {
         "defaultRequire": 1
@@ -11,6 +13,9 @@
         "requireAnnotations": true
     },
     "client": [
+        "AccessorMapState",
+        "MixinClientConnection",
+        "MixinEntityRenderDispatcher",
         "MixinGameRenderer"
     ]
 }
