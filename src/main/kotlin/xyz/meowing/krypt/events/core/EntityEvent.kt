@@ -1,6 +1,8 @@
 package xyz.meowing.krypt.events.core
 
 import net.minecraft.entity.Entity
+import net.minecraft.network.packet.s2c.play.EntityTrackerUpdateS2CPacket
+import xyz.meowing.knit.api.events.CancellableEvent
 import xyz.meowing.knit.api.events.Event
 
 sealed class EntityEvent {
@@ -23,4 +25,18 @@ sealed class EntityEvent {
     class Death(
         val entity: Entity
     ) : Event()
+
+    sealed class Packet {
+        /**
+         * Posted when the client receives the EntityTrackerUpdateS2CPacket packet.
+         *
+         * @see xyz.meowing.krypt.mixins.MixinClientPlayNetworkHandler
+         * @since 1.2.0
+         */
+        class Metadata(
+            val packet: EntityTrackerUpdateS2CPacket,
+            val entity: Entity,
+            val name: String
+        ) : CancellableEvent()
+    }
 }

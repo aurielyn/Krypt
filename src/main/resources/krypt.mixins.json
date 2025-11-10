@@ -15,6 +15,7 @@
     "client": [
         "AccessorMapState",
         "MixinClientConnection",
+        "MixinClientPlayNetworkHandler",
         "MixinEntityRenderDispatcher",
         "MixinGameRenderer"
     ]

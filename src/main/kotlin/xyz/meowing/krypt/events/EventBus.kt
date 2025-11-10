@@ -11,6 +11,7 @@ import xyz.meowing.knit.api.events.Event
 import xyz.meowing.knit.api.events.EventBus
 import xyz.meowing.knit.api.scheduler.TickScheduler
 import xyz.meowing.knit.internal.events.TickEvent
+import xyz.meowing.knit.internal.events.WorldRenderEvent
 import xyz.meowing.krypt.annotations.Module
 import xyz.meowing.krypt.api.location.SkyBlockIsland
 import xyz.meowing.krypt.events.core.ChatEvent
@@ -18,6 +19,7 @@ import xyz.meowing.krypt.events.core.EntityEvent
 import xyz.meowing.krypt.events.core.GameEvent
 import xyz.meowing.krypt.events.core.LocationEvent
 import xyz.meowing.krypt.events.core.PacketEvent
+import xyz.meowing.krypt.events.core.RenderEvent
 import xyz.meowing.krypt.events.core.ServerEvent
 import xyz.meowing.krypt.managers.events.EventBusManager
 
@@ -44,6 +46,18 @@ object EventBus : EventBus(true) {
         Knit.EventBus.register<TickEvent.Server.Start> {
             TickScheduler.Server.onTick()
             post(xyz.meowing.krypt.events.core.TickEvent.Server())
+        }
+
+        Knit.EventBus.register<WorldRenderEvent.Last> { event ->
+            post(RenderEvent.World.Last(event.context))
+        }
+
+        Knit.EventBus.register<WorldRenderEvent.AfterEntities> { event ->
+            post(RenderEvent.World.AfterEntities(event.context))
+        }
+
+        Knit.EventBus.register<WorldRenderEvent.BlockOutline> { event ->
+            if (post(RenderEvent.World.BlockOutline(event.context))) event.cancel()
         }
 
         ClientLifecycleEvents.CLIENT_STARTED.register { _ ->

@@ -17,4 +17,8 @@ object Utils {
             null
         }
     }
+
+    fun Color.toFloatArray(): FloatArray {
+        return floatArrayOf(red / 255f, green / 255f, blue / 255f)
+    }
 }

@@ -5,7 +5,10 @@ import xyz.meowing.krypt.api.dungeons.enums.DungeonPlayer
 import xyz.meowing.krypt.api.dungeons.handlers.RoomRegistry
 import xyz.meowing.krypt.api.dungeons.utils.ScanUtils
 import xyz.meowing.krypt.api.dungeons.utils.WorldScanUtils
+import xyz.meowing.krypt.events.EventBus
+import xyz.meowing.krypt.events.core.DungeonEvent
 import xyz.meowing.krypt.utils.WorldUtils
+import kotlin.properties.Delegates
 
 class Room(
     initialComponent: Pair<Int, Int>,
@@ -18,7 +21,16 @@ class Room(
     var roomData: RoomMetadata? = null
     var shape: String = "1x1"
     var explored = false
-    var checkmark = Checkmark.UNDISCOVERED
+
+    var checkmark by Delegates.observable(Checkmark.UNDISCOVERED) { _, oldValue, newValue ->
+        if (oldValue == newValue) return@observable
+        if (name == "Unknown") return@observable
+
+        val roomPlayers = players.toList()
+
+        EventBus.post(DungeonEvent.Room.StateChange(this, oldValue, newValue, roomPlayers))
+    }
+
     var players: MutableSet<DungeonPlayer> = mutableSetOf()
 
     var name: String? = null

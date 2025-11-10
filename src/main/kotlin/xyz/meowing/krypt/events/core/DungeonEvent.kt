@@ -3,6 +3,8 @@ package xyz.meowing.krypt.events.core
 import xyz.meowing.knit.api.events.Event
 import xyz.meowing.krypt.api.dungeons.enums.DungeonFloor
 import xyz.meowing.krypt.api.dungeons.enums.DungeonKey
+import xyz.meowing.krypt.api.dungeons.enums.DungeonPlayer
+import xyz.meowing.krypt.api.dungeons.enums.map.Checkmark
 
 sealed class DungeonEvent {
     /**
@@ -33,6 +35,13 @@ sealed class DungeonEvent {
         class Change(
             val old: xyz.meowing.krypt.api.dungeons.enums.map.Room,
             val new: xyz.meowing.krypt.api.dungeons.enums.map.Room
+        ) : Event()
+
+        class StateChange(
+            val room: xyz.meowing.krypt.api.dungeons.enums.map.Room,
+            val oldState: Checkmark,
+            val newState: Checkmark,
+            val roomPlayers: List<DungeonPlayer>
         ) : Event()
     }
 
