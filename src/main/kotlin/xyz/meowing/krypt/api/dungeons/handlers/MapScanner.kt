@@ -1,6 +1,5 @@
 package xyz.meowing.krypt.api.dungeons.handlers
 
-import net.minecraft.item.map.MapDecoration
 import net.minecraft.item.map.MapDecorationTypes
 import net.minecraft.item.map.MapState
 import xyz.meowing.krypt.Krypt
@@ -102,7 +101,7 @@ object MapScanner {
                 val isRoomCenter = cx % 2 == 0 && cz % 2 == 0
 
                 if (isRoomCenter && rcolor != 0.toByte()) {
-                    scanRoom(colors, cx, cz, x, z, center, rcolor, idx, halfMapGap)
+                    scanRoom(colors, cx, cz, x, z, center, rcolor, halfMapGap)
                 } else if (!isRoomCenter && center != 0.toByte()) {
                     scanDoor(colors, cx, cz, idx, center)
                 }
@@ -110,7 +109,7 @@ object MapScanner {
         }
     }
 
-    private fun scanRoom(colors: ByteArray, cx: Int, cz: Int, x: Int, z: Int, center: Byte, rcolor: Byte, idx: Int, halfMapGap: Int) {
+    private fun scanRoom(colors: ByteArray, cx: Int, cz: Int, x: Int, z: Int, center: Byte, rcolor: Byte, halfMapGap: Int) {
         val rmx = cx / 2
         val rmz = cz / 2
         val roomIdx = DungeonAPI.getRoomIdx(rmx to rmz)
@@ -123,7 +122,7 @@ object MapScanner {
         scanRoomNeighbors(colors, cx, cz, x, z, room, halfMapGap)
 
         val mapRoomType = RoomType.fromMapColor(rcolor.toInt())
-        if (mapRoomType != null && room.type != mapRoomType) {
+        if (mapRoomType == RoomType.YELLOW && room.type != mapRoomType) {
             room.loadFromMapColor(rcolor)
         } else if (room.type == RoomType.UNKNOWN && room.height == null) {
             room.loadFromMapColor(rcolor)
@@ -171,17 +170,20 @@ object MapScanner {
         for ((dx, dz) in ScanUtils.mapDirections) {
             val doorCx = cx + dx
             val doorCz = cz + dz
+
             if (doorCx % 2 == 0 && doorCz % 2 == 0) continue
 
             val doorX = x + dx * halfMapGap
             val doorZ = z + dz * halfMapGap
             val doorIdx = doorX + doorZ * MAP_SIZE
-            val doorCenter = colors.getOrNull(doorIdx) ?: continue
+            val doorCenter = colors.getOrNull(doorIdx)
 
-            if (doorCenter == 0.toByte()) continue
+            val isGap = doorCenter == null || doorCenter == 0.toByte()
+            val isDoor = if (!isGap) {
+                isDoorPattern(colors, doorIdx)
+            } else false
 
-            val isDoor = isDoorPattern(colors, doorIdx)
-            if (isDoor) continue
+            if (isGap || isDoor) continue
 
             val neighborCx = cx + dx * 2
             val neighborCz = cz + dz * 2
@@ -266,8 +268,8 @@ object MapScanner {
 
     private fun dungeonPlayerError(decorationId: String?, reason: String?, index: Int) {
         Krypt.LOGGER.error(
-            "[Dungeon Map] Dungeon player for map decoration '{}' {}. Player list index (zero-indexed): {}. Player list: {}. Map decorations: {}",
-            decorationId, reason, index, DungeonAPI.players.contentToString(), "..."
+            "[Dungeon Map] Dungeon player for map decoration '{}' {}. Player list index (zero-indexed): {}.",
+            decorationId, reason, index
         )
     }
 
