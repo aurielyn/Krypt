@@ -1,4 +1,4 @@
-package xyz.meowing.krypt.features.general.map
+package xyz.meowing.krypt.features.map
 
 import net.minecraft.client.gui.DrawContext
 import xyz.meowing.krypt.annotations.Module
@@ -9,7 +9,7 @@ import xyz.meowing.krypt.config.ui.elements.MCColorCode
 import xyz.meowing.krypt.config.ui.types.ElementType
 import xyz.meowing.krypt.events.core.GuiEvent
 import xyz.meowing.krypt.features.Feature
-import xyz.meowing.krypt.features.general.map.render.MapRenderer
+import xyz.meowing.krypt.features.map.render.MapRenderer
 import xyz.meowing.krypt.hud.HudManager
 import xyz.meowing.krypt.managers.config.ConfigElement
 import xyz.meowing.krypt.managers.config.ConfigManager

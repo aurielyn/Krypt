@@ -4,6 +4,7 @@ package xyz.meowing.krypt.api.dungeons
 
 import tech.thatgravyboat.skyblockapi.utils.regex.RegexUtils.find
 import tech.thatgravyboat.skyblockapi.utils.regex.matchWhen
+import tech.thatgravyboat.skyblockapi.utils.text.TextProperties.stripped
 import xyz.meowing.knit.api.KnitPlayer
 import xyz.meowing.krypt.annotations.Module
 import xyz.meowing.krypt.api.dungeons.enums.DungeonClass
@@ -24,7 +25,6 @@ import xyz.meowing.krypt.events.core.ChatEvent
 import xyz.meowing.krypt.events.core.DungeonEvent
 import xyz.meowing.krypt.events.core.LocationEvent
 import xyz.meowing.krypt.events.core.TickEvent
-import xyz.meowing.krypt.utils.StringUtils.removeFormatting
 
 @Module
 object DungeonAPI {
@@ -125,7 +125,7 @@ object DungeonAPI {
         EventBus.register<LocationEvent.IslandChange> { reset() }
 
         EventBus.registerIn<ChatEvent.Receive>(SkyBlockIsland.THE_CATACOMBS) { event ->
-            val message = event.message.string.removeFormatting()
+            val message = event.message.stripped
 
             when {
                 watcherSpawnedAllRegex.matches(message) -> {
@@ -171,7 +171,7 @@ object DungeonAPI {
             if (!event.isActionBar) return@registerIn
 
             val room = currentRoom ?: return@registerIn
-            val match = roomSecretsRegex.find(event.message.string.removeFormatting()) ?: return@registerIn
+            val match = roomSecretsRegex.find(event.message.stripped) ?: return@registerIn
             val (found, _) = match.destructured
             val secrets = found.toInt()
             if (secrets != room.secretsFound) room.secretsFound = secrets
@@ -257,7 +257,7 @@ object DungeonAPI {
     /** Updates leap detection based on held item */
     private fun updateHeldItem() {
         val item = KnitPlayer.player?.mainHandStack ?: return
-        holdingLeaps = "leap" in item.name.string.removeFormatting().lowercase()
+        holdingLeaps = "leap" in item.name.stripped.lowercase()
     }
 
     // Room accessors

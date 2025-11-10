@@ -1,9 +1,9 @@
-package xyz.meowing.krypt.features.general.map.render
+package xyz.meowing.krypt.features.map.render
 
 import net.minecraft.client.gui.DrawContext
 import xyz.meowing.krypt.api.dungeons.DungeonAPI
-import xyz.meowing.krypt.features.general.map.DungeonMap
-import xyz.meowing.krypt.features.general.map.utils.Utils
+import xyz.meowing.krypt.features.map.DungeonMap
+import xyz.meowing.krypt.features.map.utils.Utils
 import xyz.meowing.krypt.utils.Render2D
 import xyz.meowing.krypt.utils.Render2D.pushPop
 import xyz.meowing.krypt.utils.Render2D.width

@@ -1,7 +1,8 @@
-package xyz.meowing.krypt.features.general.map.render
+package xyz.meowing.krypt.features.map.render
 
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.util.math.RotationAxis
+import tech.thatgravyboat.skyblockapi.utils.extentions.stripColor
 import xyz.meowing.knit.api.KnitPlayer
 import xyz.meowing.krypt.api.dungeons.DungeonAPI
 import xyz.meowing.krypt.api.dungeons.enums.DungeonClass
@@ -9,14 +10,12 @@ import xyz.meowing.krypt.api.dungeons.enums.map.Room
 import xyz.meowing.krypt.api.dungeons.enums.DungeonPlayer
 import xyz.meowing.krypt.api.dungeons.enums.map.Checkmark
 import xyz.meowing.krypt.api.dungeons.enums.map.DoorState
-import xyz.meowing.krypt.api.dungeons.enums.map.DoorType
 import xyz.meowing.krypt.api.dungeons.enums.map.RoomType
-import xyz.meowing.krypt.features.general.map.DungeonMap
-import xyz.meowing.krypt.features.general.map.utils.Utils
+import xyz.meowing.krypt.features.map.DungeonMap
+import xyz.meowing.krypt.features.map.utils.Utils
 import xyz.meowing.krypt.utils.Render2D
 import xyz.meowing.krypt.utils.Render2D.pushPop
 import xyz.meowing.krypt.utils.Render2D.width
-import xyz.meowing.krypt.utils.StringUtils.removeFormatting
 import java.awt.Color
 import java.util.UUID
 
@@ -141,7 +140,7 @@ object Main {
                 lines.forEachIndexed { i, line ->
                     val drawX = (-line.width() / 2).toFloat()
                     val drawY = (9 * i - (lines.size * 9) / 2).toFloat()
-                    if (DungeonMap.coolText) drawShadowedText(context, line.removeFormatting(), drawX.toInt(), drawY.toInt(), 1f)
+                    if (DungeonMap.coolText) drawShadowedText(context, line.stripColor(), drawX.toInt(), drawY.toInt(), 1f)
                     Render2D.renderString(context, line, drawX, drawY, 1f)
                 }
             }

@@ -1,4 +1,4 @@
-package xyz.meowing.krypt.features.general.map.render
+package xyz.meowing.krypt.features.map.render
 
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.render.LightmapTextureManager

@@ -1,6 +1,6 @@
 package xyz.meowing.krypt.api.dungeons.enums
 
-import xyz.meowing.krypt.features.general.map.DungeonMap
+import xyz.meowing.krypt.features.map.DungeonMap
 import java.awt.Color
 
 enum class DungeonClass(val displayName: String) {

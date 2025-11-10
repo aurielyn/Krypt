@@ -24,12 +24,12 @@ object TitleUtils {
         EventBus.register<GuiEvent.RenderHUD> { render(it.context) }
     }
 
-    fun showTitle(title: String?, subtitle: String?, duration: Int, scale: Float = 4.0f) {
+    fun showTitle(title: String? = null, subtitle: String? = null, duration: Int, scale: Float = 4.0f) {
         titleQueue.offer(TitleData(title, subtitle, 200, duration, 200, scale))
         if (currentTitle == null) nextTitle()
     }
 
-    fun showTitle(title: String?, subtitle: String?, fadeIn: Int, stay: Int, fadeOut: Int, scale: Float = 4.0f) {
+    fun showTitle(title: String? = null, subtitle: String? = null, fadeIn: Int, stay: Int, fadeOut: Int, scale: Float = 4.0f) {
         titleQueue.offer(TitleData(title, subtitle, fadeIn, stay, fadeOut, scale))
         if (currentTitle == null) nextTitle()
     }

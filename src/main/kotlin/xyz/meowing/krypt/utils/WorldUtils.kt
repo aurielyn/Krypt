@@ -12,13 +12,13 @@ object WorldUtils {
 
     fun getBlockNumericId(x: Int, y: Int, z: Int): Int {
         val state = getBlockStateAt(x, y, z)?: return -1
-        return LegIDs.getLegacyId(state)
+        return LegalIDs.getLegacyId(state)
     }
 
     fun checkIfAir(x: Int, y: Int, z: Int): Int {
         val state = getBlockStateAt(x, y, z)?: return -1
         if (state.isAir) return 0
 
-        return LegIDs.getLegacyId(state)
+        return LegalIDs.getLegacyId(state)
     }
 }

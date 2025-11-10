@@ -27,7 +27,7 @@ object RoomName: Feature(
     override fun addConfig() {
         ConfigManager
             .addFeature(
-                "Room Name Hud",
+                "Room name Hud",
                 "Displays the current rooms name",
                 "General",
                 ConfigElement(
@@ -36,7 +36,7 @@ object RoomName: Feature(
                 )
             )
             .addFeatureOption(
-                "Chroma Room Name",
+                "Chroma room name",
                 ConfigElement(
                     "general.roomName.chroma",
                     ElementType.Switch(false)

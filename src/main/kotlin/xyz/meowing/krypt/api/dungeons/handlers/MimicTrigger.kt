@@ -2,13 +2,13 @@ package xyz.meowing.krypt.api.dungeons.handlers
 
 import net.minecraft.entity.EquipmentSlot
 import net.minecraft.entity.mob.ZombieEntity
+import tech.thatgravyboat.skyblockapi.utils.text.TextProperties.stripped
 import xyz.meowing.krypt.annotations.Module
 import xyz.meowing.krypt.api.dungeons.DungeonAPI
 import xyz.meowing.krypt.api.location.SkyBlockIsland
 import xyz.meowing.krypt.events.EventBus
 import xyz.meowing.krypt.events.core.ChatEvent
 import xyz.meowing.krypt.events.core.EntityEvent
-import xyz.meowing.krypt.utils.StringUtils.removeFormatting
 
 /**
  * Tracks whether the Mimic miniboss has been killed in F6/F7.
@@ -27,7 +27,7 @@ object MimicTrigger {
         EventBus.registerIn<ChatEvent.Receive>(SkyBlockIsland.THE_CATACOMBS) { event ->
             if (DungeonAPI.floor?.floorNumber !in listOf(6, 7) || DungeonAPI.floor == null) return@registerIn
 
-            val msg = event.message.string.removeFormatting()
+            val msg = event.message.stripped
             val match = MIMIC_PATTERN.matchEntire(msg) ?: return@registerIn
 
             if (mimicMessages.none { it == match.groupValues[1].lowercase() }) return@registerIn

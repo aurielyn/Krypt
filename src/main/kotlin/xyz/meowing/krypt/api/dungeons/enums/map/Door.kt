@@ -1,7 +1,7 @@
 package xyz.meowing.krypt.api.dungeons.enums.map
 
 import xyz.meowing.krypt.api.dungeons.utils.WorldScanUtils
-import xyz.meowing.krypt.features.general.map.DungeonMap
+import xyz.meowing.krypt.features.map.DungeonMap
 import xyz.meowing.krypt.utils.WorldUtils
 import java.awt.Color
 

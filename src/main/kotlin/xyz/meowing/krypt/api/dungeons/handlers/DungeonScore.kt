@@ -1,6 +1,7 @@
 package xyz.meowing.krypt.api.dungeons.handlers
 
 import tech.thatgravyboat.skyblockapi.api.data.Perk
+import tech.thatgravyboat.skyblockapi.utils.extentions.stripColor
 import tech.thatgravyboat.skyblockapi.utils.text.TextProperties.stripped
 import xyz.meowing.krypt.annotations.Module
 import xyz.meowing.krypt.api.dungeons.DungeonAPI
@@ -10,7 +11,6 @@ import xyz.meowing.krypt.api.location.SkyBlockIsland
 import xyz.meowing.krypt.events.EventBus
 import xyz.meowing.krypt.events.core.ScoreboardEvent
 import xyz.meowing.krypt.events.core.TablistEvent
-import xyz.meowing.krypt.utils.StringUtils.removeFormatting
 import kotlin.math.ceil
 import kotlin.math.floor
 
@@ -61,7 +61,7 @@ object DungeonScore {
         }
 
         EventBus.registerIn<ScoreboardEvent.Update>(SkyBlockIsland.THE_CATACOMBS) { event ->
-            event.new.forEach { parseSidebar(it.removeFormatting().trim()) }
+            event.new.forEach { parseSidebar(it.stripColor().trim()) }
         }
     }
 

@@ -9,8 +9,8 @@ import net.minecraft.item.ItemStack
 import net.minecraft.text.Text
 import net.minecraft.util.Colors
 import net.minecraft.util.Identifier
+import tech.thatgravyboat.skyblockapi.utils.extentions.stripColor
 import xyz.meowing.knit.api.KnitClient.client
-import xyz.meowing.krypt.utils.StringUtils.removeFormatting
 import java.awt.Color
 import java.util.Optional
 import java.util.UUID
@@ -142,7 +142,7 @@ object Render2D {
 
     fun String.width(): Int {
         val lines = split('\n')
-        return lines.maxOf { client.textRenderer.getWidth(it.removeFormatting()) }
+        return lines.maxOf { client.textRenderer.getWidth(it.stripColor()) }
     }
 
     fun String.height(): Int {

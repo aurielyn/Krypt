@@ -1,17 +1,17 @@
-package xyz.meowing.krypt.features.general.map.render
+package xyz.meowing.krypt.features.map.render
 
 import net.minecraft.client.gui.DrawContext
+import net.minecraft.util.Identifier
 import net.minecraft.util.math.RotationAxis
 import xyz.meowing.knit.api.KnitPlayer
 import xyz.meowing.krypt.api.dungeons.DungeonAPI
 import xyz.meowing.krypt.api.dungeons.enums.DungeonClass
 import xyz.meowing.krypt.api.dungeons.enums.DungeonPlayer
-import xyz.meowing.krypt.features.general.map.DungeonMap
-import xyz.meowing.krypt.features.general.map.utils.Utils
+import xyz.meowing.krypt.features.map.DungeonMap
+import xyz.meowing.krypt.features.map.utils.Utils
 import xyz.meowing.krypt.utils.Render2D
 import xyz.meowing.krypt.utils.Render2D.pushPop
 import java.util.UUID
-import kotlin.math.PI
 import kotlin.math.min
 
 object BossMapRenderer {
@@ -48,7 +48,7 @@ object BossMapRenderer {
             //#endif
             context.enableScissor(0, 0, MAP_SIZE, MAP_SIZE)
 
-            Render2D.drawImage(context, net.minecraft.util.Identifier.of("krypt", "krypt/boss/$texture"), (-offsetX).toInt(), (-offsetY).toInt(), (textureWidth * scale).toInt(), (textureHeight * scale).toInt())
+            Render2D.drawImage(context, Identifier.of("krypt", "krypt/boss/$texture"), (-offsetX).toInt(), (-offsetY).toInt(), (textureWidth * scale).toInt(), (textureHeight * scale).toInt())
 
             renderBossPlayers(context, bossMap, offsetX, offsetY, sizeInWorld)
 

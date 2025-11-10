@@ -1,5 +1,6 @@
 package xyz.meowing.krypt.features.general
 
+import tech.thatgravyboat.skyblockapi.utils.text.TextProperties.stripped
 import xyz.meowing.knit.api.KnitChat
 import xyz.meowing.knit.api.scheduler.TimeScheduler
 import xyz.meowing.krypt.annotations.Module
@@ -13,7 +14,6 @@ import xyz.meowing.krypt.events.core.ChatEvent
 import xyz.meowing.krypt.features.Feature
 import xyz.meowing.krypt.managers.config.ConfigElement
 import xyz.meowing.krypt.managers.config.ConfigManager
-import xyz.meowing.krypt.utils.StringUtils.removeFormatting
 import xyz.meowing.krypt.utils.TitleUtils.showTitle
 
 @Module
@@ -53,7 +53,7 @@ object CryptReminder : Feature(
     override fun initialize() {
         register<ChatEvent.Receive> { event ->
             if (event.isActionBar) return@register
-            if (event.message.string.removeFormatting() == "[NPC] Mort: Good luck.") {
+            if (event.message.stripped == "[NPC] Mort: Good luck.") {
                 TimeScheduler.schedule(1000 * 60 * delay.toLong()) {
                     val cryptCount = DungeonScore.data.crypts
 

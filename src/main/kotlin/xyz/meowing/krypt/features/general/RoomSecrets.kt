@@ -25,7 +25,7 @@ object RoomSecrets: Feature(
 
     override fun addConfig() {
         ConfigManager
-        .addFeature("Room Secrets HUD",
+        .addFeature("Room secrets HUD",
             "Shows the secrets in the current dungeon room",
             "General",
             ConfigElement(

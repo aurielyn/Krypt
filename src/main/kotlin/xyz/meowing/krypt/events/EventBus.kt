@@ -1,5 +1,6 @@
 package xyz.meowing.krypt.events
 
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientEntityEvents
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientWorldEvents
 import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents
@@ -13,6 +14,7 @@ import xyz.meowing.knit.internal.events.TickEvent
 import xyz.meowing.krypt.annotations.Module
 import xyz.meowing.krypt.api.location.SkyBlockIsland
 import xyz.meowing.krypt.events.core.ChatEvent
+import xyz.meowing.krypt.events.core.EntityEvent
 import xyz.meowing.krypt.events.core.GameEvent
 import xyz.meowing.krypt.events.core.LocationEvent
 import xyz.meowing.krypt.events.core.PacketEvent
@@ -54,6 +56,10 @@ object EventBus : EventBus(true) {
 
         ClientWorldEvents.AFTER_CLIENT_WORLD_CHANGE.register { _, _ ->
             post(LocationEvent.WorldChange())
+        }
+
+        ClientEntityEvents.ENTITY_LOAD.register { entity, _ ->
+            post(EntityEvent.Join(entity))
         }
     }
 

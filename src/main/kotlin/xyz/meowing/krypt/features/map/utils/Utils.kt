@@ -1,4 +1,4 @@
-package xyz.meowing.krypt.features.general.map.utils
+package xyz.meowing.krypt.features.map.utils
 
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
@@ -8,14 +8,10 @@ import net.minecraft.util.Identifier
 import net.minecraft.util.math.Vec3d
 import xyz.meowing.knit.api.KnitClient
 import xyz.meowing.krypt.Krypt
-import xyz.meowing.krypt.api.dungeons.enums.map.Checkmark
-import xyz.meowing.krypt.api.dungeons.enums.map.DoorType
 import xyz.meowing.krypt.api.dungeons.enums.map.RoomType
-import xyz.meowing.krypt.features.general.map.DungeonMap
 import xyz.meowing.krypt.utils.Render2D
 import xyz.meowing.krypt.utils.Render2D.pushPop
 import xyz.meowing.krypt.utils.Render2D.width
-import java.awt.Color
 import java.io.InputStreamReader
 
 object Utils {

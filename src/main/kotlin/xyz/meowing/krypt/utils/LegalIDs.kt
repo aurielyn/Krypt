@@ -9,7 +9,7 @@ import net.minecraft.util.Identifier
 import xyz.meowing.krypt.Krypt
 import kotlin.jvm.optionals.getOrNull
 
-object LegIDs {
+object LegalIDs {
     val legacyBlockIdMap = mapOf(
         "minecraft:air" to 0,
         "minecraft:stone" to 1,
