@@ -63,7 +63,7 @@ object BoulderSolver : Feature(
             .addFeature(
                 "Boulder solver",
                 "Shows which boulders to click in order",
-                "Dungeons",
+                "Solvers",
                 ConfigElement(
                     "boulderSolver",
                     ElementType.Switch(false)

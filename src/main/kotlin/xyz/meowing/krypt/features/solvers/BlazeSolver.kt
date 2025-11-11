@@ -54,7 +54,7 @@ object BlazeSolver : Feature(
             .addFeature(
                 "Blaze solver",
                 "Highlights blazes in order and tracks completion time",
-                "Dungeons",
+                "Solvers",
                 ConfigElement(
                     "blazeSolver",
                     ElementType.Switch(false)
