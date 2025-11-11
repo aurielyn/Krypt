@@ -3,6 +3,7 @@ package xyz.meowing.krypt.features.solvers
 import net.minecraft.block.Blocks
 import net.minecraft.util.math.BlockPos
 import xyz.meowing.knit.api.KnitPlayer.player
+import xyz.meowing.krypt.Krypt
 import xyz.meowing.krypt.annotations.Module
 import xyz.meowing.krypt.api.dungeons.utils.WorldScanUtils
 import xyz.meowing.krypt.api.location.SkyBlockIsland
@@ -48,14 +49,17 @@ object CreeperBeamSolver : Feature(
 
     init {
         NetworkUtils.fetchJson<List<List<List<Int>>>>(
-            url = "https://raw.githubusercontent.com/Noamm9/NoammAddons/refs/heads/data/CreeperBeamSolutions.json",
+            url = "https://raw.githubusercontent.com/StellariumMC/zen-data/refs/heads/main/solvers/CreeperBeamsSolver.json",
             onSuccess = { beamsList ->
                 beamSolutions.clear()
                 beamsList.forEach { beamPair ->
                     beamSolutions.add(Pair(beamPair[0], beamPair[1]))
                 }
+                Krypt.LOGGER.info("Loaded Creeper beam solutions.")
             },
-            onError = {}
+            onError = { error ->
+                Krypt.LOGGER.error("Caught error while trying to load Creeper Beam solutions: $error")
+            }
         )
     }
 

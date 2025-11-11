@@ -6,6 +6,7 @@ import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Box
 import xyz.meowing.knit.api.KnitClient.client
 import xyz.meowing.knit.api.KnitPlayer.player
+import xyz.meowing.krypt.Krypt
 import xyz.meowing.krypt.annotations.Module
 import xyz.meowing.krypt.api.dungeons.utils.WorldScanUtils
 import xyz.meowing.krypt.api.dungeons.utils.WorldScanUtils.getRealCoord
@@ -52,9 +53,14 @@ object BoulderSolver : Feature(
 
     init {
         NetworkUtils.fetchJson<Map<String, List<List<Double>>>>(
-            url = "https://raw.githubusercontent.com/Noamm9/NoammAddons/refs/heads/data/BoulderSolutions.json",
-            onSuccess = { boulderSolutions.putAll(it) },
-            onError = { }
+            url = "https://raw.githubusercontent.com/StellariumMC/zen-data/refs/heads/main/solvers/BoulderSolver.json",
+            onSuccess = {
+                boulderSolutions.putAll(it)
+                Krypt.LOGGER.info("Loaded Boulder solutions.")
+            },
+            onError = { error ->
+                Krypt.LOGGER.error("Caught error while trying to load Boulder solutions: $error")
+            }
         )
     }
 

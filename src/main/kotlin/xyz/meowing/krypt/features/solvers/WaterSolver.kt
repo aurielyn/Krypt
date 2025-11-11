@@ -51,9 +51,14 @@ object WaterBoardSolver : Feature(
 
     init {
         NetworkUtils.fetchJson<JsonObject>(
-            url = "https://raw.githubusercontent.com/Noamm9/NoammAddons/refs/heads/data/waterSolutions.json",
-            onSuccess = { waterSolutions = it },
-            onError = {}
+            url = "https://raw.githubusercontent.com/StellariumMC/zen-data/refs/heads/main/solvers/WaterSolver.json",
+            onSuccess = {
+                waterSolutions = it
+                Krypt.LOGGER.info("Loaded Water Board solutions.")
+            },
+            onError = { error ->
+                Krypt.LOGGER.error("Caught error while trying to load Water Board solutions: $error")
+            }
         )
     }
 
