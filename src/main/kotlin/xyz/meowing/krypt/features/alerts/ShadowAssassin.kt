@@ -1,6 +1,7 @@
 package xyz.meowing.krypt.features.alerts
 
-import net.minecraft.network.packet.s2c.play.WorldBorderInterpolateSizeS2CPacket
+import net.minecraft.network.packet.s2c.play.*
+import xyz.meowing.knit.api.KnitChat
 import xyz.meowing.krypt.annotations.Module
 import xyz.meowing.krypt.api.dungeons.DungeonAPI
 import xyz.meowing.krypt.api.location.SkyBlockIsland
@@ -31,10 +32,10 @@ object ShadowAssassin : Feature(
 
     override fun initialize() {
         register<PacketEvent.Received> { event ->
-            val packet = event.packet as? WorldBorderInterpolateSizeS2CPacket ?: return@register
+            val packet = event.packet as? WorldBorderInitializeS2CPacket ?: return@register
             if (packet.size != 1.0) return@register
 
-            showTitle(subtitle = if (DungeonAPI.floor?.floorNumber == 1) "&cBonzo Respawn" else "&8Shadow Assassin", duration = 2000)
+            showTitle(subtitle = if (DungeonAPI.floor?.floorNumber == 1) "§cBonzo Respawn" else "§8Shadow Assassin", duration = 2000)
         }
     }
 }
