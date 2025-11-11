@@ -121,10 +121,7 @@ object MapScanner {
 
         scanRoomNeighbors(colors, cx, cz, x, z, room, halfMapGap)
 
-        val mapRoomType = RoomType.fromMapColor(rcolor.toInt())
-        if (mapRoomType == RoomType.YELLOW && room.type != mapRoomType) {
-            room.loadFromMapColor(rcolor)
-        } else if (room.type == RoomType.UNKNOWN && room.height == null) {
+        if (room.type == RoomType.UNKNOWN && room.height == null) {
             room.loadFromMapColor(rcolor)
         }
 

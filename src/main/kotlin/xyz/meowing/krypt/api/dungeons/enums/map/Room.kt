@@ -92,8 +92,7 @@ class Room(
     fun loadFromData(data: RoomMetadata) {
         roomData = data
         name = data.name
-        @Suppress("USELESS_ELVIS")
-        type = data.type ?: RoomType.NORMAL
+        type = RoomType.fromRoomData(data) ?: RoomType.NORMAL
         secrets = data.secrets
         crypts = data.crypts
     }
@@ -101,8 +100,8 @@ class Room(
     fun loadFromMapColor(color: Byte): Room {
         type = RoomType.fromMapColor(color.toInt()) ?: RoomType.UNKNOWN
         when (type) {
-            RoomType.BLOOD -> RoomRegistry.getAll().find { it.type == RoomType.BLOOD }?.let { loadFromData(it) }
-            RoomType.ENTRANCE -> RoomRegistry.getAll().find { it.type == RoomType.ENTRANCE }?.let { loadFromData(it) }
+            RoomType.BLOOD -> RoomRegistry.getAll().find { it.type == "Blood" }?.let { loadFromData(it) }
+            RoomType.ENTRANCE -> RoomRegistry.getAll().find { it.type == "Entrance" }?.let { loadFromData(it) }
             else -> {}
         }
         return this

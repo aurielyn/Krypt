@@ -27,6 +27,17 @@ enum class RoomType {
         }
 
     companion object {
+        fun fromRoomData(data: RoomMetadata): RoomType? = when(data.type.lowercase()) {
+            "normal", "rare" -> NORMAL
+            "puzzle" -> PUZZLE
+            "trap" -> TRAP
+            "champion" -> YELLOW
+            "blood" -> BLOOD
+            "fairy" -> FAIRY
+            "entrance" -> ENTRANCE
+            else -> null
+        }
+
         fun fromMapColor(color: Int): RoomType? = when (color) {
             18 -> BLOOD
             30 -> ENTRANCE
