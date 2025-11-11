@@ -1,15 +1,17 @@
 package xyz.meowing.krypt.features.solvers
 
 import net.minecraft.block.Blocks
+import net.minecraft.block.ShapeContext
 import net.minecraft.entity.EntityType
 import net.minecraft.entity.decoration.ItemFrameEntity
 import net.minecraft.item.FilledMapItem
-import net.minecraft.item.map.MapState
 import net.minecraft.network.packet.s2c.play.EntitySpawnS2CPacket
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Box
+import net.minecraft.world.EmptyBlockView
 import xyz.meowing.knit.api.KnitChat
 import xyz.meowing.knit.api.KnitClient
+import xyz.meowing.knit.api.KnitClient.client
 import xyz.meowing.knit.api.KnitPlayer
 import xyz.meowing.knit.api.scheduler.TickScheduler
 import xyz.meowing.krypt.annotations.Module
@@ -32,6 +34,11 @@ import kotlin.math.floor
 import kotlin.math.max
 import kotlin.math.min
 
+/**
+ * Contains modified code from Noamm's tic-tac-toe solver.
+ *
+ * Original File: [GitHub](https://github.com/Noamm9/NoammAddons/blob/master/src/main/kotlin/noammaddons/features/impl/dungeons/solvers/puzzles/TicTacToeSolver.kt)
+ */
 @Module
 object TicTacToeSolver : Feature(
     "ticTacToeSolver",
@@ -194,8 +201,6 @@ object TicTacToeSolver : Feature(
 
             bestMove = Box(drawX, drawY, drawZ, drawX + 1, drawY + 1, drawZ + 1)
         }
-
-        KnitChat.fakeMessage("set best move")
     }
 
     private fun getBestMove(board: Array<CharArray>): Int {
