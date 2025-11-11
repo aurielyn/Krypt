@@ -360,7 +360,11 @@ object Render3D {
         val a = color.alpha / 255f
 
         VertexRendering.drawBox(
+            //#if MC >= 1.21.9
+            //$$ matrices.peek(),
+            //#else
             matrices,
+            //#endif
             buffer,
             bb.minX,
             bb.minY,

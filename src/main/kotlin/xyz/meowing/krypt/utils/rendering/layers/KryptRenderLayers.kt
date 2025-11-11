@@ -68,7 +68,9 @@ object KryptRenderLayers {
             .texture(
                 RenderPhase.Texture(
                     BeaconBlockEntityRenderer.BEAM_TEXTURE,
-                    TriState.FALSE, 
+                    //#if MC < 1.21.7
+                    TriState.FALSE,
+                    //#endif
                     false
                 )
             )
@@ -83,7 +85,9 @@ object KryptRenderLayers {
             .texture(
                 RenderPhase.Texture(
                     BeaconBlockEntityRenderer.BEAM_TEXTURE,
+                    //#if MC < 1.21.7
                     TriState.FALSE,
+                    //#endif
                     false
                 )
             )
@@ -97,8 +101,10 @@ object KryptRenderLayers {
             .builder()
             .texture(
                 RenderPhase.Texture(
-                    BeaconBlockEntityRenderer.BEAM_TEXTURE, 
+                    BeaconBlockEntityRenderer.BEAM_TEXTURE,
+                    //#if MC < 1.21.7
                     TriState.FALSE,
+                    //#endif
                     false
                 )
             )
@@ -113,7 +119,9 @@ object KryptRenderLayers {
             .texture(
                 RenderPhase.Texture(
                     BeaconBlockEntityRenderer.BEAM_TEXTURE,
+                    //#if MC < 1.21.7
                     TriState.FALSE,
+                    //#endif
                     false
                 )
             )

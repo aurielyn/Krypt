@@ -11,6 +11,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import xyz.meowing.krypt.events.EventBus;
 import xyz.meowing.krypt.events.core.PacketEvent;
 
+//#if MC >= 1.21.8
+//$$ import io.netty.channel.ChannelFutureListener;
+//#endif
+
 @Mixin(ClientConnection.class)
 public class MixinClientConnection {
     @Inject(method = "channelRead0*", at = @At("HEAD"), cancellable = true)
@@ -24,6 +28,9 @@ public class MixinClientConnection {
     }
 
     @Inject(method = "sendImmediately", at = @At("HEAD"), cancellable = true)
+    //#if MC >= 1.21.8
+    //$$ private void krypt$onPacketSend(Packet<?> packet, ChannelFutureListener channelFutureListener, boolean flush, CallbackInfo ci) {
+    //#else
     private void krypt$onPacketSend(Packet<?> packet, PacketCallbacks callbacks, boolean flush, CallbackInfo ci) {
         if (EventBus.INSTANCE.post(new PacketEvent.Sent(packet))) ci.cancel();
     }

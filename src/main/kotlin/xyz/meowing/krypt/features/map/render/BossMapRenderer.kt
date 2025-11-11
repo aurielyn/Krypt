@@ -14,6 +14,10 @@ import xyz.meowing.krypt.utils.rendering.Render2D.pushPop
 import java.util.UUID
 import kotlin.math.min
 
+//#if MC >= 1.21.8
+//$$ import kotlin.math.PI
+//#endif
+
 object BossMapRenderer {
     private const val MAP_SIZE = 128
 

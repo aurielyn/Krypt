@@ -125,8 +125,13 @@ object BlazeSolver : Feature(
 
             blazes.withIndex().forEach { (i, entity) ->
                 if (i > 0 && i < blazeCount.toInt()) {
+                    //#if MC >= 1.21.9
+                    //$$ val b1 = blazes[i - 1].entityPos.add(0.0, blazes[i - 1].height / 2.0, 0.0)
+                    //$$ val b2 = entity.entityPos.add(0.0, entity.height / 2.0, 0.0)
+                    //#else
                     val b1 = blazes[i - 1].pos.add(0.0, blazes[i - 1].height / 2.0, 0.0)
                     val b2 = entity.pos.add(0.0, entity.height / 2.0, 0.0)
+                    //#endif
                     Render3D.drawLine(b1, b2, 1f, lineColor, event.context.consumers(), event.context.matrixStack())
                 }
             }
