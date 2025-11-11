@@ -43,7 +43,7 @@ object EventBus : EventBus(true) {
             post(xyz.meowing.krypt.events.core.TickEvent.Client())
         }
 
-        Knit.EventBus.register<TickEvent.Server.Start> {
+        Knit.EventBus.register<TickEvent.Server.End> {
             TickScheduler.Server.onTick()
             post(xyz.meowing.krypt.events.core.TickEvent.Server())
         }
