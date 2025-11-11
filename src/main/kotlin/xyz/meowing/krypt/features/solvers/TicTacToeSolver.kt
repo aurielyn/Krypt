@@ -1,17 +1,15 @@
 package xyz.meowing.krypt.features.solvers
 
 import net.minecraft.block.Blocks
-import net.minecraft.block.ShapeContext
 import net.minecraft.entity.EntityType
 import net.minecraft.entity.decoration.ItemFrameEntity
 import net.minecraft.item.FilledMapItem
 import net.minecraft.network.packet.s2c.play.EntitySpawnS2CPacket
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Box
+import net.minecraft.util.shape.VoxelShape
 import net.minecraft.world.EmptyBlockView
-import xyz.meowing.knit.api.KnitChat
 import xyz.meowing.knit.api.KnitClient
-import xyz.meowing.knit.api.KnitClient.client
 import xyz.meowing.knit.api.KnitPlayer
 import xyz.meowing.knit.api.scheduler.TickScheduler
 import xyz.meowing.krypt.annotations.Module
@@ -45,8 +43,10 @@ object TicTacToeSolver : Feature(
     island = SkyBlockIsland.THE_CATACOMBS
 ) {
     private var inTicTacToe = false
-    private var bestMove: Box? = null
+    //private var bestMove: Box? = null
     private var roomCenter: Pair<Int, Int>? = null
+    private var boundingBox: VoxelShape? = null
+    private var blockPos: BlockPos? = null
 
     private val boxColor by ConfigDelegate<Color>("ticTacToeSolver.boxColor")
 
@@ -101,13 +101,22 @@ object TicTacToeSolver : Feature(
         }
 
         register<RenderEvent.World.Last> { event ->
-            bestMove?.let { box ->
+            /*bestMove?.let { box ->
                 Render3D.drawSpecialBB(
                     box,
                     boxColor,
                     event.context.consumers(),
                     event.context.matrixStack(),
                     phase = true
+                )
+            }*/
+
+            boundingBox?.let { box ->
+                Render3D.drawFilledShapeVoxel(
+                    box.offset(blockPos),
+                    boxColor,
+                    event.context.consumers(),
+                    event.context.matrixStack()
                 )
             }
         }
@@ -199,7 +208,13 @@ object TicTacToeSolver : Feature(
             val drawY = 72.0 - floor((moveIndex / 3).toDouble())
             val drawZ = (if (facing == 'Z') pos.z - sign * (moveIndex % 3) else pos.z).toDouble()
 
-            bestMove = Box(drawX, drawY, drawZ, drawX + 1, drawY + 1, drawZ + 1)
+            //bestMove = Box(drawX, drawY, drawZ, drawX + 1, drawY + 1, drawZ + 1)
+            blockPos = BlockPos(drawX.toInt(), drawY.toInt(), drawZ.toInt())
+
+            boundingBox = world.getBlockState(blockPos).getOutlineShape(
+                EmptyBlockView.INSTANCE,
+                blockPos
+            )
         }
     }
 
@@ -291,7 +306,8 @@ object TicTacToeSolver : Feature(
 
     private fun reset() {
         inTicTacToe = false
-        bestMove = null
+        boundingBox = null
+        //bestMove = null
         roomCenter = null
     }
 }

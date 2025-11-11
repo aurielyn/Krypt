@@ -1,9 +1,13 @@
 package xyz.meowing.krypt.features.solvers
 
 import net.minecraft.block.Blocks
+import net.minecraft.client.world.ClientWorld
 import net.minecraft.network.packet.c2s.play.PlayerInteractBlockC2SPacket
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Box
+import net.minecraft.util.shape.VoxelShape
+import net.minecraft.world.EmptyBlockView
+import xyz.meowing.knit.api.KnitClient
 import xyz.meowing.knit.api.KnitClient.client
 import xyz.meowing.knit.api.KnitPlayer.player
 import xyz.meowing.krypt.annotations.Module
@@ -34,7 +38,7 @@ object BoulderSolver : Feature(
     "boulderSolver",
     island = SkyBlockIsland.THE_CATACOMBS
 ) {
-    private data class BoulderBox(val box: BlockPos, val click: BlockPos, val render: BlockPos)
+    private data class BoulderBox(val box: BlockPos, val click: VoxelShape, val render: BlockPos, val clickPos: BlockPos)
 
     private val boulderSolutions = mutableMapOf<String, List<List<Double>>>()
     private var currentSolution = mutableListOf<BoulderBox>()
@@ -132,12 +136,11 @@ object BoulderSolver : Feature(
                     phase = true
                 )
 
-                Render3D.drawSpecialBB(
-                    box.click,
+                Render3D.drawFilledShapeVoxel(
+                    box.click.offset(box.clickPos),
                     clickColor,
                     event.context.consumers(),
                     event.context.matrixStack(),
-                    phase = true
                 )
             }
         }
@@ -157,6 +160,7 @@ object BoulderSolver : Feature(
     }
 
     private fun solve() {
+        val world = KnitClient.world ?: return
         val (sx, sy, sz) = bottomLeftBox.let { Triple(it.x, it.y, it.z) }
         var pattern = ""
 
@@ -170,9 +174,10 @@ object BoulderSolver : Feature(
 
         currentSolution = boulderSolutions[pattern]?.map { sol ->
             val box = getRealCoord(BlockPos(sol[0].toInt(), sy, sol[1].toInt()), roomCenter, rotation)
-            val click = getRealCoord(BlockPos(sol[2].toInt(), sy, sol[3].toInt()), roomCenter, rotation)
+            val clickPos = getRealCoord(BlockPos(sol[2].toInt(), sy, sol[3].toInt()), roomCenter, rotation)
+            val click = getVoxelShape(clickPos, world)
             val render = getRealCoord(BlockPos(sol[4].toInt(), sy, sol[5].toInt()), roomCenter, rotation)
-            BoulderBox(box, click, render)
+            BoulderBox(box, click, render, clickPos)
         }?.toMutableList() ?: mutableListOf()
     }
 
@@ -182,5 +187,12 @@ object BoulderSolver : Feature(
         rotation = 0
         currentSolution.clear()
         startTime = null
+    }
+
+    private fun getVoxelShape(pos: BlockPos, world: ClientWorld): VoxelShape {
+        return world.getBlockState(pos).getOutlineShape(
+            EmptyBlockView.INSTANCE,
+            pos
+        )
     }
 }
