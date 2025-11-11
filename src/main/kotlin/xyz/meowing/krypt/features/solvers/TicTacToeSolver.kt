@@ -95,7 +95,7 @@ object TicTacToeSolver : Feature(
             val packet = event.packet as? EntitySpawnS2CPacket ?: return@register
             if (packet.entityType != EntityType.ITEM_FRAME) return@register
 
-            TickScheduler.Server.schedule(2) {
+            TickScheduler.Server.schedule(5) {
                 scanBoard()
             }
         }
