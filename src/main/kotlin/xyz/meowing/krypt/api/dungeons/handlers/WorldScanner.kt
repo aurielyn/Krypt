@@ -149,11 +149,18 @@ object WorldScanner {
             DungeonAPI.uniqueRooms.add(it)
         }
 
-        scanRoomNeighbors(room, x, z, rx, rz, roofHeight)
+        scanRoomNeighbors(room, cx, cz, x, z, rx, rz, roofHeight)
     }
 
-    private fun scanRoomNeighbors(room: Room, x: Int, z: Int, rx: Int, rz: Int, roofHeight: Int) {
+    private fun scanRoomNeighbors(room: Room, cx: Int, cz: Int, x: Int, z: Int, rx: Int, rz: Int, roofHeight: Int) {
         for ((dx, dz, cxOff, zOff) in ScanUtils.directions) {
+            val doorCx = cx + dx
+            val doorCz = cz + dz
+            val doorComp = doorCx to doorCz
+            val doorIdx = DungeonAPI.getDoorIdx(doorComp)
+
+            if (DungeonAPI.getDoorAtIdx(doorIdx) != null) continue
+
             val nx = rx + dx
             val nz = rz + dz
             val blockBelow = WorldUtils.getBlockNumericId(nx, roofHeight, nz)
