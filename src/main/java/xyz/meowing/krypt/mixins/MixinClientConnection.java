@@ -32,6 +32,7 @@ public class MixinClientConnection {
     //$$ private void krypt$onPacketSend(Packet<?> packet, ChannelFutureListener channelFutureListener, boolean flush, CallbackInfo ci) {
     //#else
     private void krypt$onPacketSend(Packet<?> packet, PacketCallbacks callbacks, boolean flush, CallbackInfo ci) {
+    //#endif
         if (EventBus.INSTANCE.post(new PacketEvent.Sent(packet))) ci.cancel();
     }
 }
