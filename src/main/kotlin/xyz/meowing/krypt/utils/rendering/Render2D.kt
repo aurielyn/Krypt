@@ -1,4 +1,4 @@
-package xyz.meowing.krypt.utils
+package xyz.meowing.krypt.utils.rendering
 
 import net.minecraft.block.entity.SkullBlockEntity
 import net.minecraft.client.gui.DrawContext

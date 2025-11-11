@@ -40,6 +40,6 @@ class Door(val worldPos: Pair<Int, Int>, val componentPos: Pair<Int, Int>) {
         if (!WorldScanUtils.isChunkLoaded(x, z)) return
 
         val id = WorldUtils.getBlockNumericId(x, y, z)
-        opened = (id == 0) && this.type != DoorType.WITHER
+        opened = (id == 0)
     }
 }

@@ -357,7 +357,7 @@ object DungeonMap : Feature(
 
         ConfigManager
             .addFeature(
-                "Map Display",
+                "Map display",
                 "Configure map appearance",
                 "Map",
                 ConfigElement(
@@ -366,42 +366,42 @@ object DungeonMap : Feature(
                 )
             )
             .addFeatureOption(
-                "Map Info Under",
+                "Map info under",
                 ConfigElement(
                     "dungeonMap.mapInfoUnder",
                     ElementType.Switch(true)
                 )
             )
             .addFeatureOption(
-                "Map Border",
+                "Map border",
                 ConfigElement(
                     "dungeonMap.mapBorder",
                     ElementType.Switch(false)
                 )
             )
             .addFeatureOption(
-                "Map Border Width",
+                "Map border width",
                 ConfigElement(
                     "dungeonMap.mapBorderWidth",
                     ElementType.Slider(1.0, 5.0, 2.0, false)
                 )
             )
             .addFeatureOption(
-                "Map Border Color",
+                "Map border color",
                 ConfigElement(
                     "dungeonMap.mapBorderColor",
                     ElementType.ColorPicker(Color(0, 0, 0, 255))
                 )
             )
             .addFeatureOption(
-                "Map Background Color",
+                "Map background color",
                 ConfigElement(
                     "dungeonMap.mapBackgroundColor",
                     ElementType.ColorPicker(Color(0, 0, 0, 100))
                 )
             )
             .addFeatureOption(
-                "Boss Map Enabled",
+                "boss map",
                 ConfigElement(
                     "dungeonMap.bossMapEnabled",
                     ElementType.Switch(true)

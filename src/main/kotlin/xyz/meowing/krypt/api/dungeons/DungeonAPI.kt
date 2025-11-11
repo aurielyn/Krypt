@@ -80,11 +80,8 @@ object DungeonAPI {
             }
         }
 
-    val inBoss: Boolean
-        get() = floor != null && KnitPlayer.player?.let {
-            val (x, z) = WorldScanUtils.realCoordToComponent(it.x.toInt(), it.z.toInt())
-            6 * z + x > 35
-        } == true
+    var inBoss: Boolean = false
+        private set
 
     var mapLine1 = ""
         private set
@@ -115,6 +112,8 @@ object DungeonAPI {
     data class DiscoveredRoom(val x: Int, val z: Int, val room: Room)
 
     init {
+        var tickCount = 0
+
         EventBus.registerIn<LocationEvent.AreaChange>(SkyBlockIsland.THE_CATACOMBS) { event ->
             dungeonFloorRegex.find(event.new.name, "floor") { (f) ->
                 floor = DungeonFloor.getByName(f)
@@ -180,6 +179,13 @@ object DungeonAPI {
         EventBus.registerIn<TickEvent.Client>(SkyBlockIsland.THE_CATACOMBS) {
             updateHudLines()
             updateHeldItem()
+
+            if (tickCount % 5 != 0) return@registerIn
+
+            inBoss = floor != null && KnitPlayer.player?.let {
+                val (x, z) = WorldScanUtils.realCoordToComponent(it.x.toInt(), it.z.toInt())
+                6 * z + x > 35
+            } == true
         }
     }
 

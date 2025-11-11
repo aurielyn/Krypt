@@ -4,6 +4,7 @@ import net.minecraft.client.gui.DrawContext
 import xyz.meowing.knit.api.KnitClient.client
 import xyz.meowing.krypt.events.EventBus
 import xyz.meowing.krypt.events.core.GuiEvent
+import xyz.meowing.krypt.utils.rendering.Render2D
 import java.util.*
 
 object TitleUtils {

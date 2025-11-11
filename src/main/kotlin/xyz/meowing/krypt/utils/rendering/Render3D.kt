@@ -1,4 +1,4 @@
-package xyz.meowing.krypt.utils
+package xyz.meowing.krypt.utils.rendering
 
 import net.minecraft.util.shape.VoxelShape
 import net.minecraft.client.font.TextRenderer
@@ -19,6 +19,9 @@ import org.joml.Matrix4f
 import org.lwjgl.opengl.GL11
 import xyz.meowing.knit.api.KnitClient.client
 import xyz.meowing.knit.api.KnitPlayer.player
+import xyz.meowing.knit.api.render.world.RenderContext
+import xyz.meowing.krypt.utils.Utils
+import xyz.meowing.krypt.utils.rendering.layers.KryptRenderLayers
 import java.awt.Color
 import kotlin.math.cos
 import kotlin.math.max
@@ -31,19 +34,6 @@ object Render3D {
         val range = FloatArray(2)
         GL11.glGetFloatv(GL11.GL_LINE_WIDTH_RANGE, range)
         return min(max(width, range[0]), range[1])
-    }
-
-    fun drawEntityFilled(matrices: MatrixStack?, vertexConsumers: VertexConsumerProvider?, x: Double, y: Double, z: Double, width: Float, height: Float, r: Float, g: Float, b: Float, a: Float) {
-        val box = Box(x - width / 2, y, z - width / 2, x + width / 2, y + height, z + width / 2)
-        DebugRenderer.drawBox(
-            matrices,
-            vertexConsumers,
-            box,
-            r,
-            g,
-            b,
-            a
-        )
     }
 
     fun drawString(
@@ -138,7 +128,13 @@ object Render3D {
         consumers.draw()
     }
 
-    fun drawLineToEntity(entity: Entity, consumers: VertexConsumerProvider?, matrixStack: MatrixStack?, colorComponents: FloatArray, alpha: Float) {
+    fun drawLineToEntity(
+        entity: Entity,
+        consumers: VertexConsumerProvider?,
+        matrixStack: MatrixStack?,
+        colorComponents: FloatArray,
+        alpha: Float
+    ) {
         val player = player ?: return
         if (!player.canSee(entity)) return
 
@@ -150,7 +146,13 @@ object Render3D {
         drawLineToPos(entityPos, consumers, matrixStack, colorComponents, alpha)
     }
 
-    fun drawLineToPos(pos: Vec3d, consumers: VertexConsumerProvider?, matrixStack: MatrixStack?, colorComponents: FloatArray, alpha: Float) {
+    fun drawLineToPos(
+        pos: Vec3d,
+        consumers: VertexConsumerProvider?,
+        matrixStack: MatrixStack?,
+        colorComponents: FloatArray,
+        alpha: Float
+    ) {
         val player = player ?: return
         val playerPos = player.getCameraPosVec(Utils.partialTicks)
         val toTarget = pos.subtract(playerPos).normalize()
@@ -168,7 +170,14 @@ object Render3D {
         drawLineFromCursor(consumers, matrixStack, pos, colorComponents, alpha)
     }
 
-    fun drawLine(start: Vec3d, finish: Vec3d, thickness: Float, color: Color, consumers: VertexConsumerProvider?, matrixStack: MatrixStack?) {
+    fun drawLine(
+        start: Vec3d,
+        finish: Vec3d,
+        thickness: Float,
+        color: Color,
+        consumers: VertexConsumerProvider?,
+        matrixStack: MatrixStack?
+    ) {
         val cameraPos = client.gameRenderer.camera.pos
         val matrices = matrixStack ?: return
         matrices.push()
@@ -199,7 +208,13 @@ object Render3D {
         matrices.pop()
     }
 
-    fun drawLineFromCursor(consumers: VertexConsumerProvider?, matrixStack: MatrixStack?, point: Vec3d, colorComponents: FloatArray, alpha: Float) {
+    fun drawLineFromCursor(
+        consumers: VertexConsumerProvider?,
+        matrixStack: MatrixStack?,
+        point: Vec3d,
+        colorComponents: FloatArray,
+        alpha: Float
+    ) {
         val camera = client.gameRenderer.camera
         val cameraPos = camera.pos
         matrixStack?.push()
@@ -224,7 +239,15 @@ object Render3D {
         matrixStack?.pop()
     }
 
-    fun drawFilledCircle(consumers: VertexConsumerProvider?, matrixStack: MatrixStack?, center: Vec3d, radius: Float, segments: Int, borderColor: Int, fillColor: Int) {
+    fun drawFilledCircle(
+        consumers: VertexConsumerProvider?,
+        matrixStack: MatrixStack?,
+        center: Vec3d,
+        radius: Float,
+        segments: Int,
+        borderColor: Int,
+        fillColor: Int
+    ) {
         val camera = client.gameRenderer.camera.pos
         matrixStack?.push()
         matrixStack?.translate(-camera.x, -camera.y, -camera.z)
@@ -289,35 +312,55 @@ object Render3D {
         matrixStack?.pop()
     }
 
-    fun drawSpecialBB(pos: BlockPos, fillColor: Color, consumers: VertexConsumerProvider?, matrixStack: MatrixStack?) {
+    fun drawSpecialBB(
+        pos: BlockPos,
+        fillColor: Color,
+        consumers: VertexConsumerProvider?,
+        matrixStack: MatrixStack?,
+        phase: Boolean = false
+    ) {
         val bb = Box(pos).expand(0.002, 0.002, 0.002)
-        drawSpecialBB(bb, fillColor, consumers, matrixStack)
+        drawSpecialBB(bb, fillColor, consumers, matrixStack, phase)
     }
 
-    fun drawSpecialBB(bb: Box, fillColor: Color, consumers: VertexConsumerProvider?, matrixStack: MatrixStack?) {
-        drawFilledBB(bb, fillColor.withAlpha(0.6f), consumers, matrixStack)
-        drawOutlinedBB(bb, fillColor.withAlpha(0.9f), consumers, matrixStack)
+    fun drawSpecialBB(
+        bb: Box,
+        fillColor: Color,
+        consumers: VertexConsumerProvider?,
+        matrixStack: MatrixStack?,
+        phase: Boolean = false,
+        outline: Boolean = true,
+        customFillAlpha: Float = 0.9f,
+        customOutlineAlpha: Float = 1f
+    ) {
+        if (outline) {
+            drawFilledBB(bb, fillColor.withAlpha(customFillAlpha), consumers, matrixStack, phase)
+            drawOutlinedBB(bb, fillColor.darker().withAlpha(customOutlineAlpha), consumers, matrixStack, phase)
+        } else {
+            drawFilledBB(bb, fillColor, consumers, matrixStack, phase)
+        }
     }
 
-    fun drawOutlinedBB(bb: Box, color: Color, consumers: VertexConsumerProvider?, matrixStack: MatrixStack?) {
+    fun drawOutlinedBB(
+        bb: Box,
+        color: Color,
+        consumers: VertexConsumerProvider?,
+        matrixStack: MatrixStack?,
+        phase: Boolean = false
+    ) {
         val camera = client.gameRenderer.camera.pos
         val matrices = matrixStack ?: return
         matrices.push()
         matrices.translate(-camera.x, -camera.y, -camera.z)
         val consumers = consumers as VertexConsumerProvider.Immediate
-        val buffer = consumers.getBuffer(RenderLayer.getLines())
-
+        val buffer = consumers.getBuffer(if (phase) KryptRenderLayers.getLinesThroughWalls(1.0) else RenderLayer.getLines())
         val r = color.red / 255f
         val g = color.green / 255f
         val b = color.blue / 255f
         val a = color.alpha / 255f
 
         VertexRendering.drawBox(
-            //#if MC >= 1.21.9
-            //$$ matrices.peek(),
-            //#else
             matrices,
-            //#endif
             buffer,
             bb.minX,
             bb.minY,
@@ -330,12 +373,17 @@ object Render3D {
             b,
             a
         )
-
-        consumers.draw(RenderLayer.getLines())
+        consumers.draw(if (phase) KryptRenderLayers.getLinesThroughWalls(1.0) else RenderLayer.getLines())
         matrices.pop()
     }
 
-    fun drawFilledBB(bb: Box, color: Color, consumers: VertexConsumerProvider?, matrixStack: MatrixStack?) {
+    fun drawFilledBB(
+        bb: Box,
+        color: Color,
+        consumers: VertexConsumerProvider?,
+        matrixStack: MatrixStack?,
+        phase: Boolean = false
+    ) {
         val aabb = bb.expand(0.001, 0.001, 0.001)
         val camera = client.gameRenderer.camera.pos
         val matrices = matrixStack ?: return
@@ -343,13 +391,11 @@ object Render3D {
         matrices.translate(-camera.x, -camera.y, -camera.z)
         val entry = matrices.peek()
         val consumers = consumers as VertexConsumerProvider.Immediate
-        val buffer = consumers.getBuffer(RenderLayer.getDebugFilledBox())
-
+        val buffer = consumers.getBuffer(if (phase) KryptRenderLayers.FILLED_THROUGH_WALLS else RenderLayer.getDebugFilledBox())
         val a = color.alpha / 255f
         val r = color.red / 255f
         val g = color.green / 255f
         val b = color.blue / 255f
-
         val minX = aabb.minX.toFloat()
         val minY = aabb.minY.toFloat()
         val minZ = aabb.minZ.toFloat()
@@ -371,12 +417,16 @@ object Render3D {
         buffer.vertex(entry, maxX, maxY, maxZ).color(r, g, b, a)
         buffer.vertex(entry, maxX, minY, minZ).color(r, g, b, a)
         buffer.vertex(entry, maxX, minY, maxZ).color(r, g, b, a)
-
-        consumers.draw(RenderLayer.getDebugFilledBox())
+        consumers.draw(if (phase) KryptRenderLayers.FILLED_THROUGH_WALLS else RenderLayer.getDebugFilledBox())
         matrices.pop()
     }
 
-    fun drawFilledShapeVoxel(shape: VoxelShape, color: Color, consumers: VertexConsumerProvider?, matrixStack: MatrixStack?) {
+    fun drawFilledShapeVoxel(
+        shape: VoxelShape,
+        color: Color,
+        consumers: VertexConsumerProvider?,
+        matrixStack: MatrixStack?
+    ) {
         shape.boundingBoxes.forEach { box ->
             drawFilledBB(
                 box,

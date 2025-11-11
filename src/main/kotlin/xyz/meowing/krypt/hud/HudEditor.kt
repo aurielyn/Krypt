@@ -5,8 +5,8 @@ import xyz.meowing.knit.api.KnitClient
 import xyz.meowing.knit.api.input.KnitMouse
 import xyz.meowing.knit.api.screen.KnitScreen
 import xyz.meowing.krypt.hud.HudManager.customRenderers
-import xyz.meowing.krypt.utils.Render2D.height
-import xyz.meowing.krypt.utils.Render2D.width
+import xyz.meowing.krypt.utils.rendering.Render2D.height
+import xyz.meowing.krypt.utils.rendering.Render2D.width
 import java.awt.Color
 
 class HudEditor : KnitScreen("HUD Editor") {

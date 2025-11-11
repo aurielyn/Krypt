@@ -14,7 +14,7 @@ import xyz.meowing.krypt.hud.HudEditor
 import xyz.meowing.krypt.hud.HudManager
 import xyz.meowing.krypt.managers.config.ConfigElement
 import xyz.meowing.krypt.managers.config.ConfigManager
-import xyz.meowing.krypt.utils.Render2D
+import xyz.meowing.krypt.utils.rendering.Render2D
 
 @Module
 object RoomName: Feature(

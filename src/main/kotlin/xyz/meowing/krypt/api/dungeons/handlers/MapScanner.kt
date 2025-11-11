@@ -141,15 +141,19 @@ object MapScanner {
         }
 
         val check = when {
+            rcolor == 18.toByte() && DungeonAPI.bloodKilledAll && center == 30.toByte() -> {
+                if (room.checkmark != Checkmark.GREEN) roomCleared(room, Checkmark.GREEN)
+                Checkmark.GREEN
+            }
+            rcolor == 18.toByte() && DungeonAPI.bloodSpawnedAll -> {
+                if (room.checkmark != Checkmark.WHITE) roomCleared(room, Checkmark.WHITE)
+                Checkmark.WHITE
+            }
             center == 30.toByte() && rcolor != 30.toByte() -> {
                 if (room.checkmark != Checkmark.GREEN) roomCleared(room, Checkmark.GREEN)
                 Checkmark.GREEN
             }
             center == 34.toByte() -> {
-                if (room.checkmark != Checkmark.WHITE) roomCleared(room, Checkmark.WHITE)
-                Checkmark.WHITE
-            }
-            rcolor == 18.toByte() && DungeonAPI.bloodSpawnedAll -> {
                 if (room.checkmark != Checkmark.WHITE) roomCleared(room, Checkmark.WHITE)
                 Checkmark.WHITE
             }

@@ -4,9 +4,9 @@ import net.minecraft.client.gui.DrawContext
 import xyz.meowing.krypt.api.dungeons.DungeonAPI
 import xyz.meowing.krypt.features.map.DungeonMap
 import xyz.meowing.krypt.features.map.utils.Utils
-import xyz.meowing.krypt.utils.Render2D
-import xyz.meowing.krypt.utils.Render2D.pushPop
-import xyz.meowing.krypt.utils.Render2D.width
+import xyz.meowing.krypt.utils.rendering.Render2D
+import xyz.meowing.krypt.utils.rendering.Render2D.pushPop
+import xyz.meowing.krypt.utils.rendering.Render2D.width
 
 object MapRenderer {
     private val defaultMapSize = Pair(138, 138)

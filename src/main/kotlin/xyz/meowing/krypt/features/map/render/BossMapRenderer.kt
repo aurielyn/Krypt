@@ -9,8 +9,8 @@ import xyz.meowing.krypt.api.dungeons.enums.DungeonClass
 import xyz.meowing.krypt.api.dungeons.enums.DungeonPlayer
 import xyz.meowing.krypt.features.map.DungeonMap
 import xyz.meowing.krypt.features.map.utils.Utils
-import xyz.meowing.krypt.utils.Render2D
-import xyz.meowing.krypt.utils.Render2D.pushPop
+import xyz.meowing.krypt.utils.rendering.Render2D
+import xyz.meowing.krypt.utils.rendering.Render2D.pushPop
 import java.util.UUID
 import kotlin.math.min
 

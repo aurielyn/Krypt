@@ -13,8 +13,8 @@ import xyz.meowing.krypt.events.core.RenderEvent
 import xyz.meowing.krypt.features.Feature
 import xyz.meowing.krypt.managers.config.ConfigElement
 import xyz.meowing.krypt.managers.config.ConfigManager
-import xyz.meowing.krypt.utils.Render3D
 import xyz.meowing.krypt.utils.Utils.toFloatArray
+import xyz.meowing.krypt.utils.rendering.Render3D
 import java.awt.Color
 
 @Module
@@ -32,7 +32,7 @@ object KeyHighlight : Feature(
     override fun addConfig() {
         ConfigManager
             .addFeature(
-                "Key Highlight",
+                "Key highlight",
                 "Highlight blood/wither door key in the world",
                 "Highlights",
                 ConfigElement(
@@ -41,28 +41,28 @@ object KeyHighlight : Feature(
                 )
             )
             .addFeatureOption(
-                "Wither Key",
+                "Wither key",
                 ConfigElement(
                     "keyHighlight.wither",
                     ElementType.Switch(true)
                 )
             )
             .addFeatureOption(
-                "Blood Key",
+                "Blood key",
                 ConfigElement(
                     "keyHighlight.blood",
                     ElementType.Switch(true)
                 )
             )
             .addFeatureOption(
-                "Wither Key Color",
+                "Wither key color",
                 ConfigElement(
                     "keyHighlight.witherColor",
                     ElementType.ColorPicker(Color(0, 0, 0, 60))
                 )
             )
             .addFeatureOption(
-                "Blood Key Color",
+                "Blood key color",
                 ConfigElement(
                     "keyHighlight.bloodColor",
                     ElementType.ColorPicker(Color(255, 0, 0, 60))
