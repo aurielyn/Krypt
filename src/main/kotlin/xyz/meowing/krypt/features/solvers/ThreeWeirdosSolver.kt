@@ -79,7 +79,7 @@ object ThreeWeirdosSolver : Feature(
     override fun initialize() {
         register<DungeonEvent.Room.Change> { event ->
             if (event.new.name != "Three Weirdos") return@register
-            
+
             inWeirdos = true
             rotation = 360 - (event.new.rotation ?: 0)
         }
@@ -118,7 +118,7 @@ object ThreeWeirdosSolver : Feature(
 
         register<ChatEvent.Receive> { event ->
             if (!inWeirdos || event.isActionBar) return@register
-            
+
             val match = npcRegex.find(event.message.stripped) ?: return@register
             val (npc, msg) = match.destructured
 
@@ -129,11 +129,11 @@ object ThreeWeirdosSolver : Feature(
                 .filterIsInstance<ArmorStandEntity>()
                 .find { it.name.stripped == npc } ?: return@register
 
-            val offset = rotateBlockPos(BlockPos(0, 0, 1), rotation)
+            val offset = rotateBlockPos(BlockPos(1, 0, 0), rotation)
             val pos = BlockPos(
-                correctNPC.x.toInt(),
+                (correctNPC.x - 0.5).toInt(),
                 69,
-                correctNPC.z.toInt()
+                (correctNPC.z - 0.5).toInt()
             ).add(offset)
 
             if (solutions.any { it.matches(msg) }) {
