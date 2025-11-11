@@ -2,6 +2,7 @@ package xyz.meowing.krypt.mixins;
 
 import io.netty.channel.ChannelHandlerContext;
 import net.minecraft.network.ClientConnection;
+import net.minecraft.network.PacketCallbacks;
 import net.minecraft.network.packet.Packet;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -20,5 +21,10 @@ public class MixinClientConnection {
     @Inject(method = "channelRead0*", at = @At("TAIL"))
     private void krypt$onReceivePacketPost(ChannelHandlerContext context, Packet<?> packet, CallbackInfo ci) {
         EventBus.INSTANCE.post(new PacketEvent.ReceivedPost(packet));
+    }
+
+    @Inject(method = "sendImmediately", at = @At("HEAD"), cancellable = true)
+    private void krypt$onPacketSend(Packet<?> packet, PacketCallbacks callbacks, boolean flush, CallbackInfo ci) {
+        if (EventBus.INSTANCE.post(new PacketEvent.Sent(packet))) ci.cancel();
     }
 }

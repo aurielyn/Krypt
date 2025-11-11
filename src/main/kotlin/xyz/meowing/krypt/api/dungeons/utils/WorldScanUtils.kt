@@ -84,4 +84,26 @@ object WorldScanUtils {
             else -> "Unknown"
         }
     }
+
+    private const val ROOM_SIZE_SHIFT = 5
+    private const val DUNGEON_START = -185
+
+    fun getRoomCenter(posX: Int, posZ: Int): Pair<Int, Int> {
+        val roomX = (posX - DUNGEON_START + (1 shl (ROOM_SIZE_SHIFT - 1))) shr ROOM_SIZE_SHIFT
+        val roomZ = (posZ - DUNGEON_START + (1 shl (ROOM_SIZE_SHIFT - 1))) shr ROOM_SIZE_SHIFT
+        return Pair(
+            ((roomX shl ROOM_SIZE_SHIFT) + DUNGEON_START),
+            ((roomZ shl ROOM_SIZE_SHIFT) + DUNGEON_START)
+        )
+    }
+
+    fun getRoomCenterComponent(posX: Int, posZ: Int): Pair<Int, Int> {
+        val (centerX, centerZ) = getRoomCenter(posX, posZ)
+        return realCoordToComponent(centerX, centerZ, includeDoors = false)
+    }
+
+    fun isInRoomBounds(x: Int, z: Int, roomX: Int, roomZ: Int): Boolean {
+        val halfRoom = ScanUtils.halfRoomSize
+        return x in (roomX - halfRoom)..(roomX + halfRoom) && z in (roomZ - halfRoom)..(roomZ + halfRoom)
+    }
 }
