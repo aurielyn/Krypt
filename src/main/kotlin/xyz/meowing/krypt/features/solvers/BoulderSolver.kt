@@ -141,6 +141,7 @@ object BoulderSolver : Feature(
                     clickColor,
                     event.context.consumers(),
                     event.context.matrixStack(),
+                    phase = true
                 )
             }
         }
@@ -153,7 +154,7 @@ object BoulderSolver : Feature(
             val block = client.world?.getBlockState(blockPos)?.block ?: return@register
 
             when (block) {
-                Blocks.OAK_WALL_SIGN, Blocks.STONE_BUTTON -> currentSolution.find { it.click == blockPos }?.let { currentSolution.remove(it) }
+                Blocks.OAK_WALL_SIGN, Blocks.STONE_BUTTON -> currentSolution.find { it.clickPos == blockPos }?.let { currentSolution.remove(it) }
                 Blocks.CHEST -> reset()
             }
         }

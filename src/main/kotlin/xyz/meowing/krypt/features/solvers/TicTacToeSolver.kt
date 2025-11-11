@@ -43,7 +43,6 @@ object TicTacToeSolver : Feature(
     island = SkyBlockIsland.THE_CATACOMBS
 ) {
     private var inTicTacToe = false
-    //private var bestMove: Box? = null
     private var roomCenter: Pair<Int, Int>? = null
     private var boundingBox: VoxelShape? = null
     private var blockPos: BlockPos? = null
@@ -101,16 +100,6 @@ object TicTacToeSolver : Feature(
         }
 
         register<RenderEvent.World.Last> { event ->
-            /*bestMove?.let { box ->
-                Render3D.drawSpecialBB(
-                    box,
-                    boxColor,
-                    event.context.consumers(),
-                    event.context.matrixStack(),
-                    phase = true
-                )
-            }*/
-
             boundingBox?.let { box ->
                 Render3D.drawFilledShapeVoxel(
                     box.offset(blockPos),
@@ -208,7 +197,6 @@ object TicTacToeSolver : Feature(
             val drawY = 72.0 - floor((moveIndex / 3).toDouble())
             val drawZ = (if (facing == 'Z') pos.z - sign * (moveIndex % 3) else pos.z).toDouble()
 
-            //bestMove = Box(drawX, drawY, drawZ, drawX + 1, drawY + 1, drawZ + 1)
             blockPos = BlockPos(drawX.toInt(), drawY.toInt(), drawZ.toInt())
 
             boundingBox = world.getBlockState(blockPos).getOutlineShape(
@@ -307,7 +295,6 @@ object TicTacToeSolver : Feature(
     private fun reset() {
         inTicTacToe = false
         boundingBox = null
-        //bestMove = null
         roomCenter = null
     }
 }
