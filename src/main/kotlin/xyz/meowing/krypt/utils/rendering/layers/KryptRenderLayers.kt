@@ -12,8 +12,8 @@ import java.util.OptionalDouble
 import java.util.function.DoubleFunction
 
 /**
- * Modified from Stella's RenderLayers.
- * Original File: [GitHub](https://github.com/Eclipse-5214/stella/blob/main/src/main/kotlin/co/stellarskys/stella/utils/render/StellaRenderLayers.kt)
+ * Modified from Devonian's RenderLayers.
+ * Original File: [GitHub](https://github.com/Synnerz/devonian/blob/1ad3ce3a40d4f6409eaa5407d1b180ba293edb43/src/main/kotlin/com/github/synnerz/devonian/utils/render/DLayers.kt)
  */
 object KryptRenderLayers {
     private val linesThroughWallsLayers: Double2ObjectMap<RenderLayer.MultiPhase> = Double2ObjectOpenHashMap()
