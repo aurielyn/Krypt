@@ -1,15 +1,18 @@
 package xyz.meowing.krypt.features.highlights
 
 import net.minecraft.util.math.Box
+import tech.thatgravyboat.skyblockapi.utils.regex.matchWhen
 import tech.thatgravyboat.skyblockapi.utils.text.TextProperties.stripped
 import xyz.meowing.krypt.annotations.Module
 import xyz.meowing.krypt.api.dungeons.DungeonAPI
+import xyz.meowing.krypt.api.dungeons.enums.DungeonKey
 import xyz.meowing.krypt.api.dungeons.enums.map.DoorState
 import xyz.meowing.krypt.api.dungeons.enums.map.DoorType
 import xyz.meowing.krypt.api.location.SkyBlockIsland
 import xyz.meowing.krypt.config.ConfigDelegate
 import xyz.meowing.krypt.config.ui.types.ElementType
 import xyz.meowing.krypt.events.core.ChatEvent
+import xyz.meowing.krypt.events.core.LocationEvent
 import xyz.meowing.krypt.events.core.RenderEvent
 import xyz.meowing.krypt.features.Feature
 import xyz.meowing.krypt.managers.config.ConfigElement
@@ -22,9 +25,10 @@ object DoorHighlight : Feature(
     "doorHighlight",
     island = SkyBlockIsland.THE_CATACOMBS
 ) {
-    private val obtainKey = Regex("""^(?:\[[^]]+]\s)?(\w+) has obtained (Wither|Blood) Key!$""")
-    private val openedDoor = Regex("""^(\w+) opened a WITHER door!$""")
-    private val bloodOpened = Regex("""^The BLOOD DOOR has been opened!$""")
+    private val keyObtainedRegex = Regex("(?:\\[.+] ?)?\\w+ has obtained (?<type>\\w+) Key!")
+    private val keyPickedUpRegex = Regex("A (?<type>\\w+) Key was picked up!")
+    private val witherDoorOpenRegex = Regex("\\w+ opened a WITHER door!")
+    private val bloodDoorOpenRegex = Regex("The BLOOD DOOR has been opened!")
 
     private var witherKeyObtained = false
     private var bloodKeyObtained = false
@@ -77,34 +81,34 @@ object DoorHighlight : Feature(
     }
 
     override fun initialize() {
+        register<LocationEvent.WorldChange> { reset() }
+
         register<ChatEvent.Receive> { event ->
             val message = event.message.stripped
 
-            val keyMatch = obtainKey.find(message)
-            if (keyMatch != null) {
-                val keyType = keyMatch.groupValues[2]
-                when (keyType) {
-                    "Wither" -> witherKeyObtained = true
-                    "Blood" -> bloodKeyObtained = true
+            matchWhen(message) {
+                case(keyObtainedRegex, "type") { (type) ->
+                    handleGetKey(type)
                 }
-                return@register
-            }
 
-            val doorMatch = openedDoor.find(message)
-            if (doorMatch != null) {
-                witherKeyObtained = false
-                return@register
-            }
+                case(keyPickedUpRegex, "type") { (type) ->
+                    handleGetKey(type)
+                }
 
-            val bloodMatch = bloodOpened.find(message)
-            if (bloodMatch != null) {
-                bloodKeyObtained = false
-                bloodOpen = true
+                case(witherDoorOpenRegex) {
+                    witherKeyObtained = false
+                }
+
+                case(bloodDoorOpenRegex) {
+                    bloodKeyObtained = false
+                    bloodOpen = true
+                }
             }
         }
 
         register<RenderEvent.World.Last> { event ->
             if (bloodOpen) return@register
+
             DungeonAPI.doors.forEach { door ->
                 if (door == null) return@forEach
                 if (door.state != DoorState.DISCOVERED) return@forEach
@@ -133,5 +137,19 @@ object DoorHighlight : Feature(
                 )
             }
         }
+    }
+
+    private fun handleGetKey(type: String) {
+        val key = DungeonKey.getById(type) ?: return
+        when (key) {
+            DungeonKey.WITHER -> witherKeyObtained = true
+            DungeonKey.BLOOD -> bloodKeyObtained = true
+        }
+    }
+
+    private fun reset() {
+        witherKeyObtained = false
+        bloodKeyObtained = false
+        bloodOpen = false
     }
 }
