@@ -10,8 +10,8 @@ import net.minecraft.util.Identifier
 import xyz.meowing.krypt.Krypt
 
 /**
- * Modified from Stella's RenderPipelines.
- * Original File: [GitHub](https://github.com/Eclipse-5214/stella/blob/main/src/main/kotlin/co/stellarskys/stella/utils/render/StellaRenderPipelines.kt)
+ * Modified from Devonian's RenderPipelines.
+ * Original File: [GitHub](https://github.com/Synnerz/devonian/blob/1ad3ce3a40d4f6409eaa5407d1b180ba293edb43/src/main/kotlin/com/github/synnerz/devonian/utils/render/DPipelines.kt
  */
 object KryptRenderPipelines {
     val LINES_THROUGH_WALLS: RenderPipeline = RenderPipelines.register(
