@@ -1,7 +1,6 @@
 package xyz.meowing.krypt.api.dungeons.enums.map
 
 import net.minecraft.block.Blocks
-import xyz.meowing.krypt.Krypt
 import xyz.meowing.krypt.api.dungeons.enums.DungeonPlayer
 import xyz.meowing.krypt.api.dungeons.handlers.RoomRegistry
 import xyz.meowing.krypt.api.dungeons.utils.ScanUtils
