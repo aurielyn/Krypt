@@ -1,12 +1,12 @@
 package xyz.meowing.krypt.features.solvers
 
-import net.minecraft.block.Blocks
-import net.minecraft.client.world.ClientWorld
-import net.minecraft.network.packet.c2s.play.PlayerInteractBlockC2SPacket
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.Box
-import net.minecraft.util.shape.VoxelShape
-import net.minecraft.world.EmptyBlockView
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.client.multiplayer.ClientLevel
+import net.minecraft.network.protocol.game.ServerboundUseItemOnPacket
+import net.minecraft.core.BlockPos
+import net.minecraft.world.phys.AABB
+import net.minecraft.world.phys.shapes.VoxelShape
+import net.minecraft.world.level.EmptyBlockGetter
 import xyz.meowing.knit.api.KnitClient
 import xyz.meowing.knit.api.KnitClient.client
 import xyz.meowing.knit.api.KnitPlayer.player
@@ -129,7 +129,7 @@ object BoulderSolver : Feature(
             val boxes = if (showAll) currentSolution else listOf(currentSolution.first())
 
             boxes.forEach { box ->
-                val boxArea = Box(
+                val boxArea = AABB(
                     box.box.x - 1.0, box.box.y - 1.0, box.box.z - 1.0,
                     box.box.x + 2.0, box.box.y + 2.0, box.box.z + 2.0
                 )
@@ -143,7 +143,7 @@ object BoulderSolver : Feature(
                 )
 
                 Render3D.drawFilledShapeVoxel(
-                    box.click.offset(box.clickPos),
+                    box.click.move(box.clickPos),
                     clickColor,
                     event.context.consumers(),
                     event.context.matrixStack(),
@@ -155,9 +155,9 @@ object BoulderSolver : Feature(
         register<PacketEvent.Sent> { event ->
             if (!inBoulder) return@register
 
-            val packet = event.packet as? PlayerInteractBlockC2SPacket ?: return@register
-            val blockPos = packet.blockHitResult.blockPos
-            val block = client.world?.getBlockState(blockPos)?.block ?: return@register
+            val packet = event.packet as? ServerboundUseItemOnPacket ?: return@register
+            val blockPos = packet.hitResult.blockPos
+            val block = client.level?.getBlockState(blockPos)?.block ?: return@register
 
             when (block) {
                 Blocks.OAK_WALL_SIGN, Blocks.STONE_BUTTON -> currentSolution.find { it.clickPos == blockPos }?.let { currentSolution.remove(it) }
@@ -196,9 +196,9 @@ object BoulderSolver : Feature(
         startTime = null
     }
 
-    private fun getVoxelShape(pos: BlockPos, world: ClientWorld): VoxelShape {
-        return world.getBlockState(pos).getOutlineShape(
-            EmptyBlockView.INSTANCE,
+    private fun getVoxelShape(pos: BlockPos, world: ClientLevel): VoxelShape {
+        return world.getBlockState(pos).getShape(
+            EmptyBlockGetter.INSTANCE,
             pos
         )
     }

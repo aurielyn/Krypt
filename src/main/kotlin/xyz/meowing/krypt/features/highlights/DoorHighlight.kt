@@ -1,6 +1,6 @@
 package xyz.meowing.krypt.features.highlights
 
-import net.minecraft.util.math.Box
+import net.minecraft.world.phys.AABB
 import tech.thatgravyboat.skyblockapi.utils.regex.matchWhen
 import tech.thatgravyboat.skyblockapi.utils.text.TextProperties.stripped
 import xyz.meowing.krypt.annotations.Module
@@ -122,7 +122,7 @@ object DoorHighlight : Feature(
                 }
 
                 val (x, y, z) = door.getPos()
-                val box = Box(
+                val box = AABB(
                     x.toDouble() - 1.0, y.toDouble(), z.toDouble() - 1,
                     x.toDouble() + 2.0, y.toDouble() + 4.0, z.toDouble() + 2
                 )

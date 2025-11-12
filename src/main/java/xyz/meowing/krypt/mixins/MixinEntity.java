@@ -1,6 +1,6 @@
 package xyz.meowing.krypt.mixins;
 
-import net.minecraft.entity.Entity;
+import net.minecraft.world.entity.Entity;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -25,7 +25,7 @@ public class MixinEntity implements EntityAccessor {
     @Unique
     private boolean zen$glowingThisFrame = false;
 
-    @Inject(method = "getTeamColorValue", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "getTeamColor", at = @At("HEAD"), cancellable = true)
     public void getTeamColor(CallbackInfoReturnable<Integer> cir) {
         if (hasCustomGlow()) {
             cir.setReturnValue(zen$glowingColor);
@@ -33,7 +33,7 @@ public class MixinEntity implements EntityAccessor {
         }
     }
 
-    @Inject(method = "isGlowing", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "isCurrentlyGlowing", at = @At("HEAD"), cancellable = true)
     public void isGlowing(CallbackInfoReturnable<Boolean> cir) {
         if (hasCustomGlow()) {
             cir.setReturnValue(true);

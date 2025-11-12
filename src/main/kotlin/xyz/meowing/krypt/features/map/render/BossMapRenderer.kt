@@ -1,8 +1,8 @@
 package xyz.meowing.krypt.features.map.render
 
-import net.minecraft.client.gui.DrawContext
-import net.minecraft.util.Identifier
-import net.minecraft.util.math.RotationAxis
+import net.minecraft.client.gui.GuiGraphics
+import net.minecraft.resources.ResourceLocation
+import com.mojang.math.Axis
 import xyz.meowing.knit.api.KnitPlayer
 import xyz.meowing.krypt.api.dungeons.DungeonAPI
 import xyz.meowing.krypt.api.dungeons.enums.DungeonClass
@@ -21,13 +21,9 @@ import kotlin.math.min
 object BossMapRenderer {
     private const val MAP_SIZE = 128
 
-    fun renderBossMap(context: DrawContext) {
-        val matrix = context.matrices
-        //#if MC >= 1.21.9
-        //$$ val playerPos = KnitPlayer.player?.entityPos ?: return
-        //#else
-        val playerPos = KnitPlayer.player?.pos ?: return
-        //#endif
+    fun renderBossMap(context: GuiGraphics) {
+        val matrix = context.pose()
+        val playerPos = KnitPlayer.player?.position() ?: return
         val bossMap = Utils.BossMapRegistry.getBossMap(DungeonAPI.floor?.floorNumber ?: return, playerPos) ?: return
         val texture = bossMap.image
 
@@ -52,7 +48,7 @@ object BossMapRenderer {
             //#endif
             context.enableScissor(0, 0, MAP_SIZE, MAP_SIZE)
 
-            Render2D.drawImage(context, Identifier.of("krypt", "krypt/boss/$texture"), (-offsetX).toInt(), (-offsetY).toInt(), (textureWidth * scale).toInt(), (textureHeight * scale).toInt())
+            Render2D.drawImage(context, ResourceLocation.fromNamespaceAndPath("krypt", "krypt/boss/$texture"), (-offsetX).toInt(), (-offsetY).toInt(), (textureWidth * scale).toInt(), (textureHeight * scale).toInt())
 
             renderBossPlayers(context, bossMap, offsetX, offsetY, sizeInWorld)
 
@@ -60,8 +56,8 @@ object BossMapRenderer {
         }
     }
 
-    private fun renderBossPlayers(context: DrawContext, bossMap: Utils.BossMapData, offsetX: Double, offsetY: Double, sizeInWorld: Int) {
-        val matrix = context.matrices
+    private fun renderBossPlayers(context: GuiGraphics, bossMap: Utils.BossMapData, offsetX: Double, offsetY: Double, sizeInWorld: Int) {
+        val matrix = context.pose()
 
         for (player in DungeonAPI.players) {
             if (player == null || (player.dead && player.name != KnitPlayer.name)) continue
@@ -90,9 +86,9 @@ object BossMapRenderer {
         }
     }
 
-    private fun renderBossPlayerIcon(context: DrawContext, player: DungeonPlayer, x: Double, y: Double, rotation: Float) {
+    private fun renderBossPlayerIcon(context: GuiGraphics, player: DungeonPlayer, x: Double, y: Double, rotation: Float) {
         context.pushPop {
-            val matrix = context.matrices
+            val matrix = context.pose()
 
             //#if MC >= 1.21.7
             //$$ matrix.translate(x.toFloat(), y.toFloat())
@@ -100,7 +96,7 @@ object BossMapRenderer {
             //$$ matrix.scale(1f, 1f)
             //#else
             matrix.translate(x.toFloat(), y.toFloat(), 0f)
-            matrix.multiply(RotationAxis.POSITIVE_Z.rotationDegrees(rotation.toFloat()))
+            matrix.mulPose(Axis.ZP.rotationDegrees(rotation.toFloat()))
             matrix.scale(1f, 1f, 1f)
             //#endif
 

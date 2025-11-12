@@ -1,10 +1,10 @@
 package xyz.meowing.krypt.features.solvers
 
 import com.google.gson.JsonObject
-import net.minecraft.block.Blocks
-import net.minecraft.network.packet.c2s.play.PlayerInteractBlockC2SPacket
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.Vec3d
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.network.protocol.game.ServerboundUseItemOnPacket
+import net.minecraft.core.BlockPos
+import net.minecraft.world.phys.Vec3
 import xyz.meowing.knit.api.KnitPlayer.player
 import xyz.meowing.knit.api.scheduler.TickScheduler
 import xyz.meowing.krypt.Krypt
@@ -187,8 +187,8 @@ object WaterBoardSolver : Feature(
 
         register<PacketEvent.Sent> { event ->
             if (solutions.isEmpty()) return@register
-            val packet = event.packet as? PlayerInteractBlockC2SPacket ?: return@register
-            val position = packet.blockHitResult.blockPos
+            val packet = event.packet as? ServerboundUseItemOnPacket ?: return@register
+            val position = packet.hitResult.blockPos
 
             LeverBlock.entries.find { it.getLeverPos() == position }?.let {
                 if (it == LeverBlock.WATER && openedWaterTicks == -1) {
@@ -249,7 +249,7 @@ object WaterBoardSolver : Feature(
             }
     }
 
-    private fun getBlockAt(pos: BlockPos, center: BlockPos, rot: Int): net.minecraft.block.Block? {
+    private fun getBlockAt(pos: BlockPos, center: BlockPos, rot: Int): net.minecraft.world.level.block.Block? {
         val realPos = WorldScanUtils.getRealCoord(pos, center, rot)
         return WorldUtils.getBlockStateAt(realPos.x, realPos.y, realPos.z)?.block
     }
@@ -264,7 +264,7 @@ object WaterBoardSolver : Feature(
         rotation = null
     }
 
-    private fun BlockPos.toCenterVec() = Vec3d(x + 0.5, y + 0.5, z + 0.5)
+    private fun BlockPos.toCenterVec() = Vec3(x + 0.5, y + 0.5, z + 0.5)
 
     private enum class WoolColor(val relativePosition: BlockPos) {
         PURPLE(BlockPos(0, 56, 4)),

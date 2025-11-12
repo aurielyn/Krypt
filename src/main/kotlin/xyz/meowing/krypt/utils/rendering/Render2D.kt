@@ -1,19 +1,23 @@
 package xyz.meowing.krypt.utils.rendering
 
-import net.minecraft.block.entity.SkullBlockEntity
-import net.minecraft.client.gui.DrawContext
-import net.minecraft.client.gui.PlayerSkinDrawer
-import net.minecraft.client.render.RenderLayer
-import net.minecraft.client.util.DefaultSkinHelper
-import net.minecraft.item.ItemStack
-import net.minecraft.text.Text
-import net.minecraft.util.Colors
-import net.minecraft.util.Identifier
+import net.minecraft.world.level.block.entity.SkullBlockEntity
+import net.minecraft.client.gui.GuiGraphics
+import net.minecraft.client.gui.components.PlayerFaceRenderer
+import net.minecraft.client.renderer.RenderType
+import net.minecraft.client.resources.DefaultPlayerSkin
+import net.minecraft.world.item.ItemStack
+import net.minecraft.network.chat.Component
+import net.minecraft.util.CommonColors
+import net.minecraft.resources.ResourceLocation
 import tech.thatgravyboat.skyblockapi.utils.extentions.stripColor
 import xyz.meowing.knit.api.KnitClient.client
 import java.awt.Color
 import java.util.Optional
 import java.util.UUID
+
+//#if MC >= 1.21.8
+//$$ import net.minecraft.client.renderer.RenderPipelines
+//#endif
 
 //#if MC >= 1.21.9
 //$$ import com.mojang.authlib.GameProfile
@@ -26,8 +30,8 @@ object Render2D {
     }
 
     fun renderString(
-        context: DrawContext,
-        text: Text,
+        context: GuiGraphics,
+        text: Component,
         x: Float,
         y: Float,
         scale: Float,
@@ -35,118 +39,118 @@ object Render2D {
         textStyle: TextStyle = TextStyle.DEFAULT
     ) {
         //#if MC >= 1.21.7
-        //$$ context.matrices.pushMatrix()
-        //$$ context.matrices.translate(x, y)
-        //$$ context.matrices.scale(scale, scale)
+        //$$ context.pose().pushMatrix()
+        //$$ context.pose().translate(x, y)
+        //$$ context.pose().scale(scale, scale)
         //#else
-        context.matrices.push()
-        context.matrices.translate(x, y, 0f)
-        context.matrices.scale(scale, scale, 1f)
+        context.pose().pushPose()
+        context.pose().translate(x, y, 0f)
+        context.pose().scale(scale, scale, 1f)
         //#endif
 
         when (textStyle) {
             TextStyle.DROP_SHADOW -> {
-                context.drawText(client.textRenderer, text, 0, 0, colors, true)
+                context.drawString(client.font, text, 0, 0, colors, true)
             }
 
             TextStyle.DEFAULT -> {
-                context.drawText(client.textRenderer, text, 0, 0, colors, false)
+                context.drawString(client.font, text, 0, 0, colors, false)
             }
         }
 
         //#if MC >= 1.21.7
-        //$$ context.matrices.popMatrix()
+        //$$ context.pose().popMatrix()
         //#else
-        context.matrices.pop()
+        context.pose().popPose()
         //#endif
     }
 
     fun renderString(
-        context: DrawContext,
+        context: GuiGraphics,
         text: String,
         x: Float,
         y: Float,
         scale: Float,
         colors: Int = -1,
         textStyle: TextStyle = TextStyle.DEFAULT
-    ) = renderString(context, Text.literal(text), x, y, scale, colors, textStyle)
+    ) = renderString(context, Component.literal(text), x, y, scale, colors, textStyle)
 
-    fun renderStringWithShadow(context: DrawContext, text: String, x: Float, y: Float, scale: Float, colors: Int = Colors.WHITE) {
+    fun renderStringWithShadow(context: GuiGraphics, text: String, x: Float, y: Float, scale: Float, colors: Int = CommonColors.WHITE) {
         renderString(context, text, x, y, scale, colors, TextStyle.DROP_SHADOW)
     }
 
-    fun renderItem(context: DrawContext, item: ItemStack, x: Float, y: Float, scale: Float) {
+    fun renderItem(context: GuiGraphics, item: ItemStack, x: Float, y: Float, scale: Float) {
         //#if MC >= 1.21.7
-        //$$ context.matrices.pushMatrix()
-        //$$ context.matrices.translate(x, y)
-        //$$ context.matrices.scale(scale, scale)
+        //$$ context.pose().pushMatrix()
+        //$$ context.pose().translate(x, y)
+        //$$ context.pose().scale(scale, scale)
         //#else
-        context.matrices.push()
-        context.matrices.translate(x, y, 0f)
-        context.matrices.scale(scale, scale, 1f)
+        context.pose().pushPose()
+        context.pose().translate(x, y, 0f)
+        context.pose().scale(scale, scale, 1f)
         //#endif
 
-        context.drawItem(item, 0, 0)
+        context.renderItem(item, 0, 0)
 
         //#if MC >= 1.21.7
-        //$$ context.matrices.popMatrix()
+        //$$ context.pose().popMatrix()
         //#else
-        context.matrices.pop()
+        context.pose().popPose()
         //#endif
     }
 
-    fun drawPlayerHead(context: DrawContext, x: Int, y: Int, size: Int, uuid: UUID) {
+    fun drawPlayerHead(context: GuiGraphics, x: Int, y: Int, size: Int, uuid: UUID) {
         //#if MC >= 1.21.9
-        //$$ val textures = client.skinProvider.fetchSkinTextures(GameProfile(uuid, null))
+        //$$ val textures = client.skinManager.get(GameProfile(uuid, null))
         //#else
-        val textures = SkullBlockEntity.fetchProfileByUuid(uuid)
+        val textures = SkullBlockEntity.fetchGameProfile(uuid)
         //#endif
             .getNow(Optional.empty())
             //#if MC < 1.21.9
-            .map(client.skinProvider::getSkinTextures)
+            .map(client.skinManager::getInsecureSkin)
             //#endif
-            .orElseGet { DefaultSkinHelper.getSkinTextures(uuid) }
+            .orElseGet { DefaultPlayerSkin.get(uuid) }
 
-        PlayerSkinDrawer.draw(context, textures, x, y, size)
+        PlayerFaceRenderer.draw(context, textures, x, y, size)
     }
 
-    fun drawImage(ctx: DrawContext, image: Identifier, x: Int, y: Int, width: Int, height: Int) {
+    fun drawImage(ctx: GuiGraphics, image: ResourceLocation, x: Int, y: Int, width: Int, height: Int) {
         //#if MC >= 1.21.7
-        //$$ ctx.drawGuiTexture(net.minecraft.client.gl.RenderPipelines.GUI_TEXTURED, image, x, y, width, height)
+        //$$ ctx.blitSprite(RenderPipelines.GUI_TEXTURED, image, x, y, width, height)
         //#else
-        ctx.drawGuiTexture(RenderLayer::getGuiTextured, image, x, y, width, height)
+        ctx.blitSprite(RenderType::guiTextured, image, x, y, width, height)
         //#endif
     }
 
-    fun drawRect(ctx: DrawContext, x: Int, y: Int, width: Int, height: Int, color: Color = Color.WHITE) {
+    fun drawRect(ctx: GuiGraphics, x: Int, y: Int, width: Int, height: Int, color: Color = Color.WHITE) {
         //#if MC >= 1.21.7
-        //$$ ctx.fill(net.minecraft.client.gl.RenderPipelines.GUI, x, y, x + width, y + height, color.rgb)
+        //$$ ctx.fill(RenderPipelines.GUI, x, y, x + width, y + height, color.rgb)
         //#else
-        ctx.fill(RenderLayer.getGui(), x, y, x + width, y + height, color.rgb)
+        ctx.fill(RenderType.gui(), x, y, x + width, y + height, color.rgb)
         //#endif
     }
 
-    inline fun DrawContext.pushPop(block: () -> Unit) {
+    inline fun GuiGraphics.pushPop(block: () -> Unit) {
         //#if MC >= 1.21.7
-        //$$ matrices.pushMatrix()
+        //$$ pose().pushMatrix()
         //#else
-        matrices.push()
+        pose().pushPose()
         //#endif
         block()
         //#if MC >= 1.21.7
-        //$$ matrices.popMatrix()
+        //$$ pose().popMatrix()
         //#else
-        matrices.pop()
+        pose().popPose()
         //#endif
     }
 
     fun String.width(): Int {
         val lines = split('\n')
-        return lines.maxOf { client.textRenderer.getWidth(it.stripColor()) }
+        return lines.maxOf { client.font.width(it.stripColor()) }
     }
 
     fun String.height(): Int {
         val lineCount = count { it == '\n' } + 1
-        return client.textRenderer.fontHeight * lineCount
+        return client.font.lineHeight * lineCount
     }
 }

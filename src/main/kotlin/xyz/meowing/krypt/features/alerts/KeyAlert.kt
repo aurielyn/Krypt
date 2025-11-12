@@ -1,6 +1,6 @@
 package xyz.meowing.krypt.features.alerts
 
-import net.minecraft.entity.decoration.ArmorStandEntity
+import net.minecraft.world.entity.decoration.ArmorStand
 import tech.thatgravyboat.skyblockapi.utils.regex.RegexUtils.matchOrNull
 import tech.thatgravyboat.skyblockapi.utils.text.TextProperties.stripped
 import xyz.meowing.knit.api.scheduler.TickScheduler
@@ -63,7 +63,7 @@ object KeyAlert : Feature(
         register<EntityEvent.Packet.Metadata> { event ->
             if (DungeonAPI.bloodOpened || !spawnAlert) return@register
 
-            val entity = event.entity as? ArmorStandEntity ?: return@register
+            val entity = event.entity as? ArmorStand ?: return@register
 
             if (lastKeyID == entity.id) return@register // why? to make it only send once for the entity
 

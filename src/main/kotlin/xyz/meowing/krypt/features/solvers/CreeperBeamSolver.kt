@@ -1,7 +1,7 @@
 package xyz.meowing.krypt.features.solvers
 
-import net.minecraft.block.Blocks
-import net.minecraft.util.math.BlockPos
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.core.BlockPos
 import xyz.meowing.knit.api.KnitPlayer.player
 import xyz.meowing.krypt.Krypt
 import xyz.meowing.krypt.annotations.Module
@@ -121,8 +121,8 @@ object CreeperBeamSolver : Feature(
                 Render3D.drawSpecialBB(end, color, event.context.consumers(), event.context.matrixStack(), phaseThrough)
 
                 if (showLines) {
-                    val startVec = start.toCenterPos()
-                    val endVec = end.toCenterPos()
+                    val startVec = start.center
+                    val endVec = end.center
                     Render3D.drawLine(startVec, endVec, 1f, color, event.context.consumers(), event.context.matrixStack())
                 }
             }

@@ -1,6 +1,6 @@
 package xyz.meowing.krypt.hud
 
-import net.minecraft.client.gui.DrawContext
+import net.minecraft.client.gui.GuiGraphics
 import xyz.meowing.knit.api.KnitClient
 import xyz.meowing.knit.api.input.KnitMouse
 import xyz.meowing.knit.api.screen.KnitScreen
@@ -27,7 +27,7 @@ class HudEditor : KnitScreen("HUD Editor") {
         HudManager.saveAllLayouts()
     }
 
-    override fun onRender(context: DrawContext?, mouseX: Int, mouseY: Int, deltaTicks: Float) {
+    override fun onRender(context: GuiGraphics?, mouseX: Int, mouseY: Int, deltaTicks: Float) {
         val context = context ?: return
         context.fill(0, 0, width, width, 0x90000000.toInt())
 
@@ -35,13 +35,13 @@ class HudEditor : KnitScreen("HUD Editor") {
             if (!element.isEnabled()) return@forEach
 
             //#if MC >= 1.21.7
-            //$$ context.matrices.pushMatrix()
-            //$$ context.matrices.translate(element.x, element.y)
-            //$$ context.matrices.scale(element.scale, element.scale)
+            //$$ context.pose().pushMatrix()
+            //$$ context.pose().translate(element.x, element.y)
+            //$$ context.pose().scale(element.scale, element.scale)
             //#else
-            context.matrices.push()
-            context.matrices.translate(element.x, element.y, 0f)
-            context.matrices.scale(element.scale, element.scale, 1f)
+            context.pose().pushPose()
+            context.pose().translate(element.x, element.y, 0f)
+            context.pose().scale(element.scale, element.scale, 1f)
             //#endif
 
             val isHovered = element.isHovered(mouseX.toFloat(), mouseY.toFloat())
@@ -64,17 +64,17 @@ class HudEditor : KnitScreen("HUD Editor") {
                 drawHollowRect(context, -2, -3, element.width, element.height, borderColor)
                 context.fill(-2,-3, element.width, element.height, Color(30, 35, 45, alpha).rgb)
 
-                context.drawTextWithShadow(KnitClient.client.textRenderer, element.text, 0, 0, 0xFFFFFF)
+                context.drawString(KnitClient.client.font, element.text, 0, 0, 0xFFFFFF)
             }
 
             //#if MC >= 1.21.7
-            //$$ context.matrices.popMatrix()
+            //$$ context.pose().popMatrix()
             //#else
-            context.matrices.pop()
+            context.pose().popPose()
             //#endif
         }
 
-        context.drawTextWithShadow(KnitClient.client.textRenderer, "Drag elements. Press ESC to exit.", 10, 10, 0xFFFFFF)
+        context.drawString(KnitClient.client.font, "Drag elements. Press ESC to exit.", 10, 10, 0xFFFFFF)
     }
 
     override fun onMouseClick(mouseX: Int, mouseY: Int, button: Int) {
@@ -106,9 +106,9 @@ class HudEditor : KnitScreen("HUD Editor") {
         }
     }
 
-    override fun shouldPause(): Boolean = false
+    override fun isPauseScreen(): Boolean = false
 
-    private fun drawHollowRect(context: DrawContext, x1: Int, y1: Int, x2: Int, y2: Int, color: Int) {
+    private fun drawHollowRect(context: GuiGraphics, x1: Int, y1: Int, x2: Int, y2: Int, color: Int) {
         context.fill(x1, y1, x2, y1 + 1, color)
         context.fill(x1, y2 - 1, x2, y2, color)
         context.fill(x1, y1, x1 + 1, y2, color)

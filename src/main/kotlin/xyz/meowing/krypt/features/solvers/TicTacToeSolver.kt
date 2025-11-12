@@ -1,14 +1,14 @@
 package xyz.meowing.krypt.features.solvers
 
-import net.minecraft.block.Blocks
-import net.minecraft.entity.EntityType
-import net.minecraft.entity.decoration.ItemFrameEntity
-import net.minecraft.item.FilledMapItem
-import net.minecraft.network.packet.s2c.play.EntitySpawnS2CPacket
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.Box
-import net.minecraft.util.shape.VoxelShape
-import net.minecraft.world.EmptyBlockView
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.world.entity.EntityType
+import net.minecraft.world.entity.decoration.ItemFrame
+import net.minecraft.world.item.MapItem
+import net.minecraft.network.protocol.game.ClientboundAddEntityPacket
+import net.minecraft.core.BlockPos
+import net.minecraft.world.phys.AABB
+import net.minecraft.world.phys.shapes.VoxelShape
+import net.minecraft.world.level.EmptyBlockGetter
 import xyz.meowing.knit.api.KnitClient
 import xyz.meowing.knit.api.KnitPlayer
 import xyz.meowing.knit.api.scheduler.TickScheduler
@@ -91,8 +91,8 @@ object TicTacToeSolver : Feature(
 
         register<PacketEvent.Received> { event ->
             if (!inTicTacToe) return@register
-            val packet = event.packet as? EntitySpawnS2CPacket ?: return@register
-            if (packet.entityType != EntityType.ITEM_FRAME) return@register
+            val packet = event.packet as? ClientboundAddEntityPacket ?: return@register
+            if (packet.type != EntityType.ITEM_FRAME) return@register
 
             TickScheduler.Server.schedule(5) {
                 scanBoard()
@@ -102,7 +102,7 @@ object TicTacToeSolver : Feature(
         register<RenderEvent.World.Last> { event ->
             boundingBox?.let { box ->
                 Render3D.drawFilledShapeVoxel(
-                    box.offset(blockPos),
+                    box.move(blockPos),
                     boxColor,
                     event.context.consumers(),
                     event.context.matrixStack()
@@ -115,16 +115,16 @@ object TicTacToeSolver : Feature(
         val center = roomCenter ?: return
         val world = KnitClient.world ?: return
 
-        val aabb = Box(
+        val aabb = AABB(
             center.first - 9.0, 65.0, center.second - 9.0,
             center.first + 9.0, 73.0, center.second + 9.0
         )
 
-        val itemFrames = world.getEntitiesByClass(ItemFrameEntity::class.java, aabb) { true }
+        val itemFrames = world.getEntitiesOfClass(ItemFrame::class.java, aabb) { true }
         val itemFramesWithMaps = itemFrames.filter { frame ->
-            val item = frame.heldItemStack ?: return@filter false
-            if (item.item !is FilledMapItem) return@filter false
-            FilledMapItem.getMapState(item, world) != null
+            val item = frame.item ?: return@filter false
+            if (item.item !is MapItem) return@filter false
+            MapItem.getSavedData(item, world) != null
         }
 
         if (itemFramesWithMaps.size == 8) {
@@ -140,14 +140,14 @@ object TicTacToeSolver : Feature(
         var facing = 'X'
 
         for (itemFrame in itemFramesWithMaps) {
-            val map = itemFrame.heldItemStack ?: continue
-            val mapData = (map.item as? FilledMapItem)?.let { FilledMapItem.getMapState(map, world) } ?: continue
+            val map = itemFrame.item ?: continue
+            val mapData = (map.item as? MapItem)?.let { MapItem.getSavedData(map, world) } ?: continue
 
             var row = 0
-            sign = if (itemFrame.horizontalFacing.offsetX != 0) {
-                if (itemFrame.horizontalFacing.offsetX > 0) 1 else -1
+            sign = if (itemFrame.direction.stepX != 0) {
+                if (itemFrame.direction.stepX > 0) 1 else -1
             } else {
-                if (itemFrame.horizontalFacing.offsetZ > 0) 1 else -1
+                if (itemFrame.direction.stepZ > 0) 1 else -1
             }
 
             val itemFramePos = BlockPos(
@@ -161,9 +161,9 @@ object TicTacToeSolver : Feature(
                 var blockPos = itemFramePos
 
                 if (itemFrame.x % 0.5 == 0.0) {
-                    blockPos = itemFramePos.add(realI, 0, 0)
+                    blockPos = itemFramePos.offset(realI, 0, 0)
                 } else if (itemFrame.z % 0.5 == 0.0) {
-                    blockPos = itemFramePos.add(0, 0, realI)
+                    blockPos = itemFramePos.offset(0, 0, realI)
                     facing = 'Z'
                 }
 
@@ -199,8 +199,8 @@ object TicTacToeSolver : Feature(
 
             blockPos = BlockPos(drawX.toInt(), drawY.toInt(), drawZ.toInt())
 
-            boundingBox = world.getBlockState(blockPos).getOutlineShape(
-                EmptyBlockView.INSTANCE,
+            boundingBox = world.getBlockState(blockPos).getShape(
+                EmptyBlockGetter.INSTANCE,
                 blockPos
             )
         }

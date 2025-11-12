@@ -262,8 +262,8 @@ object DungeonAPI {
 
     /** Updates leap detection based on held item */
     private fun updateHeldItem() {
-        val item = KnitPlayer.player?.mainHandStack ?: return
-        holdingLeaps = "leap" in item.name.stripped.lowercase()
+        val item = KnitPlayer.player?.mainHandItem ?: return
+        holdingLeaps = "leap" in item.hoverName.stripped.lowercase()
     }
 
     // Room accessors

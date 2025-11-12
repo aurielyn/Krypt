@@ -1,6 +1,6 @@
 package xyz.meowing.krypt.features.highlights
 
-import net.minecraft.entity.Entity
+import net.minecraft.world.entity.Entity
 import tech.thatgravyboat.skyblockapi.utils.text.TextProperties.stripped
 import xyz.meowing.krypt.annotations.Module
 import xyz.meowing.krypt.api.dungeons.DungeonAPI
@@ -102,7 +102,7 @@ object KeyHighlight : Feature(
                     1f
                 )
 
-                val box = net.minecraft.util.math.Box(
+                val box = net.minecraft.world.phys.AABB(
                     entity.x - 0.4,
                     entity.y + 1.2,
                     entity.z - 0.4,

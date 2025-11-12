@@ -3,14 +3,14 @@ package xyz.meowing.krypt.mixins;
 import com.llamalad7.mixinextras.sugar.Local;
 import xyz.meowing.krypt.events.EventBus;
 import xyz.meowing.krypt.events.core.EntityEvent;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.ClientCommonNetworkHandler;
-import net.minecraft.client.network.ClientConnectionState;
-import net.minecraft.client.network.ClientPlayNetworkHandler;
-import net.minecraft.entity.Entity;
-import net.minecraft.network.ClientConnection;
-import net.minecraft.network.packet.s2c.play.EntityTrackerUpdateS2CPacket;
-import net.minecraft.text.Text;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientCommonPacketListenerImpl;
+import net.minecraft.client.multiplayer.CommonListenerCookie;
+import net.minecraft.client.multiplayer.ClientPacketListener;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.network.Connection;
+import net.minecraft.network.protocol.game.ClientboundSetEntityDataPacket;
+import net.minecraft.network.chat.Component;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -18,25 +18,25 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.Optional;
 
-@Mixin(ClientPlayNetworkHandler.class)
-public abstract class MixinClientPlayNetworkHandler extends ClientCommonNetworkHandler {
-    protected MixinClientPlayNetworkHandler(MinecraftClient client, ClientConnection connection, ClientConnectionState connectionState) {
+@Mixin(ClientPacketListener.class)
+public abstract class MixinClientPlayNetworkHandler extends ClientCommonPacketListenerImpl {
+    protected MixinClientPlayNetworkHandler(Minecraft client, Connection connection, CommonListenerCookie connectionState) {
         super(client, connection, connectionState);
     }
 
-    @Inject(method = "onEntityTrackerUpdate", at = @At("TAIL"))
-    private void zen$onEntityTrackerUpdate(EntityTrackerUpdateS2CPacket packet, CallbackInfo ci, @Local Entity entity) {
+    @Inject(method = "handleSetEntityData", at = @At("TAIL"))
+    private void zen$onEntityTrackerUpdate(ClientboundSetEntityDataPacket packet, CallbackInfo ci, @Local Entity entity) {
         if (entity != null) {
-            String name = packet.trackedValues() != null ? packet.trackedValues().stream()
+            String name = packet.packedItems() != null ? packet.packedItems().stream()
                     .filter(entry -> entry.id() == 2)
                     .map(entry -> entry.value() instanceof Optional<?> ? ((Optional<?>) entry.value()).orElse(null) : null)
-                    .filter(value -> value instanceof Text)
-                    .map(text -> ((Text) text).getString())
+                    .filter(value -> value instanceof Component)
+                    .map(text -> ((Component) text).getString())
                     .findFirst().orElse("") : "";
 
             if (EventBus.INSTANCE.post(new EntityEvent.Packet.Metadata(packet, entity, name))) {
-                if (client != null && client.world != null) {
-                    client.world.removeEntity(entity.getId(), Entity.RemovalReason.DISCARDED);
+                if (this.minecraft != null && this.minecraft.level != null) {
+                    this.minecraft.level.removeEntity(entity.getId(), Entity.RemovalReason.DISCARDED);
                 }
             }
         }

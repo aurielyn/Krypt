@@ -1,6 +1,6 @@
 package xyz.meowing.krypt.features.map.render
 
-import net.minecraft.client.gui.DrawContext
+import net.minecraft.client.gui.GuiGraphics
 import xyz.meowing.krypt.api.dungeons.DungeonAPI
 import xyz.meowing.krypt.features.map.DungeonMap
 import xyz.meowing.krypt.features.map.utils.Utils
@@ -11,8 +11,8 @@ import xyz.meowing.krypt.utils.rendering.Render2D.width
 object MapRenderer {
     private val defaultMapSize = Pair(138, 138)
 
-    fun render(context: DrawContext, x: Float, y: Float, scale: Float) {
-        val matrix = context.matrices
+    fun render(context: GuiGraphics, x: Float, y: Float, scale: Float) {
+        val matrix = context.pose()
         context.pushPop {
             //#if MC >= 1.21.7
             //$$ matrix.translate(x, y)
@@ -37,8 +37,8 @@ object MapRenderer {
         }
     }
 
-    fun renderBoss(context: DrawContext, x: Float, y: Float, scale: Float) {
-        val matrix = context.matrices
+    fun renderBoss(context: GuiGraphics, x: Float, y: Float, scale: Float) {
+        val matrix = context.pose()
         context.pushPop {
             //#if MC >= 1.21.7
             //$$ matrix.translate(x, y)
@@ -55,8 +55,8 @@ object MapRenderer {
         }
     }
 
-    fun renderScore(context: DrawContext, x: Float, y: Float, scale: Float) {
-        val matrix = context.matrices
+    fun renderScore(context: GuiGraphics, x: Float, y: Float, scale: Float) {
+        val matrix = context.pose()
         context.pushPop {
             //#if MC >= 1.21.7
             //$$ matrix.translate(x, y)
@@ -73,8 +73,8 @@ object MapRenderer {
         }
     }
 
-    fun renderPreview(context: DrawContext, x: Float, y: Float) {
-        val matrix = context.matrices
+    fun renderPreview(context: GuiGraphics, x: Float, y: Float) {
+        val matrix = context.pose()
         context.pushPop {
             //#if MC >= 1.21.7
             //$$ matrix.translate(x + 5f, y + 5f)
@@ -88,8 +88,8 @@ object MapRenderer {
         }
     }
 
-    fun renderInfoUnder(context: DrawContext, preview: Boolean) {
-        val matrix = context.matrices
+    fun renderInfoUnder(context: GuiGraphics, preview: Boolean) {
+        val matrix = context.pose()
         var mapLine1 = DungeonAPI.mapLine1
         var mapLine2 = DungeonAPI.mapLine2
         if (preview) {
@@ -113,14 +113,14 @@ object MapRenderer {
         }
     }
 
-    fun renderMapBackground(context: DrawContext) {
+    fun renderMapBackground(context: GuiGraphics) {
         val w = defaultMapSize.first
         var h = defaultMapSize.second
         h += if (DungeonMap.mapInfoUnder) 10 else 0
         Render2D.drawRect(context, 0, 0, w, h, DungeonMap.mapBackgroundColor)
     }
 
-    fun renderMapBorder(context: DrawContext) {
+    fun renderMapBorder(context: GuiGraphics) {
         val (w, baseH) = defaultMapSize
         val borderWidth = DungeonMap.mapBorderWidth
         val h = baseH + if (DungeonMap.mapInfoUnder) 10 else 0

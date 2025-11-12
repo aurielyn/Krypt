@@ -1,6 +1,6 @@
 package xyz.meowing.krypt.features.general
 
-import net.minecraft.client.gui.DrawContext
+import net.minecraft.client.gui.GuiGraphics
 import xyz.meowing.knit.api.KnitClient.client
 import xyz.meowing.knit.api.scheduler.TickScheduler
 import xyz.meowing.krypt.annotations.Module
@@ -59,7 +59,7 @@ object RoomName: Feature(
         register<GuiEvent.RenderHUD> { renderHud(it.context) }
     }
 
-    private fun renderHud(context: DrawContext) {
+    private fun renderHud(context: GuiGraphics) {
         if (DungeonAPI.inBoss) return
 
         val text = "${if (chroma) "§z" else ""}${DungeonAPI.currentRoom?.name ?: "No Room Found"}"

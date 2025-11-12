@@ -4,9 +4,9 @@ import com.mojang.blaze3d.pipeline.BlendFunction
 import com.mojang.blaze3d.pipeline.RenderPipeline
 import com.mojang.blaze3d.platform.DepthTestFunction
 import com.mojang.blaze3d.vertex.VertexFormat
-import net.minecraft.client.gl.RenderPipelines
-import net.minecraft.client.render.VertexFormats
-import net.minecraft.util.Identifier
+import net.minecraft.client.renderer.RenderPipelines
+import com.mojang.blaze3d.vertex.DefaultVertexFormat
+import net.minecraft.resources.ResourceLocation
 import xyz.meowing.krypt.Krypt
 
 /**
@@ -15,42 +15,42 @@ import xyz.meowing.krypt.Krypt
  */
 object KryptRenderPipelines {
     val LINES_THROUGH_WALLS: RenderPipeline = RenderPipelines.register(
-        RenderPipeline.builder(RenderPipelines.RENDERTYPE_LINES_SNIPPET)
-            .withLocation(Identifier.of(Krypt.NAMESPACE, "lines_through_walls"))
+        RenderPipeline.builder(RenderPipelines.LINES_SNIPPET)
+            .withLocation(ResourceLocation.fromNamespaceAndPath(Krypt.NAMESPACE, "lines_through_walls"))
             .withDepthTestFunction(DepthTestFunction.NO_DEPTH_TEST)
             .build()
     )
 
     val FILLED_THROUGH_WALLS: RenderPipeline = RenderPipelines.register(
-        RenderPipeline.builder(RenderPipelines.POSITION_COLOR_SNIPPET)
-            .withLocation(Identifier.of(Krypt.NAMESPACE, "filled_through_walls"))
-            .withVertexFormat(VertexFormats.POSITION_COLOR, VertexFormat.DrawMode.TRIANGLE_STRIP)
+        RenderPipeline.builder(RenderPipelines.DEBUG_FILLED_SNIPPET)
+            .withLocation(ResourceLocation.fromNamespaceAndPath(Krypt.NAMESPACE, "filled_through_walls"))
+            .withVertexFormat(DefaultVertexFormat.POSITION_COLOR, VertexFormat.Mode.TRIANGLE_STRIP)
             .withDepthTestFunction(DepthTestFunction.NO_DEPTH_TEST)
             .build()
     )
 
-    val BEACON_BEAM_OPAQUE: RenderPipeline = RenderPipeline.builder(RenderPipelines.RENDERTYPE_BEACON_BEAM_SNIPPET)
+    val BEACON_BEAM_OPAQUE: RenderPipeline = RenderPipeline.builder(RenderPipelines.BEACON_BEAM_SNIPPET)
         .withLocation("krypt/beacon_beam_opaque")
         .build()
 
-    val BEACON_BEAM_OPAQUE_THROUGH_WALLS: RenderPipeline = RenderPipeline.builder(RenderPipelines.RENDERTYPE_BEACON_BEAM_SNIPPET)
+    val BEACON_BEAM_OPAQUE_THROUGH_WALLS: RenderPipeline = RenderPipeline.builder(RenderPipelines.BEACON_BEAM_SNIPPET)
         .withLocation("krypt/beacon_beam_opaque_through_walls")
         .withDepthWrite(false)
         .withDepthTestFunction(DepthTestFunction.NO_DEPTH_TEST)
         .build()
 
-    val BEACON_BEAM_TRANSLUCENT: RenderPipeline = RenderPipeline.builder(RenderPipelines.RENDERTYPE_BEACON_BEAM_SNIPPET)
+    val BEACON_BEAM_TRANSLUCENT: RenderPipeline = RenderPipeline.builder(RenderPipelines.BEACON_BEAM_SNIPPET)
         .withLocation("krypt/beacon_beam_translucent")
         .withDepthWrite(false)
         .withBlend(BlendFunction.TRANSLUCENT)
         .build()
 
-    val BEACON_BEAM_TRANSLUCENT_THROUGH_WALLS: RenderPipeline = RenderPipeline.builder(RenderPipelines.RENDERTYPE_BEACON_BEAM_SNIPPET)
+    val BEACON_BEAM_TRANSLUCENT_THROUGH_WALLS: RenderPipeline = RenderPipeline.builder(RenderPipelines.BEACON_BEAM_SNIPPET)
         .withLocation("krypt/beacon_beam_translucent_through_walls")
         .withDepthWrite(false)
         .withBlend(BlendFunction.TRANSLUCENT)
         .withDepthTestFunction(DepthTestFunction.NO_DEPTH_TEST)
         .build()
 
-    fun shaderPath(name: String): Identifier = Identifier.of(Krypt.NAMESPACE, name)
+    fun shaderPath(name: String): ResourceLocation = ResourceLocation.fromNamespaceAndPath(Krypt.NAMESPACE, name)
 }

@@ -1,11 +1,11 @@
 package xyz.meowing.krypt.utils
 
-import net.minecraft.block.Block
-import net.minecraft.block.BlockState
-import net.minecraft.registry.Registries
-import net.minecraft.registry.tag.FluidTags
-import net.minecraft.state.property.Property
-import net.minecraft.util.Identifier
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.state.BlockState
+import net.minecraft.core.registries.BuiltInRegistries
+import net.minecraft.tags.FluidTags
+import net.minecraft.world.level.block.state.properties.Property
+import net.minecraft.resources.ResourceLocation
 import xyz.meowing.krypt.Krypt
 import kotlin.jvm.optionals.getOrNull
 
@@ -514,7 +514,7 @@ object LegalIDs {
             }
 
             val rawKey = key.substringBefore('[')
-            val block = Registries.BLOCK.getOptionalValue(Identifier.of(rawKey)).getOrNull() ?: return@forEach
+            val block = BuiltInRegistries.BLOCK.getOptional(ResourceLocation.parse(rawKey)).getOrNull() ?: return@forEach
 
             if ('[' !in key) {
                 block2Legacy[block] = legacyId
@@ -524,8 +524,8 @@ object LegalIDs {
             val rawProperties = key.substringAfter('[').substringBefore(']')
             val propMap = rawProperties.split(',').associate { entry ->
                 val (name, value) = entry.split('=')
-                val prop = block.stateManager.getProperty(name) ?: return@forEach
-                val parsed = prop.parse(value).getOrNull() ?: return@forEach
+                val prop = block.stateDefinition.getProperty(name) ?: return@forEach
+                val parsed = prop.getValue(value).getOrNull() ?: return@forEach
                 prop to parsed
             }
 
@@ -546,8 +546,8 @@ object LegalIDs {
         val fluid = state.fluidState
         if (!fluid.isEmpty) {
             return when {
-                fluid.isIn(FluidTags.WATER) -> if (fluid.isStill) 9 else 8
-                fluid.isIn(FluidTags.LAVA) -> if (fluid.isStill) 11 else 10
+                fluid.`is`(FluidTags.WATER) -> if (fluid.isSource) 9 else 8
+                fluid.`is`(FluidTags.LAVA) -> if (fluid.isSource) 11 else 10
                 else -> -1
             }
         }
@@ -559,11 +559,11 @@ object LegalIDs {
         val matchers = block2PropertyMatch[state.block] ?: return -1
         matchers.firstOrNull { req ->
             req.properties.all { (prop, value) ->
-                state.get(prop) == value
+                state.getValue(prop) == value
             }
         }?.legacyId?.let { return it }
 
-        Krypt.LOGGER.error("[LegacyID] Unmatched state: ${state.block} → ${state.entries}")
+        Krypt.LOGGER.error("[LegacyID] Unmatched state: ${state.block} → ${state.values}")
         return -1
     }
 }

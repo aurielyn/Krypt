@@ -1,8 +1,8 @@
 package xyz.meowing.krypt.features.solvers
 
-import net.minecraft.entity.decoration.ArmorStandEntity
-import net.minecraft.network.packet.c2s.play.PlayerInteractBlockC2SPacket
-import net.minecraft.util.math.BlockPos
+import net.minecraft.world.entity.decoration.ArmorStand
+import net.minecraft.network.protocol.game.ServerboundUseItemOnPacket
+import net.minecraft.core.BlockPos
 import tech.thatgravyboat.skyblockapi.utils.text.TextProperties.stripped
 import xyz.meowing.knit.api.KnitClient
 import xyz.meowing.krypt.annotations.Module
@@ -125,8 +125,8 @@ object ThreeWeirdosSolver : Feature(
             if (solutions.none { it.matches(msg) } && wrong.none { it.matches(msg) }) return@register
 
             val world = KnitClient.world ?: return@register
-            val correctNPC = world.entities
-                .filterIsInstance<ArmorStandEntity>()
+            val correctNPC = world.entitiesForRendering()
+                .filterIsInstance<ArmorStand>()
                 .find { it.name.stripped == npc } ?: return@register
 
             val offset = rotateBlockPos(BlockPos(1, 0, 0), rotation)
@@ -134,7 +134,7 @@ object ThreeWeirdosSolver : Feature(
                 (correctNPC.x - 0.5).toInt(),
                 69,
                 (correctNPC.z - 0.5).toInt()
-            ).add(offset)
+            ).offset(offset)
 
             if (solutions.any { it.matches(msg) }) {
                 correctPos = pos
@@ -145,8 +145,8 @@ object ThreeWeirdosSolver : Feature(
 
         register<PacketEvent.Sent> { event ->
             if (!inWeirdos || wrongPositions.size != 2) return@register
-            val packet = event.packet as? PlayerInteractBlockC2SPacket ?: return@register
-            if (packet.blockHitResult.blockPos != correctPos) return@register
+            val packet = event.packet as? ServerboundUseItemOnPacket ?: return@register
+            if (packet.hitResult.blockPos != correctPos) return@register
 
             reset()
         }

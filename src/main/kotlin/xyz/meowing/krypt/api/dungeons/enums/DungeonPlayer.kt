@@ -1,6 +1,6 @@
 package xyz.meowing.krypt.api.dungeons.enums
 
-import net.minecraft.entity.Entity
+import net.minecraft.world.entity.Entity
 import tech.thatgravyboat.skyblockapi.utils.text.TextProperties.stripped
 import xyz.meowing.knit.api.KnitClient
 import xyz.meowing.krypt.api.dungeons.handlers.MapScanner
@@ -38,7 +38,7 @@ class DungeonPlayer(
 
     val secrets get() = (currSecrets ?: initSecrets ?: 0) - (initSecrets ?: 0)
 
-    val entity: Entity? = KnitClient.world?.entities?.find { it.name.stripped == name }
+    val entity: Entity? = KnitClient.world?.entitiesForRendering()?.find { it.name.stripped == name }
 
     val uuid: UUID? get() = entity?.uuid
 

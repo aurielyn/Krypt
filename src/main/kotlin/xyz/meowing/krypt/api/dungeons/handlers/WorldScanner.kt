@@ -189,18 +189,18 @@ object WorldScanner {
 
     fun checkPlayerState() {
         val world = KnitClient.world ?: return
-        val networkHandler = KnitClient.client.networkHandler
+        val networkHandler = KnitClient.client.connection
 
         for (player in DungeonAPI.players) {
             if (player == null) continue
 
-            val entity = world.players.find { it.name.string == player.name }
-            val ping = networkHandler?.getPlayerListEntry(entity?.uuid)?.latency ?: -1
+            val entity = world.players().find { it.name.string == player.name }
+            val ping = networkHandler?.getPlayerInfo(entity?.uuid)?.latency ?: -1
 
             player.inRender = ping != -1 && entity != null
 
             if (player.inRender && entity != null) {
-                onPlayerMove(player, entity.x, entity.z, entity.yaw)
+                onPlayerMove(player, entity.x, entity.z, entity.yRot)
             }
 
             if (ping == -1) continue

@@ -1,7 +1,7 @@
 package xyz.meowing.krypt.api.dungeons.handlers
 
-import net.minecraft.entity.EquipmentSlot
-import net.minecraft.entity.mob.ZombieEntity
+import net.minecraft.world.entity.EquipmentSlot
+import net.minecraft.world.entity.monster.Zombie
 import tech.thatgravyboat.skyblockapi.utils.text.TextProperties.stripped
 import xyz.meowing.krypt.annotations.Module
 import xyz.meowing.krypt.api.dungeons.DungeonAPI
@@ -38,12 +38,12 @@ object MimicTrigger {
             if (DungeonAPI.floor?.floorNumber !in listOf(6, 7) || mimicDead) return@registerIn
             val mcEntity = event.entity
 
-            if (mcEntity !is ZombieEntity) return@registerIn
+            if (mcEntity !is Zombie) return@registerIn
             if (
                 !mcEntity.isBaby ||
                 EquipmentSlot.entries
                     .filter { it.type == EquipmentSlot.Type.HUMANOID_ARMOR }
-                    .any { slot -> mcEntity.getEquippedStack(slot).isEmpty }
+                    .any { slot -> mcEntity.getItemBySlot(slot).isEmpty }
             ) return@registerIn
 
             mimicDead = true

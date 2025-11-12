@@ -1,6 +1,6 @@
 package xyz.meowing.krypt.features.map
 
-import net.minecraft.client.gui.DrawContext
+import net.minecraft.client.gui.GuiGraphics
 import xyz.meowing.krypt.annotations.Module
 import xyz.meowing.krypt.api.dungeons.DungeonAPI
 import xyz.meowing.krypt.api.location.SkyBlockIsland
@@ -428,7 +428,7 @@ object DungeonMap : Feature(
         register<GuiEvent.RenderHUD> { event -> renderMap(event.context) }
     }
 
-    fun renderMap(context: DrawContext) {
+    fun renderMap(context: GuiGraphics) {
         val x = HudManager.getX(NAME)
         val y = HudManager.getY(NAME)
         val scale = HudManager.getScale(NAME)

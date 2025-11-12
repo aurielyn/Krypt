@@ -1,7 +1,7 @@
 package xyz.meowing.krypt.features.solvers
 
-import net.minecraft.entity.decoration.ArmorStandEntity
-import net.minecraft.entity.mob.BlazeEntity
+import net.minecraft.world.entity.decoration.ArmorStand
+import net.minecraft.world.entity.monster.Blaze
 import tech.thatgravyboat.skyblockapi.utils.text.TextProperties.stripped
 import xyz.meowing.knit.api.KnitClient
 import xyz.meowing.knit.api.KnitPlayer.player
@@ -36,9 +36,9 @@ object BlazeSolver : Feature(
     private val blazeHpRegex = Regex("^\\[Lv15].+Blaze [\\d,]+/([\\d,]+)❤$")
 
     private var inBlaze = false
-    private val blazes = mutableListOf<BlazeEntity>()
+    private val blazes = mutableListOf<Blaze>()
     private var lastBlazeCount = 10
-    private val hpMap = mutableMapOf<BlazeEntity, Int>()
+    private val hpMap = mutableMapOf<Blaze, Int>()
     private var reversed = false
     private var trueTimeStarted: Long? = null
     private var timeStarted: Long? = null
@@ -125,13 +125,8 @@ object BlazeSolver : Feature(
 
             blazes.withIndex().forEach { (i, entity) ->
                 if (i > 0 && i < blazeCount.toInt()) {
-                    //#if MC >= 1.21.9
-                    //$$ val b1 = blazes[i - 1].entityPos.add(0.0, blazes[i - 1].height / 2.0, 0.0)
-                    //$$ val b2 = entity.entityPos.add(0.0, entity.height / 2.0, 0.0)
-                    //#else
-                    val b1 = blazes[i - 1].pos.add(0.0, blazes[i - 1].height / 2.0, 0.0)
-                    val b2 = entity.pos.add(0.0, entity.height / 2.0, 0.0)
-                    //#endif
+                    val b1 = blazes[i - 1].position().add(0.0, blazes[i - 1].bbHeight / 2.0, 0.0)
+                    val b2 = entity.position().add(0.0, entity.bbHeight / 2.0, 0.0)
                     Render3D.drawLine(b1, b2, 1f, lineColor, event.context.consumers(), event.context.matrixStack())
                 }
             }
@@ -139,9 +134,9 @@ object BlazeSolver : Feature(
 
         register<RenderEvent.Entity.Pre> { event ->
             if (blazes.isEmpty()) return@register
-            if (player?.canSee(event.entity) == false) return@register
+            if (player?.hasLineOfSight(event.entity) == false) return@register
 
-            val index = blazes.indexOf(event.entity as? BlazeEntity)
+            val index = blazes.indexOf(event.entity as? Blaze)
             if (index != -1 && index < blazeCount.toInt()) {
                 event.entity.glowThisFrame = true
                 event.entity.glowingColor = getBlazeColor(index).rgb
@@ -155,16 +150,16 @@ object BlazeSolver : Feature(
 
         val world = KnitClient.world ?: return
 
-        world.entities.filterIsInstance<ArmorStandEntity>().forEach { armorStand ->
+        world.entitiesForRendering().filterIsInstance<ArmorStand>().forEach { armorStand ->
             val match = blazeHpRegex.find(armorStand.name.stripped) ?: return@forEach
             val health = match.groupValues[1].remove(",").toIntOrNull() ?: return@forEach
 
-            val nearbyEntities = world.getOtherEntities(
+            val nearbyEntities = world.getEntities(
                 armorStand,
-                armorStand.boundingBox.offset(0.0, -1.0, 0.0)
+                armorStand.boundingBox.move(0.0, -1.0, 0.0)
             )
 
-            val blaze = nearbyEntities.filterIsInstance<BlazeEntity>().firstOrNull() ?: return@forEach
+            val blaze = nearbyEntities.filterIsInstance<Blaze>().firstOrNull() ?: return@forEach
 
             if (blazes.contains(blaze) || hpMap.keys.contains(blaze)) return@forEach
             hpMap[blaze] = health

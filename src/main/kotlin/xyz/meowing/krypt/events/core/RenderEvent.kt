@@ -2,9 +2,9 @@
 
 package xyz.meowing.krypt.events.core
 
-import net.minecraft.client.render.VertexConsumerProvider
-import net.minecraft.client.render.entity.state.PlayerEntityRenderState
-import net.minecraft.client.util.math.MatrixStack
+import net.minecraft.client.renderer.MultiBufferSource
+import net.minecraft.client.renderer.entity.state.PlayerRenderState
+import com.mojang.blaze3d.vertex.PoseStack
 import xyz.meowing.knit.api.events.CancellableEvent
 import xyz.meowing.knit.api.events.Event
 import xyz.meowing.knit.api.render.world.RenderContext
@@ -50,9 +50,9 @@ sealed class RenderEvent {
          * @since 1.2.0
          */
         class Pre(
-            val entity: net.minecraft.entity.Entity,
-            val matrices: MatrixStack,
-            val vertex: VertexConsumerProvider?,
+            val entity: net.minecraft.world.entity.Entity,
+            val matrices: PoseStack,
+            val vertex: MultiBufferSource?,
             val light: Int
         ) : CancellableEvent()
 
@@ -63,9 +63,9 @@ sealed class RenderEvent {
          * @since 1.2.0
          */
         class Post(
-            val entity: net.minecraft.entity.Entity,
-            val matrices: MatrixStack,
-            val vertex: VertexConsumerProvider?,
+            val entity: net.minecraft.world.entity.Entity,
+            val matrices: PoseStack,
+            val vertex: MultiBufferSource?,
             val light: Int
         ) : Event()
     }

@@ -1,9 +1,9 @@
 package xyz.meowing.krypt.mixins;
 
 import io.netty.channel.ChannelHandlerContext;
-import net.minecraft.network.ClientConnection;
-import net.minecraft.network.PacketCallbacks;
-import net.minecraft.network.packet.Packet;
+import net.minecraft.network.Connection;
+import net.minecraft.network.PacketSendListener;
+import net.minecraft.network.protocol.Packet;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -15,7 +15,7 @@ import xyz.meowing.krypt.events.core.PacketEvent;
 //$$ import io.netty.channel.ChannelFutureListener;
 //#endif
 
-@Mixin(ClientConnection.class)
+@Mixin(Connection.class)
 public class MixinClientConnection {
     @Inject(method = "channelRead0*", at = @At("HEAD"), cancellable = true)
     private void krypt$onReceivePacket(ChannelHandlerContext context, Packet<?> packet, CallbackInfo ci) {
@@ -27,11 +27,11 @@ public class MixinClientConnection {
         EventBus.INSTANCE.post(new PacketEvent.ReceivedPost(packet));
     }
 
-    @Inject(method = "sendImmediately", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "sendPacket", at = @At("HEAD"), cancellable = true)
     //#if MC >= 1.21.8
     //$$ private void krypt$onPacketSend(Packet<?> packet, ChannelFutureListener channelFutureListener, boolean flush, CallbackInfo ci) {
     //#else
-    private void krypt$onPacketSend(Packet<?> packet, PacketCallbacks callbacks, boolean flush, CallbackInfo ci) {
+    private void krypt$onPacketSend(Packet<?> packet, PacketSendListener callbacks, boolean flush, CallbackInfo ci) {
     //#endif
         if (EventBus.INSTANCE.post(new PacketEvent.Sent(packet))) ci.cancel();
     }

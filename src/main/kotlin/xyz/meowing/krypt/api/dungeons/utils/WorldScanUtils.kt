@@ -1,6 +1,6 @@
 package xyz.meowing.krypt.api.dungeons.utils
 
-import net.minecraft.util.math.BlockPos
+import net.minecraft.core.BlockPos
 import xyz.meowing.knit.api.KnitClient
 import xyz.meowing.krypt.utils.WorldUtils
 
@@ -11,7 +11,7 @@ object WorldScanUtils {
         val world = KnitClient.world ?: return false
         val chunkX = x shr 4
         val chunkZ = z shr 4
-        return world.chunkManager.isChunkLoaded(chunkX, chunkZ)
+        return world.chunkSource.hasChunk(chunkX, chunkZ)
     }
 
     fun getCore(x: Int, z: Int): Int {

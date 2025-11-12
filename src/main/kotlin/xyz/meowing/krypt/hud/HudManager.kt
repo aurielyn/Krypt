@@ -2,7 +2,7 @@ package xyz.meowing.krypt.hud
 
 import com.mojang.serialization.Codec
 import com.mojang.serialization.DataResult
-import net.minecraft.client.gui.DrawContext
+import net.minecraft.client.gui.GuiGraphics
 import xyz.meowing.krypt.api.data.StoredFile
 import kotlin.collections.component1
 import kotlin.collections.component2
@@ -10,7 +10,7 @@ import kotlin.collections.set
 
 object HudManager {
     val elements = mutableMapOf<String, HudElement>()
-    val customRenderers = mutableMapOf<String, (DrawContext) -> Unit>()
+    val customRenderers = mutableMapOf<String, (GuiGraphics) -> Unit>()
     val customSizes = mutableMapOf<String, Pair<Int, Int>>()
 
     data class HudLayoutData(
@@ -51,7 +51,7 @@ object HudManager {
         id: String,
         width: Int,
         height: Int,
-        renderer: (DrawContext) -> Unit,
+        renderer: (GuiGraphics) -> Unit,
         configKey: String? =  null
     ) {
         customRenderers[id] = renderer

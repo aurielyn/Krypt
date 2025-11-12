@@ -1,6 +1,6 @@
 package xyz.meowing.krypt.features.highlights
 
-import net.minecraft.entity.decoration.ArmorStandEntity
+import net.minecraft.world.entity.decoration.ArmorStand
 import xyz.meowing.knit.api.KnitPlayer.player
 import xyz.meowing.knit.api.scheduler.TickScheduler
 import xyz.meowing.krypt.annotations.Module
@@ -47,7 +47,7 @@ object HighlightStarMobs : Feature(
 
     override fun initialize() {
         register<EntityEvent.Join> { event ->
-            if (event.entity !is ArmorStandEntity) return@register
+            if (event.entity !is ArmorStand) return@register
             val entity = event.entity
 
             TickScheduler.Server.schedule(2) {
@@ -67,7 +67,7 @@ object HighlightStarMobs : Feature(
             val entity = event.entity
             if (!entities.contains(entity.id)) return@register
 
-            if (player?.canSee(entity) == true) {
+            if (player?.hasLineOfSight(entity) == true) {
                 entity.glowThisFrame = true
                 entity.glowingColor = starMobsColor.rgb
             }

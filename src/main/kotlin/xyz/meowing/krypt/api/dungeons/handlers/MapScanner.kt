@@ -1,7 +1,7 @@
 package xyz.meowing.krypt.api.dungeons.handlers
 
-import net.minecraft.item.map.MapDecorationTypes
-import net.minecraft.item.map.MapState
+import net.minecraft.world.level.saveddata.maps.MapDecorationTypes
+import net.minecraft.world.level.saveddata.maps.MapItemSavedData
 import xyz.meowing.krypt.Krypt
 import xyz.meowing.krypt.api.dungeons.DungeonAPI
 import xyz.meowing.krypt.api.dungeons.DungeonAPI.rooms
@@ -27,7 +27,7 @@ object MapScanner {
     private const val DOOR_CHECK_OFFSET_V2 = 128 * 3
     private const val ROOM_COLOR_OFFSET = 5 + 128 * 4
 
-    fun updatePlayers(state: MapState) {
+    fun updatePlayers(state: MapItemSavedData) {
         val decorations = (state as AccessorMapState).decorations
         var playerIndex = 1
 
@@ -82,7 +82,7 @@ object MapScanner {
         }
     }
 
-    fun scan(state: MapState) {
+    fun scan(state: MapItemSavedData) {
         val colors = state.colors
         val mapCorner = MapUtils.mapCorners
         val mapGapSize = MapUtils.mapGapSize

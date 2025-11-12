@@ -1,6 +1,6 @@
 package xyz.meowing.krypt.api.dungeons.enums.map
 
-import net.minecraft.block.Blocks
+import net.minecraft.world.level.block.Blocks
 import xyz.meowing.krypt.api.dungeons.enums.DungeonPlayer
 import xyz.meowing.krypt.api.dungeons.handlers.RoomRegistry
 import xyz.meowing.krypt.api.dungeons.utils.ScanUtils
@@ -134,7 +134,7 @@ class Room(
 
                 if (!WorldScanUtils.isChunkLoaded(nx, nz)) continue
                 val state = WorldUtils.getBlockStateAt(nx, currentHeight, nz) ?: continue
-                if (state.isOf(Blocks.BLUE_TERRACOTTA)) {
+                if (state.`is`(Blocks.BLUE_TERRACOTTA)) {
                     rotation = jdx * 90
                     corner = Triple(nx + 0.5, currentHeight.toDouble(), nz + 0.5)
                     return this

@@ -1,8 +1,8 @@
 package xyz.meowing.krypt.features.solvers
 
-import net.minecraft.block.Blocks
-import net.minecraft.network.packet.s2c.play.PlayerPositionLookS2CPacket
-import net.minecraft.util.math.BlockPos
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.network.protocol.game.ClientboundPlayerPositionPacket
+import net.minecraft.core.BlockPos
 import xyz.meowing.knit.api.KnitPlayer.player
 import xyz.meowing.krypt.annotations.Module
 import xyz.meowing.krypt.api.dungeons.utils.WorldScanUtils
@@ -157,7 +157,7 @@ object TeleportMazeSolver : Feature(
 
         register<PacketEvent.Received> { event ->
             if (cells == null) return@register
-            val packet = event.packet as? PlayerPositionLookS2CPacket ?: return@register
+            val packet = event.packet as? ClientboundPlayerPositionPacket ?: return@register
             val pos = packet.change.position
             if (pos.x % 0.5 != 0.0 || pos.y != 69.5 || pos.z % 0.5 != 0.0) return@register
 
@@ -177,7 +177,7 @@ object TeleportMazeSolver : Feature(
             newPad.blacklisted = true
             oldPad.blacklisted = true
 
-            calcPadAngles(pos.x, pos.z, packet.change.yaw)
+            calcPadAngles(pos.x, pos.z, packet.change.yRot())
         }
     }
 

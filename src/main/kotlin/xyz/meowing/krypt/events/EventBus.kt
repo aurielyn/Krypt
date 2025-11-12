@@ -5,7 +5,7 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientWorldEvents
 import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents
-import net.minecraft.network.packet.Packet
+import net.minecraft.network.protocol.Packet
 import xyz.meowing.knit.Knit
 import xyz.meowing.knit.api.events.Event
 import xyz.meowing.knit.api.events.EventBus

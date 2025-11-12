@@ -1,6 +1,6 @@
 package xyz.meowing.krypt.features.general
 
-import net.minecraft.client.gui.DrawContext
+import net.minecraft.client.gui.GuiGraphics
 import xyz.meowing.knit.api.KnitClient.client
 import xyz.meowing.knit.api.scheduler.TickScheduler
 import xyz.meowing.krypt.annotations.Module
@@ -51,12 +51,12 @@ object RoomSecrets: Feature(
         register<GuiEvent.RenderHUD> { renderHUD(it.context) }
     }
 
-    fun hudEditorRender(context: DrawContext){
-        val matrix = context.matrices
+    fun hudEditorRender(context: GuiGraphics){
+        val matrix = context.pose()
         //#if MC >= 1.21.7
         //$$ matrix.pushMatrix()
         //#else
-        matrix.push()
+        matrix.pushPose()
         //#endif
 
         val text1 = "§fSecrets"
@@ -76,12 +76,12 @@ object RoomSecrets: Feature(
         //#if MC >= 1.21.7
         //$$ matrix.popMatrix()
         //#else
-        matrix.pop()
+        matrix.popPose()
         //#endif
     }
 
-    private fun renderHUD(context: DrawContext) {
-        val matrix = context.matrices
+    private fun renderHUD(context: GuiGraphics) {
+        val matrix = context.pose()
         val x = HudManager.getX(NAME)
         val y = HudManager.getY(NAME)
         val scale = HudManager.getScale(NAME)
@@ -91,7 +91,7 @@ object RoomSecrets: Feature(
         //$$ matrix.translate(x, y)
         //$$ matrix.scale(scale, scale)
         //#else
-        matrix.push()
+        matrix.pushPose()
         matrix.translate(x, y, 0f)
         matrix.scale(scale, scale, 1f)
         //#endif
@@ -113,7 +113,7 @@ object RoomSecrets: Feature(
         //#if MC >= 1.21.7
         //$$ matrix.popMatrix()
         //#else
-        matrix.pop()
+        matrix.popPose()
         //#endif
     }
 

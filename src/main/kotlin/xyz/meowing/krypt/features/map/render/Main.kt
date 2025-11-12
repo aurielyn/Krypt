@@ -1,7 +1,7 @@
 package xyz.meowing.krypt.features.map.render
 
-import net.minecraft.client.gui.DrawContext
-import net.minecraft.util.math.RotationAxis
+import net.minecraft.client.gui.GuiGraphics
+import com.mojang.math.Axis
 import tech.thatgravyboat.skyblockapi.utils.extentions.stripColor
 import xyz.meowing.knit.api.KnitPlayer
 import xyz.meowing.krypt.Krypt
@@ -25,7 +25,7 @@ object Main {
     private const val GAP_SIZE = 4
     private const val SPACING = ROOM_SIZE + GAP_SIZE
 
-    fun renderMap(context: DrawContext) {
+    fun renderMap(context: GuiGraphics) {
         val mapOffset = if (DungeonAPI.floor?.floorNumber == 1) 10.6f else 0f
         val mapScale = Utils.scale(DungeonAPI.floor?.floorNumber)
 
@@ -40,7 +40,7 @@ object Main {
         }
     }
 
-    private fun renderRooms(context: DrawContext) {
+    private fun renderRooms(context: GuiGraphics) {
         DungeonAPI.discoveredRooms.values.forEach { room ->
             Render2D.drawRect(context, room.x * SPACING, room.z * SPACING, ROOM_SIZE, ROOM_SIZE, Color(65 / 255f, 65 / 255f, 65 / 255f, 1f))
         }
@@ -67,7 +67,7 @@ object Main {
         }
     }
 
-    private fun renderCheckmarks(context: DrawContext) {
+    private fun renderCheckmarks(context: GuiGraphics) {
         DungeonAPI.discoveredRooms.values.forEach { room ->
             val x = room.x * SPACING + ROOM_SIZE / 2 - 5
             val y = room.z * SPACING + ROOM_SIZE / 2 - 6
@@ -109,7 +109,7 @@ object Main {
         }
     }
 
-    private fun renderRoomLabels(context: DrawContext) {
+    private fun renderRoomLabels(context: GuiGraphics) {
         DungeonAPI.uniqueRooms.forEach { room ->
             if (!room.explored) return@forEach
 
@@ -148,7 +148,7 @@ object Main {
         }
     }
 
-    private fun renderPlayers(context: DrawContext) {
+    private fun renderPlayers(context: GuiGraphics) {
         for (player in DungeonAPI.players) {
             if (player == null || (player.dead && player.name != KnitPlayer.name)) continue
 
@@ -171,7 +171,7 @@ object Main {
         }
     }
 
-    private fun renderRoomConnectors(context: DrawContext, room: Room) {
+    private fun renderRoomConnectors(context: GuiGraphics, room: Room) {
         val directions = listOf(Pair(1, 0), Pair(-1, 0), Pair(0, 1), Pair(0, -1))
 
         for ((x, z) in room.components) {
@@ -217,7 +217,7 @@ object Main {
         return Pair(minX + width / 2.0, centerZ)
     }
 
-    private fun drawShadowedText(context: DrawContext, text: String, x: Int, y: Int, scale: Float) {
+    private fun drawShadowedText(context: GuiGraphics, text: String, x: Int, y: Int, scale: Float) {
         val offsets = listOf(Pair(scale, 0f), Pair(-scale, 0f), Pair(0f, scale), Pair(0f, -scale))
 
         for ((dx, dy) in offsets) {
@@ -228,9 +228,9 @@ object Main {
         }
     }
 
-    private fun renderPlayerIcon(context: DrawContext, player: DungeonPlayer, x: Double, y: Double, rotation: Float) {
+    private fun renderPlayerIcon(context: GuiGraphics, player: DungeonPlayer, x: Double, y: Double, rotation: Float) {
         context.pushPop {
-            val matrix = context.matrices
+            val matrix = context.pose()
 
             //#if MC >= 1.21.7
             //$$ matrix.translate(x.toFloat(), y.toFloat())
@@ -238,7 +238,7 @@ object Main {
             //$$ matrix.scale(1f, 1f)
             //#else
             matrix.translate(x.toFloat(), y.toFloat(), 0f)
-            matrix.multiply(RotationAxis.POSITIVE_Z.rotationDegrees(rotation))
+            matrix.mulPose(Axis.ZP.rotationDegrees(rotation))
             matrix.scale(1f, 1f, 1f)
             //#endif
 
@@ -261,8 +261,8 @@ object Main {
         }
     }
 
-    private fun translateAndScale(context: DrawContext, x: Float, y: Float, scale: Float, offsetX: Float = 0f, offsetY: Float = 0f) {
-        val matrix = context.matrices
+    private fun translateAndScale(context: GuiGraphics, x: Float, y: Float, scale: Float, offsetX: Float = 0f, offsetY: Float = 0f) {
+        val matrix = context.pose()
 
         //#if MC >= 1.21.7
         //$$ matrix.translate(x, y)
