@@ -429,14 +429,16 @@ object Render3D {
         shape: VoxelShape,
         color: Color,
         consumers: VertexConsumerProvider?,
-        matrixStack: MatrixStack?
+        matrixStack: MatrixStack?,
+        phase: Boolean = false
     ) {
         shape.boundingBoxes.forEach { box ->
             drawFilledBB(
                 box,
                 color,
                 consumers,
-                matrixStack
+                matrixStack,
+                phase
             )
         }
     }
