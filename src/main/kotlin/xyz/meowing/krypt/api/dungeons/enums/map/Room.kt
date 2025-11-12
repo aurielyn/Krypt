@@ -1,6 +1,7 @@
 package xyz.meowing.krypt.api.dungeons.enums.map
 
 import net.minecraft.block.Blocks
+import xyz.meowing.krypt.Krypt
 import xyz.meowing.krypt.api.dungeons.enums.DungeonPlayer
 import xyz.meowing.krypt.api.dungeons.handlers.RoomRegistry
 import xyz.meowing.krypt.api.dungeons.utils.ScanUtils
@@ -35,6 +36,8 @@ class Room(
 
     var name: String? = null
     var corner: Triple<Double, Double, Double>? = null
+    var center: Triple<Double, Double, Double>? = null
+    var componentCenters: List<Triple<Double, Double, Double>> = emptyList()
     var rotation: Int? = null
     var type: RoomType = RoomType.UNKNOWN
     var secrets: Int = 0
@@ -138,6 +141,35 @@ class Room(
                     return this
                 }
             }
+        }
+        return this
+    }
+
+    fun findCenter(): Room {
+        if (realComponents.isEmpty() || height == null) return this
+
+        val minX = realComponents.minOf { it.first }
+        val maxX = realComponents.maxOf { it.first }
+        val minZ = realComponents.minOf { it.second }
+        val maxZ = realComponents.maxOf { it.second }
+
+        center = Triple(
+            (minX + maxX) / 2.0,
+            height!!.toDouble(),
+            (minZ + maxZ) / 2.0
+        )
+        return this
+    }
+
+    fun findComponentCenters(): Room {
+        val currentHeight = height ?: return this
+
+        componentCenters = realComponents.map { (x, z) ->
+            Triple(
+                x.toDouble(),
+                currentHeight.toDouble(),
+                z.toDouble(),
+            )
         }
         return this
     }

@@ -219,6 +219,11 @@ object WorldScanner {
             if (room?.rotation == null) {
                 room?.findRotation()
             }
+
+            if ((room?.componentCenters?.size ?: 0) < (room?.components?.size ?: 0)) {
+                room?.findComponentCenters()
+                room?.findCenter()
+            }
         }
     }
 
