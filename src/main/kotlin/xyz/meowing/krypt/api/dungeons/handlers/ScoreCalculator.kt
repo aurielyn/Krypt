@@ -155,10 +155,10 @@ object ScoreCalculator {
             }
 
             line.startsWith("Time Elapsed:") -> {
-                timeElapsedPattern.findGroups(line, "hrs", "min", "sec")?.let { (hrs, min, sec) ->
-                    val hours = hrs.toIntOrNull() ?: 0
-                    val minutes = min.toIntOrNull() ?: 0
-                    val seconds = sec.toIntOrNull() ?: 0
+                timeElapsedPattern.find(line)?.groups?.let { groups ->
+                    val hours = groups["hrs"]?.value?.toIntOrNull() ?: 0
+                    val minutes = groups["min"]?.value?.toIntOrNull() ?: 0
+                    val seconds = groups["sec"]?.value?.toIntOrNull() ?: 0
                     secondsElapsed = (hours * 3600 + minutes * 60 + seconds)
                 }
             }
