@@ -196,7 +196,7 @@ object MapScanner {
             if (neighborRoom == null) {
                 room.addComponent(neighborComp)
                 rooms[neighborIdx] = room
-            } else if (neighborRoom != room && neighborRoom.type != RoomType.ENTRANCE) {
+            } else if (neighborRoom != room && neighborRoom.type != RoomType.ENTRANCE && room.type != RoomType.ENTRANCE) {
                 DungeonAPI.mergeRooms(neighborRoom, room)
             }
         }

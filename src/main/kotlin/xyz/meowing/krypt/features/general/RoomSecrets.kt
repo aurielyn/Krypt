@@ -18,7 +18,7 @@ import xyz.meowing.krypt.utils.rendering.Render2D.width
 
 @Module
 object RoomSecrets: Feature(
-    "general.roomSecrets",
+    "roomSecrets",
     island = SkyBlockIsland.THE_CATACOMBS
 ) {
     private const val NAME = "Secrets Display"
@@ -29,13 +29,13 @@ object RoomSecrets: Feature(
             "Shows the secrets in the current dungeon room",
             "General",
             ConfigElement(
-                "general.roomSecrets",
+                "roomSecrets",
                 ElementType.Switch(false)
             )
         )
         .addFeatureOption("HudEditor",
             ConfigElement(
-                "general.roomSecrets.hudEditor",
+                "roomSecrets.hudEditor",
                 ElementType.Button("Edit Position") {
                     TickScheduler.Client.post {
                         client.execute { client.setScreen(HudEditor()) }
@@ -46,7 +46,7 @@ object RoomSecrets: Feature(
     }
 
     override fun initialize() {
-        HudManager.registerCustom(NAME, 50,30, this::hudEditorRender, "general.roomSecrets")
+        HudManager.registerCustom(NAME, 50,30, this::hudEditorRender, "roomSecrets")
 
         register<GuiEvent.RenderHUD> { renderHUD(it.context) }
     }

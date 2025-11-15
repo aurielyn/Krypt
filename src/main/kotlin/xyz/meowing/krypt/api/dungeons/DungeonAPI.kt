@@ -145,9 +145,9 @@ object DungeonAPI {
 
             if (event.isActionBar) {
                 currentRoom?.let { room ->
-                    roomSecretsRegex.findOrNull(message, "found") { (found) ->
-                        found
-                            .toIntOrNull()
+                    roomSecretsRegex.findOrNull(message) { match ->
+                        match[1]
+                            ?.toIntOrNull()
                             ?.takeIf { it != room.secretsFound }
                             ?.let { room.secretsFound = it }
                     }

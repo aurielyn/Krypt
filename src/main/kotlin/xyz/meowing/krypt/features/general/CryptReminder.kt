@@ -17,11 +17,11 @@ import xyz.meowing.krypt.utils.TitleUtils.showTitle
 
 @Module
 object CryptReminder : Feature(
-    "general.cryptReminder",
+    "cryptReminder",
     island = SkyBlockIsland.THE_CATACOMBS
 ) {
-    private val delay by ConfigDelegate<Double>("general.cryptReminder.delay")
-    private val sendToParty by ConfigDelegate<Boolean>("general.cryptReminder.sendToParty")
+    private val delay by ConfigDelegate<Double>("cryptReminder.delay")
+    private val sendToParty by ConfigDelegate<Boolean>("cryptReminder.sendToParty")
 
     override fun addConfig() {
         ConfigManager
@@ -30,20 +30,20 @@ object CryptReminder : Feature(
                 "Crypt reminder",
                 "General",
                 ConfigElement(
-                    "general.cryptReminder",
+                    "cryptReminder",
                     ElementType.Switch(false)
                 )
             )
             .addFeatureOption(
                 "Crypt reminder delay",
                 ConfigElement(
-                    "general.cryptReminder.delay",
+                    "cryptReminder.delay",
                     ElementType.Slider(1.0, 5.0, 2.0, false)
                 )
             )
             .addFeatureOption("Send to party",
                 ConfigElement(
-                    "general.cryptReminder.sendToParty",
+                    "cryptReminder.sendToParty",
                     ElementType.Switch(true)
                 )
             )

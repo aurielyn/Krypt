@@ -18,11 +18,11 @@ import xyz.meowing.krypt.utils.rendering.Render2D
 
 @Module
 object RoomName: Feature(
-    "general.roomName",
+    "roomName",
     island = SkyBlockIsland.THE_CATACOMBS
 ) {
-    val chroma by ConfigDelegate<Boolean>("general.roomName.chroma")
-    private const val NAME = "room name"
+    val chroma by ConfigDelegate<Boolean>("roomName.chroma")
+    private const val NAME = "Room Name"
 
     override fun addConfig() {
         ConfigManager
@@ -31,20 +31,20 @@ object RoomName: Feature(
                 "Displays the current rooms name",
                 "General",
                 ConfigElement(
-                    "general.roomName",
+                    "roomName",
                     ElementType.Switch(false)
                 )
             )
             .addFeatureOption(
                 "Chroma room name",
                 ConfigElement(
-                    "general.roomName.chroma",
+                    "roomName.chroma",
                     ElementType.Switch(false)
                 )
             )
             .addFeatureOption("HudEditor",
                 ConfigElement(
-                    "general.roomName.hudEditor",
+                    "roomName.hudEditor",
                     ElementType.Button("Edit Position") {
                         TickScheduler.Client.post {
                             client.execute { client.setScreen(HudEditor()) }
@@ -55,7 +55,7 @@ object RoomName: Feature(
     }
 
     override fun initialize() {
-        HudManager.register(NAME, "No Room Found", "general.roomName")
+        HudManager.register(NAME, "No Room Found", "roomName")
         register<GuiEvent.RenderHUD> { renderHud(it.context) }
     }
 

@@ -177,7 +177,7 @@ object WorldScanner {
                     room.addComponent(neighborComp)
                     rooms[neighborIdx] = room
                 }
-                neighborRoom != room && neighborRoom.type != RoomType.ENTRANCE -> {
+                neighborRoom != room && neighborRoom.type != RoomType.ENTRANCE && room.type != RoomType.ENTRANCE -> {
                     DungeonAPI.mergeRooms(neighborRoom, room)
                 }
             }
