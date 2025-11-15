@@ -138,6 +138,8 @@ object ScoreCalculator {
                         ?.toIntOrNull()
                         ?.let { foundSecrets = it }
                 }
+
+                totalSecrets = if (secretPercentage > 0) ((100.0 / secretPercentage) * foundSecrets + 0.5).toInt() else 0
             }
         }
     }

@@ -290,7 +290,7 @@ object DungeonAPI {
         }
 
         val mimic = if (floor?.floorNumber in listOf(6, 7)) {
-            "§7M: " + if (mimicKilled) "§a✔" else "§c✘"
+            "§7M: " + if (mimicKilled) "§a✔" else "§c✘" +
             "§8| §7P: " + if (princeKilled) "§a✔" else "§c✘"
         } else ""
 
