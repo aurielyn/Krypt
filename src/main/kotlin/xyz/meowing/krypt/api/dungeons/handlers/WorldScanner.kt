@@ -14,7 +14,6 @@ import xyz.meowing.krypt.api.location.SkyBlockIsland
 import xyz.meowing.krypt.events.EventBus
 import xyz.meowing.krypt.events.core.DungeonEvent
 import xyz.meowing.krypt.events.core.TickEvent
-import xyz.meowing.krypt.events.core.LocationEvent
 import xyz.meowing.krypt.utils.WorldUtils
 
 @Module
@@ -41,23 +40,21 @@ object WorldScanner {
             availableComponents.isNotEmpty()
 
     init {
-        EventBus.register<LocationEvent.WorldChange> { reset() }
-
-        EventBus.registerIn<TickEvent.Client>(SkyBlockIsland.THE_CATACOMBS) {
+        EventBus.registerIn<TickEvent.Client> (SkyBlockIsland.THE_CATACOMBS) {
             val player = KnitClient.player ?: return@registerIn
 
             checkPlayerState()
-
-            if (++tickCounter % SCAN_INTERVAL != 0) return@registerIn
 
             val (x, z) = WorldScanUtils.realCoordToComponent(player.x.toInt(), player.z.toInt())
             val idx = 6 * z + x
 
             if (idx >= MAX_ROOM_INDEX) return@registerIn
 
-            scan()
-            checkRoomState()
-            checkDoorState()
+            if (++tickCounter % SCAN_INTERVAL == 0) {
+                scan()
+                checkRoomState()
+                checkDoorState()
+            }
 
             val prevRoom = lastIdx?.let { rooms[it] }
             val currRoom = rooms.getOrNull(idx)

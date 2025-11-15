@@ -2,7 +2,12 @@
 
 package xyz.meowing.krypt.api.dungeons
 
+import net.minecraft.world.entity.EquipmentSlot
+import net.minecraft.world.entity.monster.Zombie
+import tech.thatgravyboat.skyblockapi.api.data.Perk
+import tech.thatgravyboat.skyblockapi.utils.extentions.getTexture
 import tech.thatgravyboat.skyblockapi.utils.regex.RegexUtils.find
+import tech.thatgravyboat.skyblockapi.utils.regex.RegexUtils.findOrNull
 import tech.thatgravyboat.skyblockapi.utils.regex.matchWhen
 import tech.thatgravyboat.skyblockapi.utils.text.TextProperties.stripped
 import xyz.meowing.knit.api.KnitPlayer
@@ -15,19 +20,27 @@ import xyz.meowing.krypt.api.dungeons.enums.map.Room
 import xyz.meowing.krypt.api.dungeons.handlers.WorldScanner
 import xyz.meowing.krypt.api.dungeons.enums.DungeonPlayer
 import xyz.meowing.krypt.api.dungeons.handlers.DungeonPlayerManager
-import xyz.meowing.krypt.api.dungeons.handlers.DungeonScore
-import xyz.meowing.krypt.api.dungeons.handlers.MimicTrigger
 import xyz.meowing.krypt.api.dungeons.handlers.MapUtils
+import xyz.meowing.krypt.api.dungeons.handlers.ScoreCalculator
+import xyz.meowing.krypt.api.dungeons.handlers.ScoreCalculator.deathCount
+import xyz.meowing.krypt.api.dungeons.handlers.ScoreCalculator.foundSecrets
+import xyz.meowing.krypt.api.dungeons.handlers.ScoreCalculator.mimicKilled
+import xyz.meowing.krypt.api.dungeons.handlers.ScoreCalculator.princeKilled
+import xyz.meowing.krypt.api.dungeons.handlers.ScoreCalculator.score
+import xyz.meowing.krypt.api.dungeons.handlers.ScoreCalculator.totalSecrets
 import xyz.meowing.krypt.api.dungeons.utils.WorldScanUtils
 import xyz.meowing.krypt.api.location.SkyBlockIsland
 import xyz.meowing.krypt.events.EventBus
 import xyz.meowing.krypt.events.core.ChatEvent
 import xyz.meowing.krypt.events.core.DungeonEvent
+import xyz.meowing.krypt.events.core.EntityEvent
 import xyz.meowing.krypt.events.core.LocationEvent
 import xyz.meowing.krypt.events.core.TickEvent
 
 @Module
 object DungeonAPI {
+    private const val MIMIC_TEXTURE = "ewogICJ0aW1lc3RhbXAiIDogMTY3Mjc2NTM1NTU0MCwKICAicHJvZmlsZUlkIiA6ICJhNWVmNzE3YWI0MjA0MTQ4ODlhOTI5ZDA5OTA0MzcwMyIsCiAgInByb2ZpbGVOYW1lIiA6ICJXaW5zdHJlYWtlcnoiLAogICJzaWduYXR1cmVSZXF1aWJlZCIgOiB0cnVlLAogICJ0ZXh0dXJlcyIgOiB7CiAgICAiU0tJTiIgOiB7CiAgICAgICJ1cmwiIDogImh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvZTE5YzEyNTQzYmM3NzkyNjA1ZWY2OGUxZjg3NDlhZThmMmEzODFkOTA4NWQ0ZDRiNzgwYmExMjgyZDM1OTdhMCIsCiAgICAgICJtZXRhZGF0YSIgOiB7CiAgICAgICAgIm1vZGVsIiA6ICJzbGltIgogICAgICB9CiAgICB9CiAgfQp9"
+
     private val watcherSpawnedAllRegex = Regex("""\[BOSS] The Watcher: That will be enough for now\.""")
     private val watcherKilledAllRegex = Regex("\\[BOSS] The Watcher: You have proven yourself\\. You may pass\\.")
 
@@ -44,6 +57,9 @@ object DungeonAPI {
     private val endRegex = Regex("\\s+(?:Master Mode|The) Catacombs - (?:Entrance|Floor [XVI]+)")
 
     private val uniqueClassRegex = Regex("Your .+ stats are doubled because you are the only player using this class!")
+    private val mimicRegex = Regex("""^Party > (?:\[[\w+]+] )?\w{1,16}: (.*)$""")
+
+    private val mimicMessages = listOf("mimic dead", "mimic dead!", "mimic killed", "mimic killed!", $$"$skytils-dungeon-score-mimic$")
 
     val rooms = Array<Room?>(36) { null }
     val doors = Array<Door?>(60) { null }
@@ -85,20 +101,18 @@ object DungeonAPI {
 
     var mapLine1 = ""
         private set
+
     var mapLine2 = ""
         private set
 
     var uniqueClass = false
         private set
 
-    val mimicDead: Boolean
-        get() = MimicTrigger.mimicDead
+    val cryptCount: Int
+        get() = ScoreCalculator.cryptsCount
 
     val players: Array<DungeonPlayer?>
         get() = DungeonPlayerManager.players
-
-    val score: Int
-        get() = DungeonScore.score
 
     val ownPlayer: DungeonPlayer?
         get() = players.find { it?.name == KnitPlayer.player?.name?.string }
@@ -108,6 +122,9 @@ object DungeonAPI {
 
     val classLevel: Int
         get() = ownPlayer?.classLevel ?: 0
+
+    val isPaul: Boolean
+        get() = Perk.EZPZ.active
 
     data class DiscoveredRoom(val x: Int, val z: Int, val room: Room)
 
@@ -125,6 +142,34 @@ object DungeonAPI {
 
         EventBus.registerIn<ChatEvent.Receive>(SkyBlockIsland.THE_CATACOMBS) { event ->
             val message = event.message.stripped
+
+            if (event.isActionBar) {
+                currentRoom?.let { room ->
+                    roomSecretsRegex.findOrNull(message, "found") { (found) ->
+                        found
+                            .toIntOrNull()
+                            ?.takeIf { it != room.secretsFound }
+                            ?.let { room.secretsFound = it }
+                    }
+                }
+                return@registerIn
+            }
+
+            if (floor?.floorNumber in listOf(6, 7)) {
+                when {
+                    mimicRegex.matches(message) -> {
+                        if (mimicMessages.any { message.contains(it, true) }) {
+                            mimicKilled = true
+                            return@registerIn
+                        }
+                    }
+
+                    message.equals("a prince falls. +1 bonus score", true) -> {
+                        princeKilled = true
+                        return@registerIn
+                    }
+                }
+            }
 
             when {
                 watcherSpawnedAllRegex.matches(message) -> {
@@ -155,25 +200,20 @@ object DungeonAPI {
                 case(keyObtainedRegex, "type") { (type) ->
                     handleGetKey(type)
                 }
+
                 case(keyPickedUpRegex, "type") { (type) ->
                     handleGetKey(type)
                 }
+
                 case(witherDoorOpenRegex) {
                     if (witherKeys > 0) --witherKeys
                 }
+
                 case(bloodDoorOpenRegex) {
                     if (bloodKeys > 0) --bloodKeys
                     bloodOpened = true
                 }
             }
-
-            if (!event.isActionBar) return@registerIn
-
-            val room = currentRoom ?: return@registerIn
-            val match = roomSecretsRegex.find(event.message.stripped) ?: return@registerIn
-            val (found, _) = match.destructured
-            val secrets = found.toInt()
-            if (secrets != room.secretsFound) room.secretsFound = secrets
         }
 
         EventBus.registerIn<TickEvent.Client>(SkyBlockIsland.THE_CATACOMBS) {
@@ -187,9 +227,19 @@ object DungeonAPI {
                 6 * z + x > 35
             } == true
         }
+
+        EventBus.registerIn<EntityEvent.Death>(SkyBlockIsland.THE_CATACOMBS) { event ->
+            if (mimicKilled) return@registerIn
+            if (floor?.floorNumber !in listOf(6, 7)) return@registerIn
+
+            val entity = event.entity as? Zombie ?: return@registerIn
+            if (!entity.isBaby) return@registerIn
+            if (entity.getItemBySlot(EquipmentSlot.HEAD)?.getTexture() != MIMIC_TEXTURE) return@registerIn
+
+            mimicKilled = true
+        }
     }
 
-    /** Clears all dungeon state */
     fun reset() {
         rooms.fill(null)
         doors.fill(null)
@@ -217,7 +267,7 @@ object DungeonAPI {
 
         WorldScanner.reset()
         DungeonPlayerManager.reset()
-        DungeonScore.reset()
+        ScoreCalculator.reset()
         MapUtils.reset()
     }
 
@@ -227,37 +277,38 @@ object DungeonAPI {
             DungeonKey.WITHER -> ++witherKeys
             DungeonKey.BLOOD -> ++bloodKeys
         }
+
         EventBus.post(DungeonEvent.KeyPickUp(key))
     }
 
     private fun updateHudLines() {
-        val run = DungeonScore.data
-
-        val dSecrets = "§7Secrets: §b${run.secretsFound}§8-§e${run.secretsRemaining}§8-§c${run.totalSecrets}"
-        val dCrypts = "§7Crypts: " + when {
-            run.crypts >= 5 -> "§a${run.crypts}"
-            run.crypts > 0 -> "§e${run.crypts}"
+        val secrets = "§7Secrets: §b${foundSecrets}§7/§c${totalSecrets}"
+        val crypts = "§7Crypts: " + when {
+            cryptCount >= 5 -> "§a${cryptCount}"
+            cryptCount > 0 -> "§e${cryptCount}"
             else -> "§c0"
         }
-        val dMimic = if (floor?.floorNumber in listOf(6, 7)) {
-            "§7Mimic: " + if (MimicTrigger.mimicDead) "§a✔" else "§c✘"
+
+        val mimic = if (floor?.floorNumber in listOf(6, 7)) {
+            "§7M: " + if (mimicKilled) "§a✔" else "§c✘"
+            "§8| §7P: " + if (princeKilled) "§a✔" else "§c✘"
         } else ""
 
-        val minSecrets = "§7Min Secrets: " + when {
-            run.secretsFound == 0 -> "§b?"
-            run.minSecrets > run.secretsFound -> "§e${run.minSecrets}"
-            else -> "§a${run.minSecrets}"
+        val unfoundSecrets = "§7Unfound: " + when {
+            foundSecrets == 0 -> "§b${totalSecrets}"
+            else -> "§a${totalSecrets - foundSecrets}"
         }
 
-        val dDeaths = "§7Deaths: " + if (run.teamDeaths > 0) "§c${run.teamDeaths}" else "§a0"
-        val dScore = "§7Score: " + when {
-            run.score >= 300 -> "§a${run.score}"
-            run.score >= 270 -> "§e${run.score}"
-            else -> "§c${run.score}"
-        } + if (DungeonScore.hasPaul) " §b★" else ""
+        val deaths = "§7Deaths: §c${deathCount.coerceAtLeast(0)}"
 
-        mapLine1 = "$dSecrets    $dCrypts    $dMimic".trim()
-        mapLine2 = "$minSecrets    $dDeaths    $dScore".trim()
+        val formattedScore = "§7Score: " + when {
+            score >= 300 -> "§a${score}"
+            score >= 270 -> "§e${score}"
+            else -> "§c${score}"
+        } + if (isPaul) " §b★" else ""
+
+        mapLine1 = "$secrets $mimic $formattedScore".trim()
+        mapLine2 = "$unfoundSecrets $deaths $crypts".trim()
     }
 
     /** Updates leap detection based on held item */
@@ -272,7 +323,6 @@ object DungeonAPI {
     fun getRoomAtComp(comp: Pair<Int, Int>) = getRoomAtIdx(getRoomIdx(comp))
     fun getRoomAt(x: Int, z: Int) = getRoomAtComp(WorldScanUtils.realCoordToComponent(x, z))
 
-    // Door accessors
     fun getDoorIdx(comp: Pair<Int, Int>): Int {
         val base = ((comp.first - 1) shr 1) + 6 * comp.second
         return base - (base / 12)
@@ -282,7 +332,6 @@ object DungeonAPI {
     fun getDoorAtComp(comp: Pair<Int, Int>) = getDoorAtIdx(getDoorIdx(comp))
     fun getDoorAt(x: Int, z: Int) = getDoorAtComp(WorldScanUtils.realCoordToComponent(x, z))
 
-    /** Adds a door to the map and tracks it as unique */
     fun addDoor(door: Door) {
         val idx = getDoorIdx(door.componentPos)
         if (idx in doors.indices) {
@@ -291,7 +340,6 @@ object DungeonAPI {
         }
     }
 
-    /** Merges two rooms into one unified instance */
     fun mergeRooms(room1: Room, room2: Room) {
         uniqueRooms.remove(room2)
         for (comp in room2.components) {

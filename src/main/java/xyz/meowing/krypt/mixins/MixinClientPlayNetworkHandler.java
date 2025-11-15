@@ -27,15 +27,15 @@ public abstract class MixinClientPlayNetworkHandler extends ClientCommonPacketLi
     @Inject(method = "handleSetEntityData", at = @At("TAIL"))
     private void zen$onEntityTrackerUpdate(ClientboundSetEntityDataPacket packet, CallbackInfo ci, @Local Entity entity) {
         if (entity != null) {
-            String name = packet.packedItems() != null ? packet.packedItems().stream()
-                    .filter(entry -> entry.id() == 2)
-                    .map(entry -> entry.value() instanceof Optional<?> ? ((Optional<?>) entry.value()).orElse(null) : null)
-                    .filter(value -> value instanceof Component)
-                    .map(text -> ((Component) text).getString())
-                    .findFirst().orElse("") : "";
+            String name = packet.packedItems().stream()
+                                .filter(entry -> entry.id() == 2)
+                                .map(entry -> entry.value() instanceof Optional<?> ? ((Optional<?>) entry.value()).orElse(null) : null)
+                                .filter(value -> value instanceof Component)
+                                .map(text -> ((Component) text).getString())
+                                .findFirst().orElse("");
 
             if (EventBus.INSTANCE.post(new EntityEvent.Packet.Metadata(packet, entity, name))) {
-                if (this.minecraft != null && this.minecraft.level != null) {
+                if (this.minecraft.level != null) {
                     this.minecraft.level.removeEntity(entity.getId(), Entity.RemovalReason.DISCARDED);
                 }
             }

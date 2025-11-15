@@ -1,7 +1,9 @@
 package xyz.meowing.krypt.features.highlights
 
 import net.minecraft.world.entity.Entity
+import net.minecraft.world.phys.AABB
 import tech.thatgravyboat.skyblockapi.utils.text.TextProperties.stripped
+import xyz.meowing.knit.api.KnitChat
 import xyz.meowing.krypt.annotations.Module
 import xyz.meowing.krypt.api.dungeons.DungeonAPI
 import xyz.meowing.krypt.api.location.SkyBlockIsland
@@ -74,7 +76,7 @@ object KeyHighlight : Feature(
         register<EntityEvent.Packet.Metadata> { event ->
             if (DungeonAPI.inBoss) return@register
 
-            val entityName = event.entity.name?.stripped ?: return@register
+            val entityName = event.entity.name.stripped
 
             when (entityName) {
                 "Wither Key" -> if (highlightWither) doorKey = Pair(event.entity, witherColor)
@@ -102,7 +104,7 @@ object KeyHighlight : Feature(
                     1f
                 )
 
-                val box = net.minecraft.world.phys.AABB(
+                val box = AABB(
                     entity.x - 0.4,
                     entity.y + 1.2,
                     entity.z - 0.4,

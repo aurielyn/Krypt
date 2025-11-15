@@ -5,7 +5,6 @@ import xyz.meowing.knit.api.KnitChat
 import xyz.meowing.knit.api.scheduler.TimeScheduler
 import xyz.meowing.krypt.annotations.Module
 import xyz.meowing.krypt.api.dungeons.DungeonAPI
-import xyz.meowing.krypt.api.dungeons.handlers.DungeonScore
 import xyz.meowing.krypt.api.location.LocationAPI
 import xyz.meowing.krypt.api.location.SkyBlockIsland
 import xyz.meowing.krypt.config.ConfigDelegate
@@ -55,7 +54,7 @@ object CryptReminder : Feature(
             if (event.isActionBar) return@register
             if (event.message.stripped == "[NPC] Mort: Good luck.") {
                 TimeScheduler.schedule(1000 * 60 * delay.toLong()) {
-                    val cryptCount = DungeonScore.data.crypts
+                    val cryptCount = DungeonAPI.cryptCount
 
                     if (cryptCount == 5 || LocationAPI.island != SkyBlockIsland.THE_CATACOMBS || DungeonAPI.inBoss) return@schedule
 

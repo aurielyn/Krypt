@@ -6,6 +6,7 @@ import xyz.meowing.krypt.Krypt
 import xyz.meowing.krypt.annotations.Module
 import xyz.meowing.krypt.api.dungeons.enums.DungeonClass
 import xyz.meowing.krypt.api.dungeons.enums.DungeonPlayer
+import xyz.meowing.krypt.api.dungeons.handlers.ScoreCalculator.deathCount
 import xyz.meowing.krypt.api.location.SkyBlockIsland
 import xyz.meowing.krypt.events.EventBus
 import xyz.meowing.krypt.events.core.ChatEvent
@@ -59,7 +60,8 @@ object DungeonPlayerManager {
         val player = getPlayer(name)
         if (player != null) {
             player.dead = true
-            player.deaths ++
+            player.deaths++
+            deathCount++
         } else {
             Krypt.LOGGER.error(
                 "[Dungeon Player Manager] Received ghost message for player '{}' but player was not found in the player list: {}",
