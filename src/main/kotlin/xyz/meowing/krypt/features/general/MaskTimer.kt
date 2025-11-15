@@ -28,7 +28,7 @@ import xyz.meowing.krypt.utils.rendering.Render2D
 
 @Module
 object MaskTimer : Feature(
-    "maskTimer",
+    "maskTimers",
     island = SkyBlockIsland.THE_CATACOMBS
 ) {
 
@@ -84,9 +84,12 @@ object MaskTimer : Feature(
 
     data class MaskData(val mask: ItemStack, val timeStr: String, val color: String, val isWearing: Boolean)
 
-    private val SpiritMask: ItemStack = createSkull("eyJ0aW1lc3RhbXAiOjE1MDUyMjI5OTg3MzQsInByb2ZpbGVJZCI6IjBiZTU2MmUxNzIyODQ3YmQ5MDY3MWYxNzNjNjA5NmNhIiwicHJvZmlsZU5hbWUiOiJ4Y29vbHgzIiwic2lnbmF0dXJlUmVxdWlyZWQiOnRydWUsInRleHR1cmVzIjp7IlNLSU4iOnsibWV0YWRhdGEiOnsibW9kZWwiOiJzbGltIn0sInVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvOWJiZTcyMWQ3YWQ4YWI5NjVmMDhjYmVjMGI4MzRmNzc5YjUxOTdmNzlkYTRhZWEzZDEzZDI1M2VjZTlkZWMyIn19fQ==")
-    private val BonzoMask: ItemStack = createSkull("eyJ0aW1lc3RhbXAiOjE1ODc5MDgzMDU4MjYsInByb2ZpbGVJZCI6IjJkYzc3YWU3OTQ2MzQ4MDI5NDI4MGM4NDIyNzRiNTY3IiwicHJvZmlsZU5hbWUiOiJzYWR5MDYxMCIsInNpZ25hdHVyZVJlcXVpcmVkIjp0cnVlLCJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvMTI3MTZlY2JmNWI4ZGEwMGIwNWYzMTZlYzZhZjYxZThiZDAyODA1YjIxZWI4ZTQ0MDE1MTQ2OGRjNjU2NTQ5YyJ9fX0=")
-    private val Phoenix: ItemStack = createSkull("ewogICJ0aW1lc3RhbXAiIDogMTY0Mjg2NTc3MTM5MSwKICAicHJvZmlsZUlkIiA6ICJiYjdjY2E3MTA0MzQ0NDEyOGQzMDg5ZTEzYmRmYWI1OSIsCiAgInByb2ZpbGVOYW1lIiA6ICJsYXVyZW5jaW8zMDMiLAogICJzaWduYXR1cmVSZXF1aXJlZCIgOiB0cnVlLAogICJ0ZXh0dXJlcyIgOiB7CiAgICAiU0tJTiIgOiB7CiAgICAgICJ1cmwiIDogImh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNjZiMWI1OWJjODkwYzljOTc1Mjc3ODdkZGUyMDYwMGM4Yjg2ZjZiOTkxMmQ1MWE2YmZjZGIwZTRjMmFhM2M5NyIsCiAgICAgICJtZXRhZGF0YSIgOiB7CiAgICAgICAgIm1vZGVsIiA6ICJzbGltIgogICAgICB9CiAgICB9CiAgfQp9")
+    private val SpiritMask: ItemStack =
+        createSkull("eyJ0aW1lc3RhbXAiOjE1MDUyMjI5OTg3MzQsInByb2ZpbGVJZCI6IjBiZTU2MmUxNzIyODQ3YmQ5MDY3MWYxNzNjNjA5NmNhIiwicHJvZmlsZU5hbWUiOiJ4Y29vbHgzIiwic2lnbmF0dXJlUmVxdWlyZWQiOnRydWUsInRleHR1cmVzIjp7IlNLSU4iOnsibWV0YWRhdGEiOnsibW9kZWwiOiJzbGltIn0sInVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvOWJiZTcyMWQ3YWQ4YWI5NjVmMDhjYmVjMGI4MzRmNzc5YjUxOTdmNzlkYTRhZWEzZDEzZDI1M2VjZTlkZWMyIn19fQ==")
+    private val BonzoMask: ItemStack =
+        createSkull("eyJ0aW1lc3RhbXAiOjE1ODc5MDgzMDU4MjYsInByb2ZpbGVJZCI6IjJkYzc3YWU3OTQ2MzQ4MDI5NDI4MGM4NDIyNzRiNTY3IiwicHJvZmlsZU5hbWUiOiJzYWR5MDYxMCIsInNpZ25hdHVyZVJlcXVpcmVkIjp0cnVlLCJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvMTI3MTZlY2JmNWI4ZGEwMGIwNWYzMTZlYzZhZjYxZThiZDAyODA1YjIxZWI4ZTQ0MDE1MTQ2OGRjNjU2NTQ5YyJ9fX0=")
+    private val Phoenix: ItemStack =
+        createSkull("ewogICJ0aW1lc3RhbXAiIDogMTY0Mjg2NTc3MTM5MSwKICAicHJvZmlsZUlkIiA6ICJiYjdjY2E3MTA0MzQ0NDEyOGQzMDg5ZTEzYmRmYWI1OSIsCiAgInByb2ZpbGVOYW1lIiA6ICJsYXVyZW5jaW8zMDMiLAogICJzaWduYXR1cmVSZXF1aXJlZCIgOiB0cnVlLAogICJ0ZXh0dXJlcyIgOiB7CiAgICAiU0tJTiIgOiB7CiAgICAgICJ1cmwiIDogImh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNjZiMWI1OWJjODkwYzljOTc1Mjc3ODdkZGUyMDYwMGM4Yjg2ZjZiOTkxMmQ1MWE2YmZjZGIwZTRjMmFhM2M5NyIsCiAgICAgICJtZXRhZGF0YSIgOiB7CiAgICAgICAgIm1vZGVsIiA6ICJzbGltIgogICAgICB9CiAgICB9CiAgfQp9")
 
     private val previewMasks = listOf(
         MaskData(BonzoMask, "153.4s", "§c", true),
@@ -103,24 +106,27 @@ object MaskTimer : Feature(
 
             when {
                 text.matches(BonzoRegex) -> {
-                    BonzoTicks = (maxOf(180.0, (if (text.contains("⚚")) 180.0 else 360.0) - DungeonAPI.cataLevel * 3.6) * 20)
+                    BonzoTicks =
+                        (maxOf(180.0, (if (text.contains("⚚")) 180.0 else 360.0) - DungeonAPI.cataLevel * 3.6) * 20)
                     tickCall.register()
 
-                    if(message)
+                    if (message)
                         sendChatMessage(Mask.BONZO)
                 }
+
                 text == "Second Wind Activated! Your Spirit Mask saved your life!" -> {
                     SpiritTicks = DungeonAPI.getMageReduction(30.0) * 20
                     tickCall.register()
 
-                    if(message)
+                    if (message)
                         sendChatMessage(Mask.SPIRIT)
                 }
+
                 text == ("Your Phoenix Pet saved you from certain death!") -> {
                     PhoenixTicks = 1200.0
                     tickCall.register()
 
-                    if(message)
+                    if (message)
                         sendChatMessage(Mask.PHOENIX)
                 }
             }
@@ -141,9 +147,11 @@ object MaskTimer : Feature(
             Mask.BONZO -> {
                 KnitChat.sendMessage("/pc Bonzo proceed")
             }
+
             Mask.SPIRIT -> {
                 KnitChat.sendMessage("/pc Spirit proceed")
             }
+
             Mask.PHOENIX -> {
                 KnitChat.sendMessage("/pc Phoenix proceed")
             }
@@ -168,7 +176,7 @@ object MaskTimer : Feature(
 
     private fun render(context: GuiGraphics) {
         val activeMasks = getActiveMasks()
-        if(activeMasks.isEmpty()) return
+        if (activeMasks.isEmpty()) return
 
         val x = HudManager.getX(NAME)
         val y = HudManager.getY(NAME)
@@ -188,7 +196,13 @@ object MaskTimer : Feature(
             val separatorColor = if (maskData.isWearing) "§a" else "§7"
 
             Render2D.renderItem(context, maskData.mask, x, currentY, scale)
-            Render2D.renderStringWithShadow(context, "${separatorColor}| ${maskData.color}${maskData.timeStr}", x + iconSize + spacing, textY, scale)
+            Render2D.renderStringWithShadow(
+                context,
+                "${separatorColor}| ${maskData.color}${maskData.timeStr}",
+                x + iconSize + spacing,
+                textY,
+                scale
+            )
 
             currentY += iconSize + spacing
 
@@ -198,17 +212,24 @@ object MaskTimer : Feature(
     private fun getActiveMasks(): List<MaskData> {
         val masks = mutableListOf<MaskData>()
 
-        val bonzoTimer = if (BonzoTicks > 0 ) String.format("%.1fs", BonzoTicks / 20.0) else "AVAILABLE"
-        if(bonzoTimer == "AVAILABLE" && alwaysDisplay)
-            masks.add(MaskData(BonzoMask, bonzoTimer, if(BonzoTicks > 0) "§c" else "§a", hasBonzoMask))
+        val bonzoTimer = if (BonzoTicks > 0) String.format("%.1fs", BonzoTicks / 20.0) else "AVAILABLE"
+        if (bonzoTimer != "AVAILABLE" || alwaysDisplay)
+            masks.add(MaskData(BonzoMask, bonzoTimer, if (BonzoTicks > 0) "§c" else "§a", hasBonzoMask))
 
-        val spiritTimer = if (SpiritTicks > 0 ) String.format("%.1fs", SpiritTicks / 20.0) else "AVAILABLE"
-        if(spiritTimer == "AVAILABLE" && alwaysDisplay)
-            masks.add(MaskData(SpiritMask, spiritTimer, if(SpiritTicks > 0) "§c" else "§a", hasSpiritMask))
+        val spiritTimer = if (SpiritTicks > 0) String.format("%.1fs", SpiritTicks / 20.0) else "AVAILABLE"
+        if (spiritTimer != "AVAILABLE" || alwaysDisplay)
+            masks.add(MaskData(SpiritMask, spiritTimer, if (SpiritTicks > 0) "§c" else "§a", hasSpiritMask))
 
-        val phoenixTimer = if (PhoenixTicks > 0 ) String.format("%.1fs", PhoenixTicks / 20.0) else "AVAILABLE"
-        if(phoenixTimer == "AVAILABLE" && alwaysDisplay)
-            masks.add(MaskData(Phoenix, phoenixTimer, if(PhoenixTicks > 0) "§c" else "§a", PetTracker.name.contains("phoenix", true)))
+        val phoenixTimer = if (PhoenixTicks > 0) String.format("%.1fs", PhoenixTicks / 20.0) else "AVAILABLE"
+        if (phoenixTimer != "AVAILABLE" || alwaysDisplay)
+            masks.add(
+                MaskData(
+                    Phoenix,
+                    phoenixTimer,
+                    if (PhoenixTicks > 0) "§c" else "§a",
+                    PetTracker.name.contains("phoenix", true)
+                )
+            )
         return masks
     }
 }
