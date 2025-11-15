@@ -122,8 +122,19 @@ object Main {
             if (checkmarkMode < 1) return@forEach
 
             val secrets = if (room.checkmark == Checkmark.GREEN) room.secrets else room.secretsFound
-            val roomNameColor = DungeonMap.roomNameColor.code
-            val secretsColor = DungeonMap.secretsColor.code
+
+            val roomNameColor = when (room.checkmark) {
+                Checkmark.GREEN -> DungeonMap.roomTextSecretsColor.code
+                Checkmark.WHITE -> DungeonMap.roomTextClearedColor.code
+                else -> DungeonMap.roomTextNotClearedColor.code
+            }
+            
+            val secretsColor = when (room.checkmark) {
+                Checkmark.GREEN -> DungeonMap.secretsTextSecretsColor.code
+                Checkmark.WHITE -> DungeonMap.secretsTextClearedColor.code
+                else -> DungeonMap.secretsTextNotClearedColor.code
+            }
+
             val roomText = room.name ?: "???"
             val secretText = "$secrets/${room.secrets}"
 
