@@ -40,15 +40,22 @@ object MaskTimer : Feature(
                 "Mask Timers",
                 "General",
                 ConfigElement(
-                    "maskTimer",
+                    "maskTimers",
                     ElementType.Switch(false)
                 )
             )
             .addFeatureOption(
                 "Send Chat Message",
                 ConfigElement(
-                    "maskTimer.message",
+                    "maskTimers.message",
                     ElementType.Switch(false)
+                )
+            )
+            .addFeatureOption(
+                "Always Display Timer",
+                ConfigElement(
+                    "maskTimers.alwaysDisplay",
+                    ElementType.Switch(true)
                 )
             )
     }
@@ -67,7 +74,8 @@ object MaskTimer : Feature(
     private var hasBonzoMask = false
     private val BonzoRegex = "^Your (?:. )?Bonzo's Mask saved your life!$".toRegex()
 
-    private val message by ConfigDelegate<Boolean>("maskTimer.message")
+    private val message by ConfigDelegate<Boolean>("maskTimers.message")
+    private val alwaysDisplay by ConfigDelegate<Boolean>("maskTimers.alwaysDisplay")
 
     private val tickCall: EventCall = EventBus.register<TickEvent.Server> {
         updateTimers()
@@ -160,6 +168,7 @@ object MaskTimer : Feature(
 
     private fun render(context: GuiGraphics) {
         val activeMasks = getActiveMasks()
+        if(activeMasks.isEmpty()) return
 
         val x = HudManager.getX(NAME)
         val y = HudManager.getY(NAME)
@@ -183,7 +192,6 @@ object MaskTimer : Feature(
 
             currentY += iconSize + spacing
 
-            println("Drawing ${maskData.mask.item.name}")
         }
     }
 
@@ -191,13 +199,16 @@ object MaskTimer : Feature(
         val masks = mutableListOf<MaskData>()
 
         val bonzoTimer = if (BonzoTicks > 0 ) String.format("%.1fs", BonzoTicks / 20.0) else "AVAILABLE"
-        masks.add(MaskData(BonzoMask, bonzoTimer, if(BonzoTicks > 0) "§c" else "§a", hasBonzoMask))
+        if(bonzoTimer == "AVAILABLE" && alwaysDisplay)
+            masks.add(MaskData(BonzoMask, bonzoTimer, if(BonzoTicks > 0) "§c" else "§a", hasBonzoMask))
 
         val spiritTimer = if (SpiritTicks > 0 ) String.format("%.1fs", SpiritTicks / 20.0) else "AVAILABLE"
-        masks.add(MaskData(SpiritMask, spiritTimer, if(SpiritTicks > 0) "§c" else "§a", hasSpiritMask))
+        if(spiritTimer == "AVAILABLE" && alwaysDisplay)
+            masks.add(MaskData(SpiritMask, spiritTimer, if(SpiritTicks > 0) "§c" else "§a", hasSpiritMask))
 
         val phoenixTimer = if (PhoenixTicks > 0 ) String.format("%.1fs", PhoenixTicks / 20.0) else "AVAILABLE"
-        masks.add(MaskData(Phoenix, phoenixTimer, if(PhoenixTicks > 0) "§c" else "§a", PetTracker.name.contains("phoenix", true)))
+        if(phoenixTimer == "AVAILABLE" && alwaysDisplay)
+            masks.add(MaskData(Phoenix, phoenixTimer, if(PhoenixTicks > 0) "§c" else "§a", PetTracker.name.contains("phoenix", true)))
         return masks
     }
 }
