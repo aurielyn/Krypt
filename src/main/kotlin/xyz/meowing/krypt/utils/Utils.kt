@@ -30,4 +30,18 @@ object Utils {
     fun Color.toFloatArray(): FloatArray {
         return floatArrayOf(red / 255f, green / 255f, blue / 255f)
     }
+
+    // Uses seconds, idk if hours work but they should :pray:
+    fun Float.toTimerFormat(decimals: Int = 2): String {
+        val seconds = (this%60)
+        val minutes = floor((this % 3600) / 60.0).toInt()
+        val hours =  floor(this / 3600.0).toInt()
+
+        val timerString = when {
+            hours > 0 -> "${hours}h${minutes}m${String.format("%.${decimals}f", seconds)}s"
+            minutes > 0 -> "${minutes}m${String.format("%.${decimals}f", seconds)}s"
+            else -> "${String.format("%.${decimals}f", seconds)}s"
+        }
+        return timerString
+    }
 }
