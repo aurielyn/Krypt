@@ -10,10 +10,8 @@ import net.minecraft.world.phys.AABB
 import net.minecraft.world.phys.shapes.VoxelShape
 import net.minecraft.world.level.EmptyBlockGetter
 import xyz.meowing.knit.api.KnitClient
-import xyz.meowing.knit.api.KnitPlayer
 import xyz.meowing.knit.api.scheduler.TickScheduler
 import xyz.meowing.krypt.annotations.Module
-import xyz.meowing.krypt.api.dungeons.utils.WorldScanUtils
 import xyz.meowing.krypt.api.location.SkyBlockIsland
 import xyz.meowing.krypt.config.ConfigDelegate
 import xyz.meowing.krypt.config.ui.types.ElementType
@@ -71,12 +69,12 @@ object TicTacToeSolver : Feature(
 
     override fun initialize() {
         register<DungeonEvent.Room.Change> { event ->
-            if (event.new.name != "Tic Tac Toe") return@register
+            val room = event.new
+            if (room.name != "Tic Tac Toe") return@register
+            val rawCenter = room.center ?: return@register
 
             inTicTacToe = true
-            KnitPlayer.player?.let { p ->
-                roomCenter = WorldScanUtils.getRoomCenter(p.x.toInt(), p.z.toInt())
-            }
+            roomCenter = Pair(rawCenter.first.toInt(), rawCenter.third.toInt())
 
             TickScheduler.Server.schedule(2) {
                 scanBoard()
