@@ -77,13 +77,6 @@ object QuizSolver : Feature(
                     ElementType.Switch(true)
                 )
             )
-            .addFeatureOption(
-                "Phase through walls",
-                ConfigElement(
-                    "quizSolver.phase",
-                    ElementType.Switch(true)
-                )
-            )
     }
 
     override fun initialize() {
