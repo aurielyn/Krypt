@@ -21,7 +21,7 @@ import xyz.meowing.krypt.utils.WorldUtils
 @Module
 object WorldScanner {
     private const val SCAN_INTERVAL = 5
-    private const val DOOR_HEIGHT = 74
+    private const val DOOR_HEIGHT_THRESHOLD = 85
     private const val DUNGEON_MIN = -200.0
     private const val DUNGEON_MAX = -10.0
 
@@ -84,7 +84,7 @@ object WorldScanner {
             availableComponents.removeAt(idx)
 
             if (cx % 2 == 1 || cz % 2 == 1) {
-                if (height == DOOR_HEIGHT) scanDoor(cx, cz, rx, rz)
+                scanDoor(cx, cz, rx, rz, height)
                 continue
             }
 
@@ -92,7 +92,8 @@ object WorldScanner {
         }
     }
 
-    private fun scanDoor(cx: Int, cz: Int, rx: Int, rz: Int) {
+    private fun scanDoor(cx: Int, cz: Int, rx: Int, rz: Int, height: Int) {
+        if (height >= DOOR_HEIGHT_THRESHOLD) return
         val comp = cx to cz
         val doorIdx = DungeonAPI.getDoorIdx(comp)
         if (DungeonAPI.getDoorAtIdx(doorIdx) != null) return
@@ -132,22 +133,7 @@ object WorldScanner {
             val blockBelow = WorldUtils.getBlockNumericId(nx, height, nz)
             val blockAbove = WorldUtils.getBlockNumericId(nx, height + 1, nz)
 
-            if (room.type == RoomType.ENTRANCE && blockBelow != 0) {
-                val doorBlock = WorldUtils.getBlockNumericId(nx, 76, nz)
-                if (doorBlock != 0) {
-                    val doorComp = (cx + dx) to (cz + dz)
-                    val doorIdx = DungeonAPI.getDoorIdx(doorComp)
-                    if (DungeonAPI.getDoorAtIdx(doorIdx) == null) {
-                        val door = Door(nx to nz, doorComp).apply {
-                            rotation = if (doorComp.second % 2 == 1) 0 else 1
-                            type = DoorType.ENTRANCE
-                        }
-                        DungeonAPI.addDoor(door)
-                    }
-                }
-                continue
-            }
-
+            if (room.type == RoomType.ENTRANCE && blockBelow != 0) continue
             if (blockBelow == 0 || blockAbove != 0) continue
 
             val neighborComp = (x + cxOff) to (z + zOff)
@@ -160,10 +146,14 @@ object WorldScanner {
                     room.addComponent(neighborComp)
                     rooms[neighborIdx] = room
                 }
-                neighborRoom != room &&
-                        neighborRoom.type != RoomType.ENTRANCE &&
-                        room.type != RoomType.ENTRANCE -> {
-                    DungeonAPI.mergeRooms(neighborRoom, room)
+
+                neighborRoom != room && neighborRoom.type != RoomType.ENTRANCE && room.type != RoomType.ENTRANCE -> {
+                    val doorComp = (cx + dx) to (cz + dz)
+                    val doorIdx = DungeonAPI.getDoorIdx(doorComp)
+
+                    if (doorIdx !in DungeonAPI.doors.indices || DungeonAPI.doors[doorIdx] == null) {
+                        DungeonAPI.mergeRooms(neighborRoom, room)
+                    }
                 }
             }
         }

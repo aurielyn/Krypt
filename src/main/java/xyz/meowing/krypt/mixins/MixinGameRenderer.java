@@ -15,6 +15,6 @@ import xyz.meowing.krypt.events.core.GuiEvent;
 public class MixinGameRenderer {
     @Inject(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/Gui;render(Lnet/minecraft/client/gui/GuiGraphics;Lnet/minecraft/client/DeltaTracker;)V", shift = At.Shift.AFTER))
     private void krypt$afterHudRender(DeltaTracker tickCounter, boolean tick, CallbackInfo ci, @Local GuiGraphics context) {
-        EventBus.INSTANCE.post(new GuiEvent.RenderHUD(context));
+        EventBus.INSTANCE.post(new GuiEvent.Render.HUD(context));
     }
 }

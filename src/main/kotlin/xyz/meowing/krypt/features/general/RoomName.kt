@@ -27,7 +27,7 @@ object RoomName: Feature(
     override fun addConfig() {
         ConfigManager
             .addFeature(
-                "Room name Hud",
+                "Room name HUD",
                 "Displays the current rooms name",
                 "General",
                 ConfigElement(
@@ -56,7 +56,7 @@ object RoomName: Feature(
 
     override fun initialize() {
         HudManager.register(NAME, "No Room Found", "roomName")
-        register<GuiEvent.RenderHUD> { renderHud(it.context) }
+        register<GuiEvent.Render.HUD> { renderHud(it.context) }
     }
 
     private fun renderHud(context: GuiGraphics) {
