@@ -7,6 +7,7 @@ import xyz.meowing.krypt.Krypt
 import xyz.meowing.krypt.annotations.Module
 import xyz.meowing.krypt.api.dungeons.utils.ScanUtils
 import xyz.meowing.krypt.api.dungeons.utils.ScanUtils.getRealCoord
+import xyz.meowing.krypt.api.dungeons.utils.block
 import xyz.meowing.krypt.api.location.SkyBlockIsland
 import xyz.meowing.krypt.config.ConfigDelegate
 import xyz.meowing.krypt.config.ui.types.ElementType
@@ -84,7 +85,7 @@ object QuizSolver : Feature(
             if (event.new.name != "Quiz") return@register
 
             inQuiz = true
-            roomCenter = ScanUtils.getRoomCenter(event.new)
+            roomCenter = event.new.center?.block() ?: return@register
             rotation = 360 - event.new.rotation.degrees
 
             triviaOptions[0].blockPos = getRealCoord(BlockPos(5, 70, -9), roomCenter!!, rotation!!)

@@ -37,8 +37,8 @@ class Room(
 
     var name: String? = null
     var corner: Triple<Int, Int, Int>? = null
-    var center: Triple<Double, Double, Double>? = null
-    var componentCenters: List<Triple<Double, Double, Double>> = emptyList()
+    var center: Triple<Int, Int, Int>? = null
+        var componentCenters: List<Triple<Int, Int, Int>> = emptyList()
     var rotation: RoomRotations = RoomRotations.NONE
     var type: RoomType = RoomType.UNKNOWN
     var secrets: Int = 0
@@ -156,9 +156,9 @@ class Room(
         val maxZ = realComponents.maxOf { it.second }
 
         center = Triple(
-            (minX + maxX) / 2.0,
-            height!!.toDouble(),
-            (minZ + maxZ) / 2.0
+            (minX + maxX) / 2,
+            height!!,
+            (minZ + maxZ) / 2
         )
         return this
     }
@@ -168,15 +168,15 @@ class Room(
 
         componentCenters = realComponents.map { (x, z) ->
             Triple(
-                x.toDouble(),
-                currentHeight.toDouble(),
-                z.toDouble(),
+                x,
+                currentHeight,
+                z,
             )
         }
         return this
     }
 
-    fun fromWorldPos(pos: Triple<Double, Double, Double>): Triple<Int, Int, Int>? {
+    fun fromWorldPos(pos: Triple<Int, Int, Int>): Triple<Int, Int, Int>? {
         if (corner == null || rotation == RoomRotations.NONE) return null
         val rel = Triple(
             (pos.first - corner!!.first).toInt(),
@@ -184,6 +184,11 @@ class Room(
             (pos.third - corner!!.third).toInt()
         )
         return WorldScanUtils.rotateCoord(rel, rotation.degrees)
+    }
+
+    fun fromWorldPos(pos: BlockPos): BlockPos? {
+        val (x, y, z) = fromWorldPos(Triple(pos.x, pos.y, pos.z)) ?: return null
+        return BlockPos(x,y,z)
     }
 
     fun toWorldPos(local: Triple<Int, Int, Int>): Triple<Int, Int, Int>? {
@@ -194,6 +199,11 @@ class Room(
             rotated.second,
             rotated.third + corner!!.third
         )
+    }
+
+    fun toWorldPos(local: BlockPos): BlockPos? {
+        val (x, y, z) = toWorldPos(Triple(local.x, local.y, local.z)) ?: return null
+        return BlockPos(x,y,z)
     }
 
     fun getRoomComponent(): Pair<Int, Int> {

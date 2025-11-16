@@ -14,6 +14,7 @@ import xyz.meowing.krypt.Krypt.prefix
 import xyz.meowing.krypt.annotations.Module
 import xyz.meowing.krypt.api.dungeons.utils.ScanUtils
 import xyz.meowing.krypt.api.dungeons.utils.ScanUtils.getRealCoord
+import xyz.meowing.krypt.api.dungeons.utils.block
 import xyz.meowing.krypt.api.location.SkyBlockIsland
 import xyz.meowing.krypt.config.ConfigDelegate
 import xyz.meowing.krypt.config.ui.types.ElementType
@@ -97,7 +98,7 @@ object WaterBoardSolver : Feature(
             if (event.new.name != "Water Board") return@register
             if (patternIdentifier != -1) return@register
 
-            roomCenter = ScanUtils.getRoomCenter(event.new)
+            roomCenter = event.new.center?.block() ?: return@register
             rotation = 360 - (event.new.rotation.degrees)
 
             TickScheduler.Server.schedule(15) {

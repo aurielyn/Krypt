@@ -5,8 +5,10 @@ import net.minecraft.network.protocol.game.ClientboundPlayerPositionPacket
 import net.minecraft.core.BlockPos
 import xyz.meowing.knit.api.KnitClient.client
 import xyz.meowing.knit.api.KnitPlayer.player
+import xyz.meowing.krypt.Krypt
 import xyz.meowing.krypt.annotations.Module
 import xyz.meowing.krypt.api.dungeons.utils.ScanUtils
+import xyz.meowing.krypt.api.dungeons.utils.block
 import xyz.meowing.krypt.api.location.SkyBlockIsland
 import xyz.meowing.krypt.config.ConfigDelegate
 import xyz.meowing.krypt.config.ui.types.ElementType
@@ -88,10 +90,12 @@ object TeleportMazeSolver : Feature(
         register<DungeonEvent.Room.Change> { event ->
             if (event.new.name != "Teleport Maze") return@register
 
-            val center = ScanUtils.getRoomCenter(event.new)
+            val center = event.new.center?.block() ?: return@register
 
             val rotation = 360 - event.new.rotation.degrees
             val pos1 = ScanUtils.getRealCoord(BlockPos(0, 69, - 3), center, rotation)
+
+            Krypt.LOGGER.info("Found Block at $pos1, ${client.level?.getBlockState(pos1)?.block}")
 
             if (client.level?.getBlockState(pos1)?.block != Blocks.END_PORTAL_FRAME) {
                 inTpMaze = false
@@ -104,6 +108,7 @@ object TeleportMazeSolver : Feature(
             for (dx in 0..31) {
                 for (dz in 0..31) {
                     val pos = BlockPos(center.x + dx - 16, 69, center.z + dz - 16)
+                    Krypt.LOGGER.info("Found Block at $pos, ${client.level?.getBlockState(pos)?.block}")
                     if (client.level?.getBlockState(pos)?.block != Blocks.END_PORTAL_FRAME) continue
                     pads += TpPad(pos)
                 }

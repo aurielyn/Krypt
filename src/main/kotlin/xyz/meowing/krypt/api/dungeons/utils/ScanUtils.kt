@@ -77,7 +77,7 @@ object ScanUtils {
     }
 
     fun getRealCoord(pos: BlockPos, roomCenter: BlockPos, rotation: Int): BlockPos {
-        return pos.rotateBlock(rotation).offset(roomCenter.x, roomCenter.y, roomCenter.z)
+        return pos.rotateBlock(rotation).offset(roomCenter.x, pos.y, roomCenter.z)
     }
 
     fun getRoomComponent(pos: BlockPos): Pair<Int, Int> {
