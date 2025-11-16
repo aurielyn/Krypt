@@ -1,9 +1,9 @@
 package xyz.meowing.krypt.utils
 
-import net.minecraft.core.BlockPos
+import net.minecraft.world.phys.Vec3
 import xyz.meowing.knit.api.KnitClient.client
-import xyz.meowing.krypt.api.dungeons.enums.map.RoomRotations
 import java.awt.Color
+import kotlin.math.sqrt
 
 object Utils {
     inline val partialTicks get() = client.deltaTracker.getGameTimeDeltaPartialTick(true)
@@ -29,5 +29,13 @@ object Utils {
 
     fun Color.toFloatArray(): FloatArray {
         return floatArrayOf(red / 255f, green / 255f, blue / 255f)
+    }
+
+    fun distanceFrom(pos1: Vec3, pos2: Vec3): Double {
+        val xDist = (pos1.x - pos2.x) * (pos1.x - pos2.x)
+        val yDist = (pos1.y - pos2.y) * (pos1.y - pos2.y)
+        val zDist = (pos1.z - pos2.z) * (pos1.z - pos2.z)
+
+        return sqrt((xDist + yDist + zDist).toDouble())
     }
 }
