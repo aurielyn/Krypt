@@ -22,8 +22,8 @@ import xyz.meowing.knit.api.KnitClient
 import xyz.meowing.knit.api.KnitPlayer.player
 import xyz.meowing.krypt.config.ConfigDelegate
 import xyz.meowing.krypt.events.core.EntityEvent
-import xyz.meowing.krypt.utils.Utils.distanceFrom
 import xyz.meowing.krypt.utils.Utils.removeFormatting
+import kotlin.math.abs
 
 @Module
 object SecretSound : Feature(
@@ -54,7 +54,7 @@ object SecretSound : Feature(
                 "Pitch",
                 ConfigElement(
                     "secretSound.pitch",
-                    ElementType.Slider(0.0, 100.0, 0.0, false)
+                    ElementType.Slider(0.0, 100.0, 100.0, false)
                 )
             )
             .addFeatureOption(
@@ -101,17 +101,15 @@ object SecretSound : Feature(
 
             val entity = world?.getEntity(itemId) as? ItemEntity ?: return@register
             val name = entity.item.displayName.string.removeFormatting()
-            val sanitizedName = name.substring(1, name.length - 1)
+            val sanitizedName = name.drop(1).dropLast(1)
 
-            if(checkName(sanitizedName) != -1
-                && distanceFrom(getPlayerPos(), Vec3(entity.x, entity.y, entity.z)) <= secretDistance)
+            if(secretTypes.binarySearch(sanitizedName) >= 0
+                && abs(player!!.position().distanceTo(entity.position())) <= secretDistance)
                 playSound()
         }
         register<EntityEvent.Death> { event ->
-            val entityPos = event.entity.position()
-
             if(event.entity.type == EntityType.BAT
-                && distanceFrom(getPlayerPos(), entityPos) <= secretDistance)
+                && abs(player!!.position().distanceTo(event.entity.position())) <= secretDistance)
                 playSound()
         }
     }
@@ -125,9 +123,7 @@ object SecretSound : Feature(
             val texture = profile.properties.get("textures")
 
             if(texture != null && texture.isNotEmpty()) {
-                println(texture.first().value)
-                return (texture.first().value == witherEssence || texture.first().value == redSkull)
-                        && distanceFrom(getPlayerPos(), transformBlockPos(blockEntity.blockPos)) <= secretDistance
+                return texture.first().value == witherEssence || texture.first().value == redSkull
             }
 
             return false
@@ -142,28 +138,6 @@ object SecretSound : Feature(
             volume.toFloat() / 100,
             pitch.toFloat() / 100
         )
-    }
-
-    private fun getPlayerPos(): Vec3 {
-        return Vec3(player!!.x, player!!.y, player!!.z)
-    }
-
-    private fun transformBlockPos(pos: BlockPos): Vec3 {
-        return Vec3(pos.x.toDouble(), pos.y.toDouble(), pos.z.toDouble())
-    }
-
-    private fun checkName(name: String): Int {
-        var left = 0
-        var right = secretTypes.size - 1
-        while (left <= right) {
-            val mid = (left + right) / 2
-            when {
-                secretTypes[mid] < name -> left = mid + 1
-                secretTypes[mid] > name -> right = mid - 1
-                else -> return mid
-            }
-        }
-        return -1
     }
 }
 

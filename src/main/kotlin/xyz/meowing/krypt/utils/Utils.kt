@@ -30,12 +30,4 @@ object Utils {
     fun Color.toFloatArray(): FloatArray {
         return floatArrayOf(red / 255f, green / 255f, blue / 255f)
     }
-
-    fun distanceFrom(pos1: Vec3, pos2: Vec3): Double {
-        val xDist = (pos1.x - pos2.x) * (pos1.x - pos2.x)
-        val yDist = (pos1.y - pos2.y) * (pos1.y - pos2.y)
-        val zDist = (pos1.z - pos2.z) * (pos1.z - pos2.z)
-
-        return sqrt((xDist + yDist + zDist).toDouble())
-    }
 }
