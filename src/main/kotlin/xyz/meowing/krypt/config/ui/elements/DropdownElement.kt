@@ -164,10 +164,7 @@ class DropdownElement(
 
         optionsContainer.children.forEach { child ->
             child.fadeOut(50)
-            child.children.forEach {
-                it.visible = true
-                it.fadeIn(50)
-            }
+            child.children.forEach { it.fadeOut(50) }
         }
 
         optionsContainer.animateSize(228f, 0f, 200, EasingType.EASE_IN) {

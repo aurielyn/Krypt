@@ -81,7 +81,7 @@ object ThreeWeirdosSolver : Feature(
             if (event.new.name != "Three Weirdos") return@register
 
             inWeirdos = true
-            rotation = 360 - (event.new.rotation ?: 0)
+            rotation = 360 - (event.new.rotation.degrees)
         }
 
         register<DungeonEvent.Room.Change> { event ->

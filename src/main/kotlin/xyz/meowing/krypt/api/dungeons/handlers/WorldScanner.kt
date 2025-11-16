@@ -2,14 +2,16 @@ package xyz.meowing.krypt.api.dungeons.handlers
 
 import xyz.meowing.knit.api.KnitClient
 import xyz.meowing.krypt.annotations.Module
-import xyz.meowing.krypt.api.dungeons.utils.WorldScanUtils
+import xyz.meowing.krypt.api.dungeons.DungeonAPI
 import xyz.meowing.krypt.api.dungeons.DungeonAPI.rooms
 import xyz.meowing.krypt.api.dungeons.enums.DungeonPlayer
-import xyz.meowing.krypt.api.dungeons.DungeonAPI
 import xyz.meowing.krypt.api.dungeons.enums.map.Door
+import xyz.meowing.krypt.api.dungeons.enums.map.DoorType
 import xyz.meowing.krypt.api.dungeons.enums.map.Room
+import xyz.meowing.krypt.api.dungeons.enums.map.RoomRotations
 import xyz.meowing.krypt.api.dungeons.enums.map.RoomType
 import xyz.meowing.krypt.api.dungeons.utils.ScanUtils
+import xyz.meowing.krypt.api.dungeons.utils.WorldScanUtils
 import xyz.meowing.krypt.api.location.SkyBlockIsland
 import xyz.meowing.krypt.events.EventBus
 import xyz.meowing.krypt.events.core.DungeonEvent
@@ -19,36 +21,22 @@ import xyz.meowing.krypt.utils.WorldUtils
 @Module
 object WorldScanner {
     private const val SCAN_INTERVAL = 5
-    private const val SCAN_COOLDOWN = 250L
-    private const val DOOR_HEIGHT_THRESHOLD = 85
-    private const val DUNGEON_MIN_X = -200.0
-    private const val DUNGEON_MAX_X = -10.0
-    private const val DUNGEON_MIN_Z = -200.0
-    private const val DUNGEON_MAX_Z = -10.0
-    private const val MAX_ROOM_INDEX = 35
+    private const val DOOR_HEIGHT = 74
+    private const val DUNGEON_MIN = -200.0
+    private const val DUNGEON_MAX = -10.0
 
     val availableComponents = ScanUtils.getScanCoord().toMutableList()
     var lastIdx: Int? = null
-
     private var tickCounter = 0
-    private var hasScanned = false
-    private var isScanning = false
-    private var lastScanTime = 0L
-
-    val shouldScan get() = !isScanning && !hasScanned &&
-            System.currentTimeMillis() - lastScanTime >= SCAN_COOLDOWN &&
-            availableComponents.isNotEmpty()
 
     init {
-        EventBus.registerIn<TickEvent.Client> (SkyBlockIsland.THE_CATACOMBS) {
+        EventBus.registerIn<TickEvent.Client>(SkyBlockIsland.THE_CATACOMBS) {
             val player = KnitClient.player ?: return@registerIn
-
             checkPlayerState()
 
             val (x, z) = WorldScanUtils.realCoordToComponent(player.x.toInt(), player.z.toInt())
             val idx = 6 * z + x
-
-            if (idx >= MAX_ROOM_INDEX) return@registerIn
+            if (idx > 35) return@registerIn
 
             if (++tickCounter % SCAN_INTERVAL == 0) {
                 scan()
@@ -63,14 +51,14 @@ object WorldScanner {
                 EventBus.post(DungeonEvent.Room.Change(prevRoom, currRoom))
             }
 
-            if (lastIdx == idx) return@registerIn
-
-            lastIdx = idx
-            DungeonAPI.currentRoom = DungeonAPI.getRoomAt(player.x.toInt(), player.z.toInt())
-            DungeonAPI.currentRoom?.let { room ->
-                room.explored = true
-                room.components.firstOrNull()?.let { (rmx, rmz) ->
-                    DungeonAPI.discoveredRooms.remove("$rmx/$rmz")
+            if (lastIdx != idx) {
+                lastIdx = idx
+                DungeonAPI.currentRoom = currRoom
+                currRoom?.let { room ->
+                    room.explored = true
+                    room.components.firstOrNull()?.let { (rmx, rmz) ->
+                        DungeonAPI.discoveredRooms.remove("$rmx/$rmz")
+                    }
                 }
             }
         }
@@ -80,104 +68,101 @@ object WorldScanner {
         availableComponents.clear()
         availableComponents += ScanUtils.getScanCoord()
         lastIdx = null
-        hasScanned = false
-        isScanning = false
-        lastScanTime = 0L
         tickCounter = 0
     }
 
     fun scan() {
-        if (!shouldScan) return
-        isScanning = true
-        var allChunksLoaded = true
+        if (availableComponents.isEmpty()) return
 
         for (idx in availableComponents.indices.reversed()) {
             val (cx, cz, rxz) = availableComponents[idx]
             val (rx, rz) = rxz
 
-            if (!WorldScanUtils.isChunkLoaded(rx, rz)) {
-                allChunksLoaded = false
-                continue
-            }
+            if (!WorldScanUtils.isChunkLoaded(rx, rz)) continue
 
-            val roofHeight = WorldScanUtils.getHighestY(rx, rz) ?: continue
+            val height = WorldScanUtils.getHighestY(rx, rz) ?: continue
             availableComponents.removeAt(idx)
 
             if (cx % 2 == 1 || cz % 2 == 1) {
-                scanDoorComponent(cx, cz, rx, rz, roofHeight)
+                if (height == DOOR_HEIGHT) scanDoor(cx, cz, rx, rz)
                 continue
             }
 
-            scanRoomComponent(cx, cz, rx, rz, roofHeight)
+            scanRoom(cx, cz, rx, rz, height)
         }
-
-        if (allChunksLoaded && availableComponents.isEmpty()) {
-            hasScanned = true
-        }
-
-        lastScanTime = System.currentTimeMillis()
-        isScanning = false
     }
 
-    private fun scanDoorComponent(cx: Int, cz: Int, rx: Int, rz: Int, roofHeight: Int) {
-        if (roofHeight >= DOOR_HEIGHT_THRESHOLD) return
-
+    private fun scanDoor(cx: Int, cz: Int, rx: Int, rz: Int) {
         val comp = cx to cz
         val doorIdx = DungeonAPI.getDoorIdx(comp)
-
         if (DungeonAPI.getDoorAtIdx(doorIdx) != null) return
 
         val door = Door(rx to rz, comp).apply {
             rotation = if (cz % 2 == 1) 0 else 1
+            type = when (WorldUtils.getBlockNumericId(rx, 69, rz)) {
+                173 -> DoorType.WITHER
+                97 -> DoorType.ENTRANCE
+                159 -> DoorType.BLOOD
+                else -> DoorType.NORMAL
+            }
         }
         DungeonAPI.addDoor(door)
     }
 
-    private fun scanRoomComponent(cx: Int, cz: Int, rx: Int, rz: Int, roofHeight: Int) {
+    private fun scanRoom(cx: Int, cz: Int, rx: Int, rz: Int, height: Int) {
         val x = cx / 2
         val z = cz / 2
         val roomIdx = DungeonAPI.getRoomIdx(x to z)
 
         val room = rooms[roomIdx]?.apply {
-            if (height == null) height = roofHeight
+            if (this.height == null) this.height = height
             scan()
-        } ?: Room(x to z, roofHeight).scan().also {
+        } ?: Room(x to z, height).scan().also {
             rooms[roomIdx] = it
             DungeonAPI.uniqueRooms.add(it)
         }
 
-        scanRoomNeighbors(room, cx, cz, x, z, rx, rz, roofHeight)
+        scanNeighbors(room, cx, cz, x, z, rx, rz, height)
     }
 
-    private fun scanRoomNeighbors(room: Room, cx: Int, cz: Int, x: Int, z: Int, rx: Int, rz: Int, roofHeight: Int) {
+    private fun scanNeighbors(room: Room, cx: Int, cz: Int, x: Int, z: Int, rx: Int, rz: Int, height: Int) {
         for ((dx, dz, cxOff, zOff) in ScanUtils.directions) {
-            val doorCx = cx + dx
-            val doorCz = cz + dz
-            val doorComp = doorCx to doorCz
-            val doorIdx = DungeonAPI.getDoorIdx(doorComp)
-
-            if (DungeonAPI.getDoorAtIdx(doorIdx) != null) continue
-
             val nx = rx + dx
             val nz = rz + dz
-            val blockBelow = WorldUtils.getBlockNumericId(nx, roofHeight, nz)
-            val blockAbove = WorldUtils.getBlockNumericId(nx, roofHeight + 1, nz)
+            val blockBelow = WorldUtils.getBlockNumericId(nx, height, nz)
+            val blockAbove = WorldUtils.getBlockNumericId(nx, height + 1, nz)
 
-            if (room.type == RoomType.ENTRANCE && blockBelow != 0) continue
+            if (room.type == RoomType.ENTRANCE && blockBelow != 0) {
+                val doorBlock = WorldUtils.getBlockNumericId(nx, 76, nz)
+                if (doorBlock != 0) {
+                    val doorComp = (cx + dx) to (cz + dz)
+                    val doorIdx = DungeonAPI.getDoorIdx(doorComp)
+                    if (DungeonAPI.getDoorAtIdx(doorIdx) == null) {
+                        val door = Door(nx to nz, doorComp).apply {
+                            rotation = if (doorComp.second % 2 == 1) 0 else 1
+                            type = DoorType.ENTRANCE
+                        }
+                        DungeonAPI.addDoor(door)
+                    }
+                }
+                continue
+            }
+
             if (blockBelow == 0 || blockAbove != 0) continue
 
-            val neighborComp = x + cxOff to z + zOff
+            val neighborComp = (x + cxOff) to (z + zOff)
             val neighborIdx = DungeonAPI.getRoomIdx(neighborComp)
             if (neighborIdx !in rooms.indices) continue
 
             val neighborRoom = rooms[neighborIdx]
-
             when {
                 neighborRoom == null -> {
                     room.addComponent(neighborComp)
                     rooms[neighborIdx] = room
                 }
-                neighborRoom != room && neighborRoom.type != RoomType.ENTRANCE && room.type != RoomType.ENTRANCE -> {
+                neighborRoom != room &&
+                        neighborRoom.type != RoomType.ENTRANCE &&
+                        room.type != RoomType.ENTRANCE -> {
                     DungeonAPI.mergeRooms(neighborRoom, room)
                 }
             }
@@ -188,9 +173,7 @@ object WorldScanner {
         val world = KnitClient.world ?: return
         val networkHandler = KnitClient.client.connection
 
-        for (player in DungeonAPI.players) {
-            if (player == null) continue
-
+        for (player in DungeonAPI.players.filterNotNull()) {
             val entity = world.players().find { it.name.string == player.name }
             val ping = networkHandler?.getPlayerInfo(entity?.uuid)?.latency ?: -1
 
@@ -203,21 +186,21 @@ object WorldScanner {
             if (ping == -1) continue
 
             val currRoom = player.currRoom ?: continue
-            if (currRoom == player.lastRoom) continue
-
-            player.lastRoom?.players?.remove(player)
-            currRoom.players.add(player)
-            player.lastRoom = currRoom
+            if (currRoom != player.lastRoom) {
+                player.lastRoom?.players?.remove(player)
+                currRoom.players.add(player)
+                player.lastRoom = currRoom
+            }
         }
     }
 
     fun checkRoomState() {
-        for (room in rooms) {
-            if (room?.rotation == null) {
-                room?.findRotation()
+        for (room in rooms.filterNotNull()) {
+            if (room.rotation == RoomRotations.NONE) {
+                room.findRotation()
             }
 
-            if (room != null && room.componentCenters.size < room.components.size) {
+            if (room.componentCenters.size < room.components.size) {
                 room.findComponentCenters()
                 room.findCenter()
             }
@@ -237,11 +220,11 @@ object WorldScanner {
         player.realZ = z
         player.yaw = yaw + 180f
 
-        if (x !in DUNGEON_MIN_X..DUNGEON_MAX_X || z !in DUNGEON_MIN_Z..DUNGEON_MAX_Z) return
+        if (x !in DUNGEON_MIN..DUNGEON_MAX || z !in DUNGEON_MIN..DUNGEON_MAX) return
 
         val mapSize = ScanUtils.defaultMapSize
-        player.iconX = clampMap(x, DUNGEON_MIN_X, DUNGEON_MAX_X, 0.0, mapSize.first.toDouble())
-        player.iconZ = clampMap(z, DUNGEON_MIN_Z, DUNGEON_MAX_Z, 0.0, mapSize.second.toDouble())
+        player.iconX = clampMap(x, DUNGEON_MIN, DUNGEON_MAX, 0.0, mapSize.first.toDouble())
+        player.iconZ = clampMap(z, DUNGEON_MIN, DUNGEON_MAX, 0.0, mapSize.second.toDouble())
         player.currRoom = DungeonAPI.getRoomAt(x.toInt(), z.toInt())
     }
 

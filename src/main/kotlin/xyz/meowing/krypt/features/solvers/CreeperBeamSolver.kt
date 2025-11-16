@@ -95,7 +95,7 @@ object CreeperBeamSolver : Feature(
             if (event.new.name != "Creeper Beams") return@register
 
             inCreeperBeams = true
-            rotation = 360 - (event.new.rotation ?: 0) + 180
+            rotation = 360 - (event.new.rotation.degrees) + 180
 
             player?.let { p ->
                 val (centerX, centerZ) = WorldScanUtils.getRoomCenter(p.x.toInt(), p.z.toInt())

@@ -10,32 +10,32 @@ import kotlin.time.Duration
  * @author Meowdding
  */
 internal interface EntityAccessor {
-    fun `zen$setGlowing`(glowing: Boolean)
-    fun `zen$setGlowingColor`(color: Int)
-    fun `zen$glowTime`(time: Long)
-    fun `zen$setGlowingThisFrame`(glowing: Boolean)
+    fun `krypt$setGlowing`(glowing: Boolean)
+    fun `krypt$setGlowingColor`(color: Int)
+    fun `krypt$glowTime`(time: Long)
+    fun `krypt$setGlowingThisFrame`(glowing: Boolean)
 }
 
 var Entity.isCurrentlyGlowing: Boolean
     get() = this.isCurrentlyGlowing
     set(value) {
-        (this as EntityAccessor).`zen$setGlowing`(value)
+        (this as EntityAccessor).`krypt$setGlowing`(value)
     }
 
 var Entity.glowTime: Duration
     get() = Duration.INFINITE
     set(value) {
-        (this as EntityAccessor).`zen$glowTime`(value.inWholeMilliseconds)
+        (this as EntityAccessor).`krypt$glowTime`(value.inWholeMilliseconds)
     }
 
 var Entity.glowingColor: Int
     get() = this.teamColor
     set(value) {
-        (this as EntityAccessor).`zen$setGlowingColor`(value)
+        (this as EntityAccessor).`krypt$setGlowingColor`(value)
     }
 
 var Entity.glowThisFrame: Boolean
     get() = false
     set(value) {
-        (this as EntityAccessor).`zen$setGlowingThisFrame`(value)
+        (this as EntityAccessor).`krypt$setGlowingThisFrame`(value)
     }

@@ -4,13 +4,13 @@ import net.minecraft.client.gui.GuiGraphics
 import com.mojang.math.Axis
 import tech.thatgravyboat.skyblockapi.utils.extentions.stripColor
 import xyz.meowing.knit.api.KnitPlayer
-import xyz.meowing.krypt.Krypt
 import xyz.meowing.krypt.api.dungeons.DungeonAPI
 import xyz.meowing.krypt.api.dungeons.enums.DungeonClass
 import xyz.meowing.krypt.api.dungeons.enums.map.Room
 import xyz.meowing.krypt.api.dungeons.enums.DungeonPlayer
 import xyz.meowing.krypt.api.dungeons.enums.map.Checkmark
 import xyz.meowing.krypt.api.dungeons.enums.map.DoorState
+import xyz.meowing.krypt.api.dungeons.enums.map.RoomShape
 import xyz.meowing.krypt.api.dungeons.enums.map.RoomType
 import xyz.meowing.krypt.features.map.DungeonMap
 import xyz.meowing.krypt.features.map.utils.Utils
@@ -122,8 +122,19 @@ object Main {
             if (checkmarkMode < 1) return@forEach
 
             val secrets = if (room.checkmark == Checkmark.GREEN) room.secrets else room.secretsFound
-            val roomNameColor = DungeonMap.roomNameColor.code
-            val secretsColor = DungeonMap.secretsColor.code
+
+            val roomNameColor = when (room.checkmark) {
+                Checkmark.GREEN -> DungeonMap.roomTextSecretsColor.code
+                Checkmark.WHITE -> DungeonMap.roomTextClearedColor.code
+                else -> DungeonMap.roomTextNotClearedColor.code
+            }
+            
+            val secretsColor = when (room.checkmark) {
+                Checkmark.GREEN -> DungeonMap.secretsTextSecretsColor.code
+                Checkmark.WHITE -> DungeonMap.secretsTextClearedColor.code
+                else -> DungeonMap.secretsTextNotClearedColor.code
+            }
+
             val roomText = room.name ?: "???"
             val secretText = "$secrets/${room.secrets}"
 
@@ -192,7 +203,7 @@ object Main {
             }
         }
 
-        if (room.components.size == 4 && room.shape == "2x2") {
+        if (room.components.size == 4 && room.shape == RoomShape.SHAPE_2X2) {
             val x = room.components[0].first * SPACING + ROOM_SIZE
             val y = room.components[0].second * SPACING + ROOM_SIZE
             Render2D.drawRect(context, x, y, GAP_SIZE, GAP_SIZE, room.type.color)
@@ -209,7 +220,7 @@ object Main {
         val height = maxZ - minZ
 
         var centerZ = minZ + height / 2.0
-        if (shape == "L") {
+        if (shape == RoomShape.SHAPE_L) {
             val topEdgeCount = components.count { it.second == minZ }
             centerZ += if (topEdgeCount == 2) -height / 2.0 else height / 2.0
         }

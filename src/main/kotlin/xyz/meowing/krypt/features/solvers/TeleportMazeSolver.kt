@@ -92,7 +92,7 @@ object TeleportMazeSolver : Feature(
                 WorldScanUtils.getRoomCenter(p.x.toInt(), p.z.toInt())
             } ?: return@register
 
-            val rotation = event.new.rotation ?: return@register
+            val rotation = event.new.rotation.degrees
             val pos1 = WorldScanUtils.getRealCoord(BlockPos(0, 69, -3), BlockPos(center.first, 0, center.second), 360 - rotation)
 
             if (WorldUtils.getBlockStateAt(pos1.x, pos1.y, pos1.z)?.block != Blocks.END_PORTAL_FRAME) {

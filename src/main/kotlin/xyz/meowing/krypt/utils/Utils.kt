@@ -1,6 +1,8 @@
 package xyz.meowing.krypt.utils
 
+import net.minecraft.core.BlockPos
 import xyz.meowing.knit.api.KnitClient.client
+import xyz.meowing.krypt.api.dungeons.enums.map.RoomRotations
 import java.awt.Color
 
 object Utils {

@@ -48,7 +48,10 @@ object RoomSecrets: Feature(
     override fun initialize() {
         HudManager.registerCustom(NAME, 50,30, this::hudEditorRender, "roomSecrets")
 
-        register<GuiEvent.RenderHUD> { renderHUD(it.context) }
+        register<GuiEvent.RenderHUD> {
+            if (DungeonAPI.inBoss) return@register
+            renderHUD(it.context)
+        }
     }
 
     fun hudEditorRender(context: GuiGraphics){

@@ -98,9 +98,9 @@ object WaterBoardSolver : Feature(
                 val (centerX, centerZ) = WorldScanUtils.getRoomCenter(p.x.toInt(), p.z.toInt())
                 roomCenter = BlockPos(centerX, 0, centerZ)
             }
-            rotation = 360 - (event.new.rotation ?: return@register)
+            rotation = 360 - (event.new.rotation.degrees)
 
-            TickScheduler.Server.schedule(40) {
+            TickScheduler.Server.schedule(20) {
                 scanWaterBoard()
             }
         }

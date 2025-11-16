@@ -22,52 +22,56 @@ object DungeonMap : Feature(
 ) {
     private const val NAME = "Dungeon Map"
 
-    var showPlayerHead by ConfigDelegate<Boolean>("dungeonMap.showPlayerHead")
-    var playerHeadsUnder by ConfigDelegate<Boolean>("dungeonMap.playerHeadsUnder")
-    var iconClassColors by ConfigDelegate<Boolean>("dungeonMap.iconClassColors")
-    var playerIconBorderColor by ConfigDelegate<Color>("dungeonMap.playerIconBorderColor")
-    var playerIconBorderSize by ConfigDelegate<Double>("dungeonMap.playerIconBorderSize")
-    var showOwnPlayer by ConfigDelegate<Boolean>("dungeonMap.showOwnPlayer")
-    var showPlayerNametags by ConfigDelegate<Boolean>("dungeonMap.showPlayerNametags")
+    val showPlayerHead by ConfigDelegate<Boolean>("dungeonMap.showPlayerHead")
+    val playerHeadsUnder by ConfigDelegate<Boolean>("dungeonMap.playerHeadsUnder")
+    val iconClassColors by ConfigDelegate<Boolean>("dungeonMap.iconClassColors")
+    val playerIconBorderColor by ConfigDelegate<Color>("dungeonMap.playerIconBorderColor")
+    val playerIconBorderSize by ConfigDelegate<Double>("dungeonMap.playerIconBorderSize")
+    val showOwnPlayer by ConfigDelegate<Boolean>("dungeonMap.showOwnPlayer")
+    val showPlayerNametags by ConfigDelegate<Boolean>("dungeonMap.showPlayerNametags")
 
-    var healerColor by ConfigDelegate<Color>("dungeonMap.healerColor")
-    var mageColor by ConfigDelegate<Color>("dungeonMap.mageColor")
-    var berserkColor by ConfigDelegate<Color>("dungeonMap.berserkColor")
-    var archerColor by ConfigDelegate<Color>("dungeonMap.archerColor")
-    var tankColor by ConfigDelegate<Color>("dungeonMap.tankColor")
+    val healerColor by ConfigDelegate<Color>("dungeonMap.healerColor")
+    val mageColor by ConfigDelegate<Color>("dungeonMap.mageColor")
+    val berserkColor by ConfigDelegate<Color>("dungeonMap.berserkColor")
+    val archerColor by ConfigDelegate<Color>("dungeonMap.archerColor")
+    val tankColor by ConfigDelegate<Color>("dungeonMap.tankColor")
 
-    var puzzleCheckmarkMode by ConfigDelegate<Int>("dungeonMap.puzzleCheckmarkMode")
-    var normalCheckmarkMode by ConfigDelegate<Int>("dungeonMap.normalCheckmarkMode")
-    var checkmarkScale by ConfigDelegate<Double>("dungeonMap.checkmarkScale")
-    var roomNameColor by ConfigDelegate<MCColorCode>("dungeonMap.roomNameColor")
-    var secretsColor by ConfigDelegate<MCColorCode>("dungeonMap.secretsColor")
-    var coolText by ConfigDelegate<Boolean>("dungeonMap.coolText")
-    var roomLabelScale by ConfigDelegate<Double>("dungeonMap.roomLabelScale")
+    val puzzleCheckmarkMode by ConfigDelegate<Int>("dungeonMap.puzzleCheckmarkMode")
+    val normalCheckmarkMode by ConfigDelegate<Int>("dungeonMap.normalCheckmarkMode")
+    val checkmarkScale by ConfigDelegate<Double>("dungeonMap.checkmarkScale")
+    val roomTextNotClearedColor by ConfigDelegate<MCColorCode>("dungeonMap.roomTextNotClearedColor")
+    val roomTextClearedColor by ConfigDelegate<MCColorCode>("dungeonMap.roomTextClearedColor")
+    val roomTextSecretsColor by ConfigDelegate<MCColorCode>("dungeonMap.roomTextSecretsColor")
+    val secretsTextNotClearedColor by ConfigDelegate<MCColorCode>("dungeonMap.secretsTextNotClearedColor")
+    val secretsTextClearedColor by ConfigDelegate<MCColorCode>("dungeonMap.secretsTextClearedColor")
+    val secretsTextSecretsColor by ConfigDelegate<MCColorCode>("dungeonMap.secretsTextSecretsColor")
+    val coolText by ConfigDelegate<Boolean>("dungeonMap.coolText")
+    val roomLabelScale by ConfigDelegate<Double>("dungeonMap.roomLabelScale")
 
-    var showClearedRoomCheckmarks by ConfigDelegate<Boolean>("dungeonMap.showClearedRoomCheckmarks")
-    var clearedRoomCheckmarkScale by ConfigDelegate<Double>("dungeonMap.clearedRoomCheckmarkScale")
+    val showClearedRoomCheckmarks by ConfigDelegate<Boolean>("dungeonMap.showClearedRoomCheckmarks")
+    val clearedRoomCheckmarkScale by ConfigDelegate<Double>("dungeonMap.clearedRoomCheckmarkScale")
 
-    var normalRoomColor by ConfigDelegate<Color>("dungeonMap.normalRoomColor")
-    var puzzleRoomColor by ConfigDelegate<Color>("dungeonMap.puzzleRoomColor")
-    var trapRoomColor by ConfigDelegate<Color>("dungeonMap.trapRoomColor")
-    var yellowRoomColor by ConfigDelegate<Color>("dungeonMap.yellowRoomColor")
-    var bloodRoomColor by ConfigDelegate<Color>("dungeonMap.bloodRoomColor")
-    var fairyRoomColor by ConfigDelegate<Color>("dungeonMap.fairyRoomColor")
-    var entranceRoomColor by ConfigDelegate<Color>("dungeonMap.entranceRoomColor")
+    val normalRoomColor by ConfigDelegate<Color>("dungeonMap.normalRoomColor")
+    val puzzleRoomColor by ConfigDelegate<Color>("dungeonMap.puzzleRoomColor")
+    val trapRoomColor by ConfigDelegate<Color>("dungeonMap.trapRoomColor")
+    val yellowRoomColor by ConfigDelegate<Color>("dungeonMap.yellowRoomColor")
+    val bloodRoomColor by ConfigDelegate<Color>("dungeonMap.bloodRoomColor")
+    val fairyRoomColor by ConfigDelegate<Color>("dungeonMap.fairyRoomColor")
+    val entranceRoomColor by ConfigDelegate<Color>("dungeonMap.entranceRoomColor")
 
-    var normalDoorColor by ConfigDelegate<Color>("dungeonMap.normalDoorColor")
-    var witherDoorColor by ConfigDelegate<Color>("dungeonMap.witherDoorColor")
-    var bloodDoorColor by ConfigDelegate<Color>("dungeonMap.bloodDoorColor")
-    var entranceDoorColor by ConfigDelegate<Color>("dungeonMap.entranceDoorColor")
+    val normalDoorColor by ConfigDelegate<Color>("dungeonMap.normalDoorColor")
+    val witherDoorColor by ConfigDelegate<Color>("dungeonMap.witherDoorColor")
+    val bloodDoorColor by ConfigDelegate<Color>("dungeonMap.bloodDoorColor")
+    val entranceDoorColor by ConfigDelegate<Color>("dungeonMap.entranceDoorColor")
 
-    var mapInfoUnder by ConfigDelegate<Boolean>("dungeonMap.mapInfoUnder")
-    var mapBorder by ConfigDelegate<Boolean>("dungeonMap.mapBorder")
-    var mapBorderWidth by ConfigDelegate<Int>("dungeonMap.mapBorderWidth")
-    var mapBorderColor by ConfigDelegate<Color>("dungeonMap.mapBorderColor")
-    var mapBackgroundColor by ConfigDelegate<Color>("dungeonMap.mapBackgroundColor")
+    val mapInfoUnder by ConfigDelegate<Boolean>("dungeonMap.mapInfoUnder")
+    val mapBorder by ConfigDelegate<Boolean>("dungeonMap.mapBorder")
+    val mapBorderWidth by ConfigDelegate<Int>("dungeonMap.mapBorderWidth")
+    val mapBorderColor by ConfigDelegate<Color>("dungeonMap.mapBorderColor")
+    val mapBackgroundColor by ConfigDelegate<Color>("dungeonMap.mapBackgroundColor")
 
-    var bossMapEnabled by ConfigDelegate<Boolean>("dungeonMap.bossMapEnabled")
-    var scoreMapEnabled by ConfigDelegate<Boolean>("dungeonMap.scoreMapEnabled")
+    val bossMapEnabled by ConfigDelegate<Boolean>("dungeonMap.bossMapEnabled")
+    val scoreMapEnabled by ConfigDelegate<Boolean>("dungeonMap.scoreMapEnabled")
 
     override fun addConfig() {
         ConfigManager
@@ -214,21 +218,49 @@ object DungeonMap : Feature(
                 )
             )
             .addFeatureOption(
-                "Room name color",
+                "Room text not cleared",
                 ConfigElement(
-                    "dungeonMap.roomNameColor",
+                    "dungeonMap.roomTextNotClearedColor",
+                    ElementType.MCColorPicker(MCColorCode.GRAY)
+                )
+            )
+            .addFeatureOption(
+                "Room text cleared",
+                ConfigElement(
+                    "dungeonMap.roomTextClearedColor",
                     ElementType.MCColorPicker(MCColorCode.WHITE)
                 )
             )
             .addFeatureOption(
-                "Secrets text color",
+                "Room text secrets found",
                 ConfigElement(
-                    "dungeonMap.secretsColor",
-                    ElementType.MCColorPicker(MCColorCode.AQUA)
+                    "dungeonMap.roomTextSecretsColor",
+                    ElementType.MCColorPicker(MCColorCode.GREEN)
                 )
             )
             .addFeatureOption(
-                "Cool text",
+                "Secrets text not cleared",
+                ConfigElement(
+                    "dungeonMap.secretsTextNotClearedColor",
+                    ElementType.MCColorPicker(MCColorCode.GRAY)
+                )
+            )
+            .addFeatureOption(
+                "Secrets text cleared",
+                ConfigElement(
+                    "dungeonMap.secretsTextClearedColor",
+                    ElementType.MCColorPicker(MCColorCode.WHITE)
+                )
+            )
+            .addFeatureOption(
+                "Secrets text all found",
+                ConfigElement(
+                    "dungeonMap.secretsTextSecretsColor",
+                    ElementType.MCColorPicker(MCColorCode.GREEN)
+                )
+            )
+            .addFeatureOption(
+                "Shadowed text",
                 ConfigElement(
                     "dungeonMap.coolText",
                     ElementType.Switch(true)
