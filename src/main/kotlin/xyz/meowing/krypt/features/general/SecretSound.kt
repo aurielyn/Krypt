@@ -10,7 +10,7 @@ import net.minecraft.world.entity.EntityType
 import net.minecraft.world.entity.item.ItemEntity
 import net.minecraft.world.level.block.Blocks
 import net.minecraft.world.level.block.entity.SkullBlockEntity
-import net.minecraft.world.phys.Vec3
+import tech.thatgravyboat.skyblockapi.platform.properties
 import xyz.meowing.krypt.features.Feature
 import xyz.meowing.krypt.annotations.Module
 import xyz.meowing.krypt.api.location.SkyBlockIsland
@@ -119,7 +119,6 @@ object SecretSound : Feature(
 
         if(blockEntity is SkullBlockEntity) {
             val profile = blockEntity.ownerProfile ?: return false
-
             val texture = profile.properties.get("textures")
 
             if(texture != null && texture.isNotEmpty()) {
