@@ -52,7 +52,7 @@ object TicTacToeSolver : Feature(
     override fun addConfig() {
         ConfigManager
             .addFeature(
-                "Tic Tac Toe solver",
+                "Tic-Tac-Toe solver",
                 "Shows the best move using minimax algorithm",
                 "Solvers",
                 ConfigElement(

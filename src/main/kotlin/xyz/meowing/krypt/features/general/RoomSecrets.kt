@@ -33,7 +33,8 @@ object RoomSecrets: Feature(
                 ElementType.Switch(false)
             )
         )
-        .addFeatureOption("HudEditor",
+        .addFeatureOption(
+            "HudEditor",
             ConfigElement(
                 "roomSecrets.hudEditor",
                 ElementType.Button("Edit Position") {
@@ -48,7 +49,7 @@ object RoomSecrets: Feature(
     override fun initialize() {
         HudManager.registerCustom(NAME, 50,30, this::hudEditorRender, "roomSecrets")
 
-        register<GuiEvent.RenderHUD> {
+        register<GuiEvent.Render.HUD> {
             if (DungeonAPI.inBoss) return@register
             renderHUD(it.context)
         }

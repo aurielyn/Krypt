@@ -46,7 +46,7 @@ object ThreeWeirdosSolver : Feature(
     override fun addConfig() {
         ConfigManager
             .addFeature(
-                "Three Weirdos solver",
+                "Three weirdos solver",
                 "Highlights the correct chest and removes wrong ones",
                 "Solvers",
                 ConfigElement(

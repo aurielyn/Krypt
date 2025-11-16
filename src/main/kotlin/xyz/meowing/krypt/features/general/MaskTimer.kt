@@ -1,5 +1,3 @@
-@file:Suppress("UNUSED")
-
 package xyz.meowing.krypt.features.general
 
 import net.minecraft.client.gui.GuiGraphics
@@ -32,11 +30,12 @@ object MaskTimer : Feature(
     island = SkyBlockIsland.THE_CATACOMBS
 ) {
 
-    private const val NAME = "MaskTimers"
+    private const val NAME = "Mask Timers"
+
     override fun addConfig() {
         ConfigManager
             .addFeature(
-                "Mask Timers",
+                "Mask timers",
                 "Mask Timers",
                 "General",
                 ConfigElement(
@@ -45,14 +44,14 @@ object MaskTimer : Feature(
                 )
             )
             .addFeatureOption(
-                "Send Chat Message",
+                "Send chat message",
                 ConfigElement(
                     "maskTimers.message",
                     ElementType.Switch(false)
                 )
             )
             .addFeatureOption(
-                "Always Display Timer",
+                "Always display timer",
                 ConfigElement(
                     "maskTimers.alwaysDisplay",
                     ElementType.Switch(true)
@@ -132,7 +131,7 @@ object MaskTimer : Feature(
             }
         }
 
-        register<GuiEvent.RenderHUD> { event ->
+        register<GuiEvent.Render.HUD> { event ->
             render(event.context)
         }
 

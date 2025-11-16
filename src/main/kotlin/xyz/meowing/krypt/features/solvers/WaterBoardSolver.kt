@@ -66,7 +66,7 @@ object WaterBoardSolver : Feature(
     override fun addConfig() {
         ConfigManager
             .addFeature(
-                "Water Board solver",
+                "Water board solver",
                 "Shows optimal lever order and timing",
                 "Solvers",
                 ConfigElement(

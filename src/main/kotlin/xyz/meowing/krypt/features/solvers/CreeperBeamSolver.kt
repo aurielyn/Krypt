@@ -65,7 +65,7 @@ object CreeperBeamSolver : Feature(
     override fun addConfig() {
         ConfigManager
             .addFeature(
-                "Creeper Beam solver",
+                "Creeper beam solver",
                 "Highlights beam pairs in Creeper Beams room",
                 "Solvers",
                 ConfigElement(
