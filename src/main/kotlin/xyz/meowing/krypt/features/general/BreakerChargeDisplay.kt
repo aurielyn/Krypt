@@ -55,7 +55,7 @@ object BreakerChargeDisplay : Feature(
                 else -> "§c"
             }
 
-            renderString = "§bCharges: §${colorCode}${first}§7/§a${max}§c⸕"
+            renderString = "§bCharges: ${colorCode}${first}§7/§a${max}§c⸕"
         }
 
         register<GuiEvent.Render.HUD> { event ->
