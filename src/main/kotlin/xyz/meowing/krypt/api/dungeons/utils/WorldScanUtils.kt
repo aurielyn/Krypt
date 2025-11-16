@@ -5,6 +5,9 @@ import xyz.meowing.knit.api.KnitClient
 import xyz.meowing.krypt.utils.WorldUtils
 
 object WorldScanUtils {
+    private const val ROOM_SIZE_SHIFT = 5
+    private const val DUNGEON_START = -185
+
     val blacklist = setOf(5, 54, 146)
 
     fun isChunkLoaded(x: Int, z: Int): Boolean {
@@ -16,7 +19,7 @@ object WorldScanUtils {
 
     fun getCore(x: Int, z: Int): Int {
         val sb = StringBuilder(150)
-        val height = getHighestY(x, z)?.coerceIn(11..140) ?: 140 .coerceIn(11..140)
+        val height = getHighestY(x, z)?.coerceIn(11..140) ?: 140.coerceIn(11..140)
 
         sb.append(CharArray(140 - height) { '0' })
         var bedrock = 0
@@ -71,23 +74,6 @@ object WorldScanUtils {
             else -> pos
         }
     }
-
-    fun getRoomShape(comps: List<Pair<Int, Int>>): String {
-        val count = comps.size
-        val xs = comps.map { it.first }.toSet()
-        val zs = comps.map { it.second }.toSet()
-
-        return when (count) {
-            1 -> "1x1"
-            2 -> "1x2"
-            3 -> if (xs.size == 3 || zs.size == 3) "1x3" else "L"
-            4 -> if (xs.size == 1 || zs.size == 1) "1x4" else "2x2"
-            else -> "Unknown"
-        }
-    }
-
-    private const val ROOM_SIZE_SHIFT = 5
-    private const val DUNGEON_START = -185
 
     fun getRoomCenter(posX: Int, posZ: Int): Pair<Int, Int> {
         val roomX = (posX - DUNGEON_START + (1 shl (ROOM_SIZE_SHIFT - 1))) shr ROOM_SIZE_SHIFT

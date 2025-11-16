@@ -1,5 +1,6 @@
 package xyz.meowing.krypt.api.dungeons.enums.map
 
+import net.minecraft.core.Direction
 import net.minecraft.world.level.block.Blocks
 import xyz.meowing.krypt.api.dungeons.enums.DungeonPlayer
 import xyz.meowing.krypt.api.dungeons.handlers.RoomRegistry
@@ -19,7 +20,7 @@ class Room(
     val cores = mutableListOf<Int>()
 
     var roomData: RoomMetadata? = null
-    var shape: String = "1x1"
+    var shape: RoomShape = RoomShape.UNKNOWN
     var explored = false
 
     var checkmark by Delegates.observable(Checkmark.UNDISCOVERED) { _, oldValue, newValue ->
@@ -34,10 +35,10 @@ class Room(
     var players: MutableSet<DungeonPlayer> = mutableSetOf()
 
     var name: String? = null
-    var corner: Triple<Double, Double, Double>? = null
+    var corner: Triple<Int, Int, Int>? = null
     var center: Triple<Double, Double, Double>? = null
     var componentCenters: List<Triple<Double, Double, Double>> = emptyList()
-    var rotation: Int? = null
+    var rotation: RoomRotations = RoomRotations.NONE
     var type: RoomType = RoomType.UNKNOWN
     var secrets: Int = 0
     var secretsFound: Int = 0
@@ -70,9 +71,9 @@ class Room(
         realComponents.clear()
         realComponents += components.map { WorldScanUtils.componentToRealCoord(it.first, it.second) }
         scan()
-        shape = WorldScanUtils.getRoomShape(components)
+        shape = RoomShape.fromComponents(components)
         corner = null
-        rotation = null
+        rotation = RoomRotations.NONE
     }
 
     fun scan(): Room {
@@ -113,34 +114,35 @@ class Room(
         val currentHeight = height ?: return this
 
         if (type == RoomType.FAIRY) {
-            rotation = 0
+            rotation = RoomRotations.SOUTH
             val (x, z) = realComponents.first()
-            corner = Triple(x - ScanUtils.halfRoomSize + 0.5, height!!.toDouble(), z - ScanUtils.halfRoomSize + 0.5)
+            corner = Triple(x - ScanUtils.halfRoomSize, height!!, z - ScanUtils.halfRoomSize)
             return this
         }
 
-        val offsets = listOf(
-            Pair(-ScanUtils.halfRoomSize, -ScanUtils.halfRoomSize),
-            Pair(ScanUtils.halfRoomSize, -ScanUtils.halfRoomSize),
-            Pair(ScanUtils.halfRoomSize, ScanUtils.halfRoomSize),
-            Pair(-ScanUtils.halfRoomSize, ScanUtils.halfRoomSize)
-        )
+        val horizontals = Direction.entries.filter { it.axis.isHorizontal }
 
-        for ((x, z) in realComponents) {
-            for ((jdx, offset) in offsets.withIndex()) {
-                val (dx, dz) = offset
-                val nx = x + dx
-                val nz = z + dz
+        rotation = RoomRotations.entries.dropLast(1).find { rot ->
+            realComponents.any { (rx, rz) ->
+                val checkX = rx + rot.x
+                val checkZ = rz + rot.z
 
-                if (!WorldScanUtils.isChunkLoaded(nx, nz)) continue
-                val state = WorldUtils.getBlockStateAt(nx, currentHeight, nz) ?: continue
-                if (state.`is`(Blocks.BLUE_TERRACOTTA)) {
-                    rotation = jdx * 90
-                    corner = Triple(nx + 0.5, currentHeight.toDouble(), nz + 0.5)
-                    return this
+                if (!WorldScanUtils.isChunkLoaded(checkX, checkZ)) return@any false
+
+                val state = WorldUtils.getBlockStateAt(checkX, currentHeight, checkZ) ?: return@any false
+
+                state.`is`(Blocks.BLUE_TERRACOTTA) && horizontals.all { facing ->
+                    val offsetX = if (facing.axis == Direction.Axis.X) facing.stepX else 0
+                    val offsetZ = if (facing.axis == Direction.Axis.Z) facing.stepZ else 0
+                    val neighborState = WorldUtils.getBlockStateAt(checkX + offsetX, currentHeight, checkZ + offsetZ)
+                    neighborState?.block in setOf(Blocks.AIR, Blocks.BLUE_TERRACOTTA, null)
+                }.also { isValid ->
+                    if (isValid) {
+                        corner = Triple(checkX, currentHeight, checkZ)
+                    }
                 }
             }
-        }
+        } ?: RoomRotations.NONE
         return this
     }
 
@@ -174,21 +176,21 @@ class Room(
     }
 
     fun fromWorldPos(pos: Triple<Double, Double, Double>): Triple<Int, Int, Int>? {
-        if (corner == null || rotation == null) return null
+        if (corner == null || rotation == RoomRotations.NONE) return null
         val rel = Triple(
             (pos.first - corner!!.first).toInt(),
             (pos.second - corner!!.second).toInt(),
             (pos.third - corner!!.third).toInt()
         )
-        return WorldScanUtils.rotateCoord(rel, rotation!!)
+        return WorldScanUtils.rotateCoord(rel, rotation.degrees)
     }
 
-    fun toWorldPos(local: Triple<Int, Int, Int>): Triple<Double, Double, Double>? {
-        if (corner == null || rotation == null) return null
-        val rotated = WorldScanUtils.rotateCoord(local, 360 - rotation!!)
+    fun toWorldPos(local: Triple<Int, Int, Int>): Triple<Int, Int, Int>? {
+        if (corner == null || rotation == RoomRotations.NONE) return null
+        val rotated = WorldScanUtils.rotateCoord(local, 360 - rotation.degrees)
         return Triple(
             rotated.first + corner!!.first,
-            rotated.second + corner!!.second,
+            rotated.second,
             rotated.third + corner!!.third
         )
     }

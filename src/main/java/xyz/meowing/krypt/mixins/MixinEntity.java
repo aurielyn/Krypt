@@ -17,19 +17,19 @@ import xyz.meowing.krypt.utils.EntityAccessor;
 @Mixin(Entity.class)
 public class MixinEntity implements EntityAccessor {
     @Unique
-    private boolean zen$glowing = false;
+    private boolean krypt$glowing = false;
     @Unique
-    private int zen$glowingColor = 0;
+    private int krypt$glowingColor = 0;
     @Unique
-    private long zen$glowTime = -1;
+    private long krypt$glowTime = -1;
     @Unique
-    private boolean zen$glowingThisFrame = false;
+    private boolean krypt$glowingThisFrame = false;
 
     @Inject(method = "getTeamColor", at = @At("HEAD"), cancellable = true)
     public void getTeamColor(CallbackInfoReturnable<Integer> cir) {
         if (hasCustomGlow()) {
-            cir.setReturnValue(zen$glowingColor);
-            this.zen$glowingThisFrame = false;
+            cir.setReturnValue(krypt$glowingColor);
+            this.krypt$glowingThisFrame = false;
         }
     }
 
@@ -41,31 +41,31 @@ public class MixinEntity implements EntityAccessor {
     }
 
     @Override
-    public void zen$setGlowing(boolean glowing) {
-        this.zen$glowing = glowing;
+    public void krypt$setGlowing(boolean glowing) {
+        this.krypt$glowing = glowing;
     }
 
     @Override
-    public void zen$setGlowingColor(int color) {
-        this.zen$glowingColor = color;
+    public void krypt$setGlowingColor(int color) {
+        this.krypt$glowingColor = color;
     }
 
     @Override
-    public void zen$glowTime(long time) {
-        this.zen$glowTime = System.currentTimeMillis() + time;
-        this.zen$glowing = false;
+    public void krypt$glowTime(long time) {
+        this.krypt$glowTime = System.currentTimeMillis() + time;
+        this.krypt$glowing = false;
     }
 
     @Override
-    public void zen$setGlowingThisFrame(boolean glowing) {
-        this.zen$glowingThisFrame = glowing;
+    public void krypt$setGlowingThisFrame(boolean glowing) {
+        this.krypt$glowingThisFrame = glowing;
     }
 
     @Unique
     private boolean hasCustomGlow() {
-        if (this.zen$glowingThisFrame) return true;
-        if (this.zen$glowTime > System.currentTimeMillis()) return true;
-        this.zen$glowTime = -1;
-        return this.zen$glowing;
+        if (this.krypt$glowingThisFrame) return true;
+        if (this.krypt$glowTime > System.currentTimeMillis()) return true;
+        this.krypt$glowTime = -1;
+        return this.krypt$glowing;
     }
 }
