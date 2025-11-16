@@ -10,10 +10,10 @@ import net.minecraft.world.phys.AABB
 import net.minecraft.world.phys.shapes.VoxelShape
 import net.minecraft.world.level.EmptyBlockGetter
 import xyz.meowing.knit.api.KnitClient
-import xyz.meowing.knit.api.KnitPlayer
+import xyz.meowing.knit.api.KnitClient.client
 import xyz.meowing.knit.api.scheduler.TickScheduler
 import xyz.meowing.krypt.annotations.Module
-import xyz.meowing.krypt.api.dungeons.utils.WorldScanUtils
+import xyz.meowing.krypt.api.dungeons.utils.ScanUtils
 import xyz.meowing.krypt.api.location.SkyBlockIsland
 import xyz.meowing.krypt.config.ConfigDelegate
 import xyz.meowing.krypt.config.ui.types.ElementType
@@ -43,7 +43,7 @@ object TicTacToeSolver : Feature(
     island = SkyBlockIsland.THE_CATACOMBS
 ) {
     private var inTicTacToe = false
-    private var roomCenter: Pair<Int, Int>? = null
+    private var roomCenter: BlockPos? = null
     private var boundingBox: VoxelShape? = null
     private var blockPos: BlockPos? = null
 
@@ -74,9 +74,7 @@ object TicTacToeSolver : Feature(
             if (event.new.name != "Tic Tac Toe") return@register
 
             inTicTacToe = true
-            KnitPlayer.player?.let { p ->
-                roomCenter = WorldScanUtils.getRoomCenter(p.x.toInt(), p.z.toInt())
-            }
+            roomCenter = ScanUtils.getRoomCenter(event.new)
 
             TickScheduler.Server.schedule(2) {
                 scanBoard()
@@ -116,8 +114,8 @@ object TicTacToeSolver : Feature(
         val world = KnitClient.world ?: return
 
         val aabb = AABB(
-            center.first - 9.0, 65.0, center.second - 9.0,
-            center.first + 9.0, 73.0, center.second + 9.0
+            center.x - 9.0, 65.0, center.z - 9.0,
+            center.x + 9.0, 73.0, center.z + 9.0
         )
 
         val itemFrames = world.getEntitiesOfClass(ItemFrame::class.java, aabb) { true }
@@ -167,7 +165,7 @@ object TicTacToeSolver : Feature(
                     facing = 'Z'
                 }
 
-                val block = WorldUtils.getBlockStateAt(blockPos.x, blockPos.y, blockPos.z)?.block
+                val block = client.level?.getBlockState(blockPos)?.block
                 if (block == Blocks.STONE_BUTTON || block == Blocks.AIR) {
                     leftmostRow = blockPos
                     row = i

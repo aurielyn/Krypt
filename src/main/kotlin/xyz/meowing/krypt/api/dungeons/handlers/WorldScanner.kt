@@ -160,10 +160,13 @@ object WorldScanner {
                     room.addComponent(neighborComp)
                     rooms[neighborIdx] = room
                 }
-                neighborRoom != room &&
-                        neighborRoom.type != RoomType.ENTRANCE &&
-                        room.type != RoomType.ENTRANCE -> {
-                    DungeonAPI.mergeRooms(neighborRoom, room)
+                neighborRoom != room && neighborRoom.type != RoomType.ENTRANCE && room.type != RoomType.ENTRANCE -> {
+                    val doorComp = (cx + dx) to (cz + dz)
+                    val doorIdx = DungeonAPI.getDoorIdx(doorComp)
+
+                    if (doorIdx !in DungeonAPI.doors.indices || DungeonAPI.doors[doorIdx] == null) {
+                        DungeonAPI.mergeRooms(neighborRoom, room)
+                    }
                 }
             }
         }

@@ -6,6 +6,7 @@ import net.minecraft.core.BlockPos
 import tech.thatgravyboat.skyblockapi.utils.text.TextProperties.stripped
 import xyz.meowing.knit.api.KnitClient
 import xyz.meowing.krypt.annotations.Module
+import xyz.meowing.krypt.api.dungeons.utils.ScanUtils.rotateBlock
 import xyz.meowing.krypt.api.location.SkyBlockIsland
 import xyz.meowing.krypt.config.ConfigDelegate
 import xyz.meowing.krypt.config.ui.types.ElementType
@@ -129,12 +130,13 @@ object ThreeWeirdosSolver : Feature(
                 .filterIsInstance<ArmorStand>()
                 .find { it.name.stripped == npc } ?: return@register
 
-            val offset = rotateBlockPos(BlockPos(1, 0, 0), rotation)
             val pos = BlockPos(
                 (correctNPC.x - 0.5).toInt(),
                 69,
                 (correctNPC.z - 0.5).toInt()
-            ).offset(offset)
+            )
+                .offset(BlockPos(1, 0, 0)
+                .rotateBlock(rotation))
 
             if (solutions.any { it.matches(msg) }) {
                 correctPos = pos

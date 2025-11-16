@@ -3,9 +3,10 @@ package xyz.meowing.krypt.features.solvers
 import net.minecraft.world.level.block.Blocks
 import net.minecraft.network.protocol.game.ClientboundPlayerPositionPacket
 import net.minecraft.core.BlockPos
+import xyz.meowing.knit.api.KnitClient.client
 import xyz.meowing.knit.api.KnitPlayer.player
 import xyz.meowing.krypt.annotations.Module
-import xyz.meowing.krypt.api.dungeons.utils.WorldScanUtils
+import xyz.meowing.krypt.api.dungeons.utils.ScanUtils
 import xyz.meowing.krypt.api.location.SkyBlockIsland
 import xyz.meowing.krypt.config.ConfigDelegate
 import xyz.meowing.krypt.config.ui.types.ElementType
@@ -16,7 +17,6 @@ import xyz.meowing.krypt.events.core.RenderEvent
 import xyz.meowing.krypt.features.Feature
 import xyz.meowing.krypt.managers.config.ConfigElement
 import xyz.meowing.krypt.managers.config.ConfigManager
-import xyz.meowing.krypt.utils.WorldUtils
 import xyz.meowing.krypt.utils.rendering.Render3D
 import java.awt.Color
 import kotlin.math.abs
@@ -88,14 +88,12 @@ object TeleportMazeSolver : Feature(
         register<DungeonEvent.Room.Change> { event ->
             if (event.new.name != "Teleport Maze") return@register
 
-            val center = player?.let { p ->
-                WorldScanUtils.getRoomCenter(p.x.toInt(), p.z.toInt())
-            } ?: return@register
+            val center = ScanUtils.getRoomCenter(event.new)
 
-            val rotation = event.new.rotation.degrees
-            val pos1 = WorldScanUtils.getRealCoord(BlockPos(0, 69, -3), BlockPos(center.first, 0, center.second), 360 - rotation)
+            val rotation = 360 - event.new.rotation.degrees
+            val pos1 = ScanUtils.getRealCoord(BlockPos(0, 69, - 3), center, rotation)
 
-            if (WorldUtils.getBlockStateAt(pos1.x, pos1.y, pos1.z)?.block != Blocks.END_PORTAL_FRAME) {
+            if (client.level?.getBlockState(pos1)?.block != Blocks.END_PORTAL_FRAME) {
                 inTpMaze = false
                 return@register
             }
@@ -105,8 +103,8 @@ object TeleportMazeSolver : Feature(
             val pads = mutableListOf<TpPad>()
             for (dx in 0..31) {
                 for (dz in 0..31) {
-                    val pos = BlockPos(center.first + dx - 16, 69, center.second + dz - 16)
-                    if (WorldUtils.getBlockStateAt(pos.x, pos.y, pos.z)?.block != Blocks.END_PORTAL_FRAME) continue
+                    val pos = BlockPos(center.x + dx - 16, 69, center.z + dz - 16)
+                    if (client.level?.getBlockState(pos)?.block != Blocks.END_PORTAL_FRAME) continue
                     pads += TpPad(pos)
                 }
             }

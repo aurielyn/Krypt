@@ -1,6 +1,5 @@
 package xyz.meowing.krypt.api.dungeons.utils
 
-import net.minecraft.core.BlockPos
 import xyz.meowing.knit.api.KnitClient
 import xyz.meowing.krypt.utils.WorldUtils
 
@@ -73,43 +72,5 @@ object WorldScanUtils {
             270 -> Triple(-pos.third, pos.second, pos.first)
             else -> pos
         }
-    }
-
-    fun getRoomCenter(posX: Int, posZ: Int): Pair<Int, Int> {
-        val roomX = (posX - DUNGEON_START + (1 shl (ROOM_SIZE_SHIFT - 1))) shr ROOM_SIZE_SHIFT
-        val roomZ = (posZ - DUNGEON_START + (1 shl (ROOM_SIZE_SHIFT - 1))) shr ROOM_SIZE_SHIFT
-        return Pair(
-            ((roomX shl ROOM_SIZE_SHIFT) + DUNGEON_START),
-            ((roomZ shl ROOM_SIZE_SHIFT) + DUNGEON_START)
-        )
-    }
-
-    fun getRealCoord(pos: BlockPos, center: BlockPos, rotation: Int): BlockPos {
-        val relX = pos.x
-        val relZ = pos.z
-
-        val rotated = when ((rotation % 360 + 360) % 360) {
-            0 -> Pair(relX, relZ)
-            90 -> Pair(relZ, -relX)
-            180 -> Pair(-relX, -relZ)
-            270 -> Pair(-relZ, relX)
-            else -> Pair(relX, relZ)
-        }
-
-        return BlockPos(
-            center.x + rotated.first,
-            pos.y,
-            center.z + rotated.second
-        )
-    }
-
-    fun getRoomCenterComponent(posX: Int, posZ: Int): Pair<Int, Int> {
-        val (centerX, centerZ) = getRoomCenter(posX, posZ)
-        return realCoordToComponent(centerX, centerZ, includeDoors = false)
-    }
-
-    fun isInRoomBounds(x: Int, z: Int, roomX: Int, roomZ: Int): Boolean {
-        val halfRoom = ScanUtils.halfRoomSize
-        return x in (roomX - halfRoom)..(roomX + halfRoom) && z in (roomZ - halfRoom)..(roomZ + halfRoom)
     }
 }
