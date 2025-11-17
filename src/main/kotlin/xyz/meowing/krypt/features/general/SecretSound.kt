@@ -68,6 +68,7 @@ object SecretSound : Feature(
     override fun initialize() {
         register<DungeonEvent.Secrets.Chest> { playSound() }
         register<DungeonEvent.Secrets.Misc> { playSound() }
+        register<DungeonEvent.Secrets.Essence> { playSound() }
         register<DungeonEvent.Secrets.Item> { event ->
             val itemId = event.entityId
 

@@ -2,8 +2,6 @@
 
 package xyz.meowing.krypt.api.dungeons
 
-import net.minecraft.client.multiplayer.ClientLevel
-import net.minecraft.core.BlockPos
 import net.minecraft.network.protocol.game.ClientboundTakeItemEntityPacket
 import net.minecraft.network.protocol.game.ServerboundUseItemOnPacket
 import net.minecraft.world.entity.EntityType
@@ -311,16 +309,24 @@ object DungeonAPI {
                 return@registerIn
             }
 
-            val texture = getTexture(world, pos)
+            val entity = world.getBlockEntity(pos) ?: return@registerIn
+            var blockTexture: String? = null
 
-            if(texture == WITHER_ESSENCE_TEXTURE) {
-                val entity = world.getBlockEntity(pos) ?: return@registerIn
+            if(entity is SkullBlockEntity) {
+                val profile = entity.ownerProfile
+                val texture = profile?.properties?.get("textures")
+
+                if(texture != null && texture.isNotEmpty()) {
+                    blockTexture = texture.first().value
+                }
+            }
+
+            if(blockTexture == WITHER_ESSENCE_TEXTURE) {
                 EventBus.post(DungeonEvent.Secrets.Essence(entity, pos))
                 return@registerIn
             }
 
-            if(texture == RED_SKULL_TEXTURE) {
-                val entity = world.getBlockEntity(pos) ?: return@registerIn
+            if(blockTexture == RED_SKULL_TEXTURE) {
                 EventBus.post(DungeonEvent.Secrets.Misc(DungeonEvent.Secrets.SecretType.RED_SKULL, pos))
                 return@registerIn
             }
@@ -409,23 +415,6 @@ object DungeonAPI {
     private fun updateHeldItem() {
         val item = KnitPlayer.player?.mainHandItem ?: return
         holdingLeaps = "leap" in item.hoverName.stripped.lowercase()
-    }
-
-    private fun getTexture(world: ClientLevel, pos: BlockPos): String? {
-        val blockEntity = world.getBlockEntity(pos)
-
-        if(blockEntity is SkullBlockEntity) {
-            val profile = blockEntity.ownerProfile ?: return null
-            val texture = profile.properties.get("textures")
-
-            if(texture != null && texture.isNotEmpty()) {
-                return texture.first().value
-            }
-
-            return null
-        }
-
-        return null
     }
 
     // Room accessors
