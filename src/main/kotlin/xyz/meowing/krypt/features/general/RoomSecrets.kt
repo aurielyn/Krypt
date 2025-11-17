@@ -55,7 +55,7 @@ object RoomSecrets: Feature(
         }
     }
 
-    fun hudEditorRender(context: GuiGraphics){
+    fun hudEditorRender(context: GuiGraphics) {
         val matrix = context.pose()
         //#if MC >= 1.21.7
         //$$ matrix.pushMatrix()
