@@ -52,6 +52,9 @@ import xyz.meowing.krypt.utils.Utils.removeFormatting
 import kotlin.collections.first
 import kotlin.collections.isNotEmpty
 import kotlin.math.floor
+//#if MC >= 1.21.9
+//$$ import tech.thatgravyboat.skyblockapi.platform.properties
+//#endif
 
 @Module
 object DungeonAPI {
