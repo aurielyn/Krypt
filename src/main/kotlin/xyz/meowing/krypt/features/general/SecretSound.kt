@@ -25,6 +25,10 @@ import xyz.meowing.knit.api.KnitPlayer.player
 import xyz.meowing.krypt.config.ConfigDelegate
 import xyz.meowing.krypt.events.core.EntityEvent
 
+//#if MC >= 1.21.9
+//$$ import tech.thatgravyboat.skyblockapi.platform.properties
+//#endif
+
 @Module
 object SecretSound : Feature(
     "secretSound",
