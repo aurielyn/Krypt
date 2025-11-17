@@ -39,6 +39,7 @@ import xyz.meowing.krypt.events.core.LocationEvent
 import xyz.meowing.krypt.events.core.TablistEvent
 import xyz.meowing.krypt.events.core.TickEvent
 import xyz.meowing.krypt.features.alerts.MimicAlert
+import xyz.meowing.krypt.features.alerts.PrinceAlert
 import kotlin.math.floor
 
 @Module
@@ -187,6 +188,7 @@ object DungeonAPI {
 
                     message.equals("a prince falls. +1 bonus score", true) -> {
                         princeKilled = true
+                        PrinceAlert.displayTitle()
                         return@registerIn
                     }
                 }

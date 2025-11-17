@@ -11,39 +11,39 @@ import xyz.meowing.krypt.managers.config.ConfigManager
 import xyz.meowing.krypt.utils.TitleUtils
 
 @Module
-object MimicAlert : Feature(
-    "mimicAlert",
+object PrinceAlert : Feature(
+    "princeAlert",
     island = SkyBlockIsland.THE_CATACOMBS
-) {
+){
     override fun addConfig() {
         ConfigManager.addFeature(
-            "Mimic alert",
-            "Mimic alert",
-            "Alerts",
+            "Prince title",
+            "Display prince death title",
+            "Alert",
             ConfigElement(
-                "mimicAlert",
+                "princeAlert",
                 ElementType.Switch(false)
             )
         )
             .addFeatureOption(
                 "Send chat message",
                 ConfigElement(
-                    "mimicAlert.sendMessage",
+                    "princeAlert.sendMessage",
                     ElementType.Switch(true)
                 )
             )
             .addFeatureOption(
-                "Mimic message",
+                "Prince message",
                 ConfigElement(
-                    "mimicAlert.message",
-                    ElementType.TextInput("Mimic Killed!")
+                    "princeAlert.message",
+                    ElementType.TextInput("Prince Killed!")
                 )
             )
     }
 
-    private val message by ConfigDelegate<String>("mimicAlert.message")
-    private val sendMessage by ConfigDelegate<Boolean>("mimicAlert.sendMessage")
-    private val enabled by ConfigDelegate<Boolean>("mimicAlert")
+    private val message by ConfigDelegate<String>("princeAlert.message")
+    private val sendMessage by ConfigDelegate<Boolean>("princeAlert.sendMessage")
+    private val enabled by ConfigDelegate<Boolean>("princeAlert")
 
     private const val DURATION = 2000
 
