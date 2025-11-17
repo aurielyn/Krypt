@@ -4,12 +4,16 @@ import com.google.gson.JsonObject
 import net.minecraft.world.level.block.Blocks
 import net.minecraft.network.protocol.game.ServerboundUseItemOnPacket
 import net.minecraft.core.BlockPos
+import net.minecraft.world.level.block.Block
 import net.minecraft.world.phys.Vec3
-import xyz.meowing.knit.api.KnitPlayer.player
+import xyz.meowing.knit.api.KnitChat
+import xyz.meowing.knit.api.KnitClient.client
 import xyz.meowing.knit.api.scheduler.TickScheduler
 import xyz.meowing.krypt.Krypt
+import xyz.meowing.krypt.Krypt.prefix
 import xyz.meowing.krypt.annotations.Module
-import xyz.meowing.krypt.api.dungeons.utils.WorldScanUtils
+import xyz.meowing.krypt.api.dungeons.utils.ScanUtils
+import xyz.meowing.krypt.api.dungeons.utils.ScanUtils.getRealCoord
 import xyz.meowing.krypt.api.location.SkyBlockIsland
 import xyz.meowing.krypt.config.ConfigDelegate
 import xyz.meowing.krypt.config.ui.types.ElementType
@@ -22,7 +26,6 @@ import xyz.meowing.krypt.features.Feature
 import xyz.meowing.krypt.managers.config.ConfigElement
 import xyz.meowing.krypt.managers.config.ConfigManager
 import xyz.meowing.krypt.utils.NetworkUtils
-import xyz.meowing.krypt.utils.WorldUtils
 import xyz.meowing.krypt.utils.rendering.Render3D
 import java.awt.Color
 
@@ -65,7 +68,7 @@ object WaterBoardSolver : Feature(
     override fun addConfig() {
         ConfigManager
             .addFeature(
-                "Water Board solver",
+                "Water board solver",
                 "Shows optimal lever order and timing",
                 "Solvers",
                 ConfigElement(
@@ -94,14 +97,16 @@ object WaterBoardSolver : Feature(
             if (event.new.name != "Water Board") return@register
             if (patternIdentifier != -1) return@register
 
-            player?.let { p ->
-                val (centerX, centerZ) = WorldScanUtils.getRoomCenter(p.x.toInt(), p.z.toInt())
-                roomCenter = BlockPos(centerX, 0, centerZ)
-            }
+            roomCenter = ScanUtils.getRoomCenter(event.new)
             rotation = 360 - (event.new.rotation.degrees)
 
-            TickScheduler.Server.schedule(20) {
-                scanWaterBoard()
+            TickScheduler.Server.schedule(15) {
+                KnitChat.fakeMessage("$prefix §7Solving Water Board...")
+                // gaslight the user until we figure out a way to do it without the 1.5-2s delay
+            }
+
+            TickScheduler.Server.schedule(30) {
+               solve()
             }
         }
 
@@ -119,7 +124,7 @@ object WaterBoardSolver : Feature(
                 .sortedBy { (lever, time) -> time + if (lever == LeverBlock.WATER) 0.01 else 0.0 }
 
             val firstSolution = solutionList.firstOrNull()?.first ?: return@register
-            val firstPos = firstSolution.getLeverPos() ?: return@register
+            val firstPos = firstSolution.getLeverPos()
 
             Render3D.drawLineToPos(
                 firstPos.toCenterVec(),
@@ -136,7 +141,7 @@ object WaterBoardSolver : Feature(
             if (solutionList.size > 1) {
                 val secondSolution = solutionList[1].first
                 val secondPos = secondSolution.getLeverPos()
-                if (firstPos != secondPos && secondPos != null) {
+                if (firstPos != secondPos) {
                     Render3D.drawLine(
                         firstPos.toCenterVec(),
                         secondPos.toCenterVec(),
@@ -149,7 +154,7 @@ object WaterBoardSolver : Feature(
             }
 
             solutions.forEach { (lever, times) ->
-                val leverPos = lever.getLeverPos() ?: return@forEach
+                val leverPos = lever.getLeverPos()
                 times.drop(lever.clickCount).forEachIndexed { index, time ->
                     val timeInTicks = (time * 20).toInt()
                     val text = when (openedWaterTicks) {
@@ -191,13 +196,11 @@ object WaterBoardSolver : Feature(
             val position = packet.hitResult.blockPos
 
             LeverBlock.entries.find { it.getLeverPos() == position }?.let {
-                if (it == LeverBlock.WATER && openedWaterTicks == -1) {
-                    openedWaterTicks = tickCounter
-                }
+                if (it == LeverBlock.WATER && openedWaterTicks == -1) openedWaterTicks = tickCounter
                 it.clickCount++
             }
 
-            val block = WorldUtils.getBlockStateAt(position.x, position.y, position.z)?.block
+            val block = client.level?.getBlockState(position)?.block
             if (block == Blocks.CHEST && WoolColor.entries.all { !it.isClose() }) {
                 reset()
             }
@@ -209,22 +212,23 @@ object WaterBoardSolver : Feature(
         }
     }
 
-    private fun scanWaterBoard() {
-        val center = roomCenter ?: return
-        val rot = rotation ?: return
+    private fun solve() {
+        val roomCenter = roomCenter ?: return
+        val rotation = rotation ?: return
 
         val closeWalls = WoolColor.entries.joinToString("") {
             if (it.isClose()) it.ordinal.toString() else ""
         }.takeIf { it.length == 3 } ?: return
 
         patternIdentifier = when {
-            getBlockAt(BlockPos(-1, 77, 12), center, rot) == Blocks.TERRACOTTA -> 0
-            getBlockAt(BlockPos(1, 78, 12), center, rot) == Blocks.EMERALD_BLOCK -> 1
-            getBlockAt(BlockPos(-1, 78, 12), center, rot) == Blocks.DIAMOND_BLOCK -> 2
-            getBlockAt(BlockPos(-1, 78, 12), center, rot) == Blocks.QUARTZ_BLOCK -> 3
-            else -> return
+            getBlockAt(BlockPos(-1, 77, 12), roomCenter, rotation) == Blocks.TERRACOTTA -> 0
+            getBlockAt(BlockPos(1, 78, 12), roomCenter, rotation) == Blocks.EMERALD_BLOCK -> 1
+            getBlockAt(BlockPos(-1, 78, 12), roomCenter, rotation) == Blocks.DIAMOND_BLOCK -> 2
+            getBlockAt(BlockPos(-1, 78, 12), roomCenter, rotation) == Blocks.QUARTZ_BLOCK -> 3
+            else -> return KnitChat.fakeMessage("$prefix §cFailed to get Water Board pattern. Was the puzzle already started?")
         }
 
+        solutions.clear()
         if (!::waterSolutions.isInitialized) {
             Krypt.LOGGER.error("[krypt] Water Board solutions not loaded")
             return
@@ -249,9 +253,8 @@ object WaterBoardSolver : Feature(
             }
     }
 
-    private fun getBlockAt(pos: BlockPos, center: BlockPos, rot: Int): net.minecraft.world.level.block.Block? {
-        val realPos = WorldScanUtils.getRealCoord(pos, center, rot)
-        return WorldUtils.getBlockStateAt(realPos.x, realPos.y, realPos.z)?.block
+    private fun getBlockAt(pos: BlockPos, center: BlockPos, rot: Int): Block? {
+        return client.level?.getBlockState(getRealCoord(pos, center, rot))?.block
     }
 
     private fun reset() {
@@ -273,13 +276,7 @@ object WaterBoardSolver : Feature(
         GREEN(BlockPos(0, 56, 1)),
         RED(BlockPos(0, 56, 0));
 
-        fun isClose(): Boolean {
-            val center = roomCenter ?: return false
-            val rot = rotation ?: return false
-            val realPos = WorldScanUtils.getRealCoord(relativePosition, center, rot)
-            val block = WorldUtils.getBlockStateAt(realPos.x, realPos.y, realPos.z)?.block ?: return false
-            return block != Blocks.AIR
-        }
+        fun isClose() = getBlockAt(relativePosition, roomCenter!!, rotation!!) != Blocks.AIR
     }
 
     private enum class LeverBlock(val relativePosition: BlockPos, var clickCount: Int = 0) {
@@ -291,10 +288,6 @@ object WaterBoardSolver : Feature(
         CLAY(BlockPos(-5, 61, -5)),
         WATER(BlockPos(0, 60, -10));
 
-        fun getLeverPos(): BlockPos? {
-            val center = roomCenter ?: return null
-            val rot = rotation ?: return null
-            return WorldScanUtils.getRealCoord(relativePosition, center, rot)
-        }
+        fun getLeverPos() = getRealCoord(relativePosition, roomCenter!!, rotation!!)
     }
 }

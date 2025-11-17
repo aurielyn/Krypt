@@ -457,7 +457,7 @@ object DungeonMap : Feature(
             "dungeonMap"
         )
 
-        register<GuiEvent.RenderHUD> { event -> renderMap(event.context) }
+        register<GuiEvent.Render.HUD> { event -> renderMap(event.context) }
     }
 
     fun renderMap(context: GuiGraphics) {

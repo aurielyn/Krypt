@@ -33,7 +33,8 @@ object RoomSecrets: Feature(
                 ElementType.Switch(false)
             )
         )
-        .addFeatureOption("HudEditor",
+        .addFeatureOption(
+            "HudEditor",
             ConfigElement(
                 "roomSecrets.hudEditor",
                 ElementType.Button("Edit Position") {
@@ -48,13 +49,13 @@ object RoomSecrets: Feature(
     override fun initialize() {
         HudManager.registerCustom(NAME, 50,30, this::hudEditorRender, "roomSecrets")
 
-        register<GuiEvent.RenderHUD> {
+        register<GuiEvent.Render.HUD> {
             if (DungeonAPI.inBoss) return@register
             renderHUD(it.context)
         }
     }
 
-    fun hudEditorRender(context: GuiGraphics){
+    fun hudEditorRender(context: GuiGraphics) {
         val matrix = context.pose()
         //#if MC >= 1.21.7
         //$$ matrix.pushMatrix()
@@ -110,8 +111,8 @@ object RoomSecrets: Feature(
         matrix.translate(25f, 5f, 0f)
         //#endif
 
-        Render2D.renderString(context, text1, -w1 / 2f, 0f, 1f)
-        Render2D.renderString(context, text2, -w2 / 2f, 10f, 1f)
+        Render2D.renderString(context, text1, -w1 / 2f, 0f, 1f, textStyle = Render2D.TextStyle.DROP_SHADOW)
+        Render2D.renderString(context, text2, -w2 / 2f, 10f, 1f, textStyle = Render2D.TextStyle.DROP_SHADOW)
 
         //#if MC >= 1.21.7
         //$$ matrix.popMatrix()
