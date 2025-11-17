@@ -111,8 +111,8 @@ object RoomSecrets: Feature(
         matrix.translate(25f, 5f, 0f)
         //#endif
 
-        Render2D.renderString(context, text1, -w1 / 2f, 0f, 1f)
-        Render2D.renderString(context, text2, -w2 / 2f, 10f, 1f)
+        Render2D.renderString(context, text1, -w1 / 2f, 0f, 1f, textStyle = Render2D.TextStyle.DROP_SHADOW)
+        Render2D.renderString(context, text2, -w2 / 2f, 10f, 1f, textStyle = Render2D.TextStyle.DROP_SHADOW)
 
         //#if MC >= 1.21.7
         //$$ matrix.popMatrix()

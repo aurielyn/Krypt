@@ -22,7 +22,6 @@ import xyz.meowing.krypt.utils.glowingColor
 import xyz.meowing.krypt.utils.rendering.Render3D
 import java.awt.Color
 
-
 /**
  * Contains modified code from Noamm's blaze solver.
  *

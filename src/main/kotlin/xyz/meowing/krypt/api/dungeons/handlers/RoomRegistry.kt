@@ -17,10 +17,10 @@ object RoomRegistry {
 
     init {
         NetworkUtils.fetchJson<List<RoomMetadata>>(
-            url = "https://raw.githubusercontent.com/Noamm9/NoammAddons/refs/heads/data/rooms.json",
+            url = "https://raw.githubusercontent.com/StellariumMC/zen-data/refs/heads/main/assets/roomData.json",
             onSuccess = { rooms ->
                 populateRooms(rooms)
-                Krypt.LOGGER.info("RoomRegistry: Loaded ${rooms.size} rooms from Skytils")
+                Krypt.LOGGER.info("RoomRegistry: Loaded ${rooms.size} rooms.")
             },
             onError = { error ->
                 Krypt.LOGGER.info("RoomRegistry: Failed to load room data — ${error.message}")

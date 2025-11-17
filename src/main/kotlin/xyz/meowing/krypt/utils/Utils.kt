@@ -1,7 +1,9 @@
 package xyz.meowing.krypt.utils
 
+import net.minecraft.world.phys.Vec3
 import xyz.meowing.knit.api.KnitClient.client
 import java.awt.Color
+import kotlin.math.sqrt
 
 object Utils {
     inline val partialTicks get() = client.deltaTracker.getGameTimeDeltaPartialTick(true)
