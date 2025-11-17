@@ -2,10 +2,9 @@ package xyz.meowing.krypt.features.solvers
 
 import net.minecraft.world.level.block.Blocks
 import net.minecraft.core.BlockPos
-import xyz.meowing.knit.api.KnitPlayer.player
 import xyz.meowing.krypt.Krypt
 import xyz.meowing.krypt.annotations.Module
-import xyz.meowing.krypt.api.dungeons.utils.WorldScanUtils
+import xyz.meowing.krypt.api.dungeons.utils.ScanUtils
 import xyz.meowing.krypt.api.location.SkyBlockIsland
 import xyz.meowing.krypt.config.ConfigDelegate
 import xyz.meowing.krypt.config.ui.types.ElementType
@@ -66,7 +65,7 @@ object CreeperBeamSolver : Feature(
     override fun addConfig() {
         ConfigManager
             .addFeature(
-                "Creeper Beam solver",
+                "Creeper beam solver",
                 "Highlights beam pairs in Creeper Beams room",
                 "Solvers",
                 ConfigElement(
@@ -97,10 +96,7 @@ object CreeperBeamSolver : Feature(
             inCreeperBeams = true
             rotation = 360 - (event.new.rotation.degrees) + 180
 
-            player?.let { p ->
-                val (centerX, centerZ) = WorldScanUtils.getRoomCenter(p.x.toInt(), p.z.toInt())
-                roomCenter = BlockPos(centerX, 0, centerZ)
-            }
+            roomCenter = ScanUtils.getRoomCenter(event.new)
 
             solve()
         }
@@ -134,12 +130,12 @@ object CreeperBeamSolver : Feature(
         beamSolutions.forEach { (start, end) ->
             if (colorIndex >= colorPool.size) return@forEach
 
-            val startPos = WorldScanUtils.getRealCoord(
+            val startPos = ScanUtils.getRealCoord(
                 BlockPos(start[0], start[1], start[2]),
                 roomCenter,
                 rotation
             )
-            val endPos = WorldScanUtils.getRealCoord(
+            val endPos = ScanUtils.getRealCoord(
                 BlockPos(end[0], end[1], end[2]),
                 roomCenter,
                 rotation

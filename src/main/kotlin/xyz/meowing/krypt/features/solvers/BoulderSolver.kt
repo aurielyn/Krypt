@@ -9,11 +9,10 @@ import net.minecraft.world.phys.shapes.VoxelShape
 import net.minecraft.world.level.EmptyBlockGetter
 import xyz.meowing.knit.api.KnitClient
 import xyz.meowing.knit.api.KnitClient.client
-import xyz.meowing.knit.api.KnitPlayer.player
 import xyz.meowing.krypt.Krypt
 import xyz.meowing.krypt.annotations.Module
-import xyz.meowing.krypt.api.dungeons.utils.WorldScanUtils
-import xyz.meowing.krypt.api.dungeons.utils.WorldScanUtils.getRealCoord
+import xyz.meowing.krypt.api.dungeons.utils.ScanUtils
+import xyz.meowing.krypt.api.dungeons.utils.ScanUtils.getRealCoord
 import xyz.meowing.krypt.api.location.SkyBlockIsland
 import xyz.meowing.krypt.config.ConfigDelegate
 import xyz.meowing.krypt.config.ui.types.ElementType
@@ -108,11 +107,7 @@ object BoulderSolver : Feature(
 
             inBoulder = true
             rotation = 360 - (event.new.rotation.degrees) + 180
-
-            player?.let { p ->
-                val (centerX, centerZ) = WorldScanUtils.getRoomCenter(p.x.toInt(), p.z.toInt())
-                roomCenter = BlockPos(centerX, 0, centerZ)
-            }
+            roomCenter = ScanUtils.getRoomCenter(event.new)
 
             solve()
         }
@@ -174,15 +169,17 @@ object BoulderSolver : Feature(
         for (z in 0..5) {
             for (x in 0..6) {
                 val pos = getRealCoord(BlockPos(sx + x * 3, sy, sz + z * 3), roomCenter, rotation)
-                val block = WorldUtils.getBlockStateAt(pos.x, pos.y, pos.z)?.block
+                val block = client.level?.getBlockState(pos)?.block
                 pattern += if (block == Blocks.AIR) "0" else "1"
             }
         }
 
         currentSolution = boulderSolutions[pattern]?.map { sol ->
             val box = getRealCoord(BlockPos(sol[0].toInt(), sy, sol[1].toInt()), roomCenter, rotation)
+
             val clickPos = getRealCoord(BlockPos(sol[2].toInt(), sy, sol[3].toInt()), roomCenter, rotation)
             val click = getVoxelShape(clickPos, world)
+
             val render = getRealCoord(BlockPos(sol[4].toInt(), sy, sol[5].toInt()), roomCenter, rotation)
             BoulderBox(box, click, render, clickPos)
         }?.toMutableList() ?: mutableListOf()

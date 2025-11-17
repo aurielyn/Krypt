@@ -1,5 +1,6 @@
 package xyz.meowing.krypt.api.dungeons.enums.map
 
+import net.minecraft.core.BlockPos
 import net.minecraft.core.Direction
 import net.minecraft.world.level.block.Blocks
 import xyz.meowing.krypt.api.dungeons.enums.DungeonPlayer
@@ -193,5 +194,10 @@ class Room(
             rotated.second,
             rotated.third + corner!!.third
         )
+    }
+
+    fun getRoomComponent(): Pair<Int, Int> {
+        val (rx, rz) = realComponents.first()
+        return ScanUtils.getRoomComponent(BlockPos(rx, 0, rz))
     }
 }
