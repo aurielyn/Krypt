@@ -3,6 +3,7 @@ package xyz.meowing.krypt.features.general
 import net.minecraft.client.gui.GuiGraphics
 import net.minecraft.world.item.ItemStack
 import tech.thatgravyboat.skyblockapi.utils.extentions.createSkull
+import tech.thatgravyboat.skyblockapi.utils.text.TextProperties.stripped
 import xyz.meowing.knit.api.KnitChat
 import xyz.meowing.knit.api.KnitPlayer.player
 import xyz.meowing.knit.api.events.EventCall
@@ -21,7 +22,6 @@ import xyz.meowing.krypt.features.Feature
 import xyz.meowing.krypt.hud.HudManager
 import xyz.meowing.krypt.managers.config.ConfigElement
 import xyz.meowing.krypt.managers.config.ConfigManager
-import xyz.meowing.krypt.utils.Utils.removeFormatting
 import xyz.meowing.krypt.utils.rendering.Render2D
 
 @Module
@@ -101,7 +101,7 @@ object MaskTimer : Feature(
 
         register<ChatEvent.Receive> { event ->
             if (event.isActionBar) return@register
-            val text = event.message.string.removeFormatting()
+            val text = event.message.stripped
 
             when {
                 text.matches(BonzoRegex) -> {

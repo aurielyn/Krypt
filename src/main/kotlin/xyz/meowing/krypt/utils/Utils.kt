@@ -1,19 +1,10 @@
 package xyz.meowing.krypt.utils
 
-import net.minecraft.core.BlockPos
 import xyz.meowing.knit.api.KnitClient.client
-import xyz.meowing.krypt.api.dungeons.enums.map.RoomRotations
 import java.awt.Color
 
 object Utils {
     inline val partialTicks get() = client.deltaTracker.getGameTimeDeltaPartialTick(true)
-
-    private val formatRegex = "[§&][0-9a-fk-or]".toRegex()
-
-    fun String?.removeFormatting(): String {
-        if (this == null) return ""
-        return this.replace(formatRegex, "")
-    }
 
     fun Map<*, *>.toColorFromMap(): Color? {
         return try {
@@ -39,8 +30,8 @@ object Utils {
         val secondsFormatted = String.format("%.${decimals}f", seconds)
 
         return when {
-            hours > 0 -> "${hours}h${minutes}m${secondsFormatted}s"
-            minutes > 0 -> "${minutes}m${secondsFormatted}s"
+            hours > 0 -> "${hours}h ${minutes}m ${secondsFormatted}s"
+            minutes > 0 -> "${minutes}m ${secondsFormatted}s"
             else -> "${secondsFormatted}s"
         }
     }

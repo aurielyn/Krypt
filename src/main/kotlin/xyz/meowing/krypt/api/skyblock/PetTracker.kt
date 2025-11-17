@@ -1,10 +1,10 @@
 package xyz.meowing.krypt.api.skyblock
 
 import tech.thatgravyboat.skyblockapi.utils.regex.RegexUtils.findThenNull
+import tech.thatgravyboat.skyblockapi.utils.text.TextProperties.stripped
 import xyz.meowing.krypt.api.data.StoredFile
 import xyz.meowing.krypt.events.EventBus
 import xyz.meowing.krypt.events.core.ChatEvent
-import xyz.meowing.krypt.utils.Utils.removeFormatting
 
 object PetTracker {
     private val AUTO_PET = Regex("Autopet equipped your \\[Lvl (?<level>\\d+)] (?<name>.*?)! VIEW RULE")
@@ -26,7 +26,7 @@ object PetTracker {
     init {
         EventBus.register<ChatEvent.Receive> { event ->
             if (event.isActionBar) return@register
-            val message = event.message.string.removeFormatting()
+            val message = event.message.stripped
 
             AUTO_PET.findThenNull(message, "level", "name") { match ->
                 level = match["level"]?.toIntOrNull() ?: 0

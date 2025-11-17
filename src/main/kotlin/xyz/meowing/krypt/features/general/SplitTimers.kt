@@ -1,14 +1,18 @@
 package xyz.meowing.krypt.features.general
 
 import net.minecraft.client.gui.GuiGraphics
+import xyz.meowing.knit.api.KnitChat
 import xyz.meowing.knit.api.KnitClient.client
 import xyz.meowing.knit.api.scheduler.TickScheduler
+import xyz.meowing.knit.api.utils.NumberUtils.formatWithCommas
+import xyz.meowing.knit.api.utils.NumberUtils.toDuration
 import xyz.meowing.krypt.annotations.Module
 import xyz.meowing.krypt.api.dungeons.enums.DungeonFloor
 import xyz.meowing.krypt.api.location.SkyBlockIsland
 import xyz.meowing.krypt.config.ConfigDelegate
 import xyz.meowing.krypt.config.ui.types.ElementType
 import xyz.meowing.krypt.events.core.ChatEvent
+import xyz.meowing.krypt.events.core.DungeonEvent
 import xyz.meowing.krypt.events.core.GuiEvent
 import xyz.meowing.krypt.events.core.LocationEvent
 import xyz.meowing.krypt.events.core.TickEvent
@@ -19,17 +23,46 @@ import xyz.meowing.krypt.managers.config.ConfigElement
 import xyz.meowing.krypt.managers.config.ConfigManager
 import xyz.meowing.krypt.utils.Utils.toTimerFormat
 import xyz.meowing.krypt.utils.rendering.Render2D
+import xyz.meowing.krypt.utils.rendering.Render2D.pushPop
 import java.awt.Color
 
-
 @Module
-object SplitTimers: Feature("splitTimers", island = SkyBlockIsland.THE_CATACOMBS) {
+object SplitTimers : Feature(
+    "splitTimers",
+    island = SkyBlockIsland.THE_CATACOMBS
+) {
     private const val NAME = "Split Timers"
+
+    private var ticks = 0L
+
     private var timerStyle by ConfigDelegate<Int>("splitTimers.timerStyle")
+
+    private val shownList = mutableListOf<Split>()
+
+    private class Split(
+        val splitName: String,
+        val startTrigger: String,
+        val floor: DungeonFloor? = null,
+        val master: Boolean = false,
+        val weird: Boolean = false
+    ) {
+        var startTime = 0L
+        var endTime = 0L
+        var startTick = 0L
+        var endTick = 0L
+
+        var hasStarted = false
+        var hasFinished = false
+        var inSplit = false
+
+        init {
+            shownList.add(this)
+        }
+    }
 
     override fun addConfig() {
         ConfigManager
-            .addFeature("Split Timers",
+            .addFeature("Split timers",
                 "Shows the splits times of your dungeon run.",
                 "General",
                 ConfigElement(
@@ -59,42 +92,48 @@ object SplitTimers: Feature("splitTimers", island = SkyBlockIsland.THE_CATACOMBS
             )
     }
 
-    var ticks = 0L
     override fun initialize() {
         initSplits()
         HudManager.registerCustom(NAME, 160, 30, this::hudEditorRender, "splitTimers")
-        register<GuiEvent.RenderHUD> { renderHud(it.context) }
-        register<TickEvent.Server> { ticks++ }
+
+        register<GuiEvent.Render.HUD> {
+            renderHud(it.context)
+        }
+
+        register<TickEvent.Server> {
+            ticks++
+        }
+
         register<ChatEvent.Receive> { event ->
             val message = event.message.string
-            println(message)
 
             shownList.filter { !it.hasFinished }.forEach {
-                if (message.startsWith(it.startTrigger) || (it.weird && message.startsWith("[BOSS]") && message.endsWith("Livid: Impossible! How did you figure out which one I was?!"))) {
+                if (
+                    message.startsWith(it.startTrigger) ||
+                    (it.weird && message.startsWith("[BOSS]") && message.endsWith("Livid: Impossible! How did you figure out which one I was?!"))
+                    ) {
                     shownList.filter { split -> split.inSplit }.forEach { split ->
                         split.inSplit = false
                         split.endTime = System.currentTimeMillis()
                         split.endTick = ticks
                         split.hasFinished = true
                     }
+
                     it.hasStarted = true
                     it.startTime = System.currentTimeMillis()
                     it.startTick = ticks
                     it.inSplit = true
-
-                }
-
-            }
-
-            if (message.startsWith(" ") && message.contains("☠ Defeated ")) {
-                shownList.filter { split -> split.inSplit }.forEach { split ->
-                    split.inSplit = false
-                    split.endTime = System.currentTimeMillis()
-                    split.endTick = ticks
-                    split.hasFinished = true
                 }
             }
+        }
 
+        register<DungeonEvent.End> {
+            shownList.filter { split -> split.inSplit }.forEach { split ->
+                split.inSplit = false
+                split.endTime = System.currentTimeMillis()
+                split.endTick = ticks
+                split.hasFinished = true
+            }
         }
 
         register<LocationEvent.WorldChange> {
@@ -103,46 +142,31 @@ object SplitTimers: Feature("splitTimers", island = SkyBlockIsland.THE_CATACOMBS
                 it.hasStarted = false
                 it.startTick = 0L
                 it.startTime = 0L
-					it.endTime = 0L
-					it.endTick = 0L
+                it.endTime = 0L
+                it.endTick = 0L
                 it.inSplit = false
             }
         }
     }
 
-    fun hudEditorRender(context: GuiGraphics){
-        val matrix = context.pose()
-        //#if MC >= 1.21.7
-        //$$ matrix.pushMatrix()
-        //#else
-        matrix.pushPose()
-        //#endif
+    fun hudEditorRender(context: GuiGraphics) {
+        context.pushPop {
+            val text = when (timerStyle) {
+                2 -> "§7[41.45]"
+                else -> ""
+            }
 
-        val text = when (timerStyle) {
-            2 -> "§7[41.45]"
-            else -> ""
+            Render2D.renderStringWithShadow(context, "Split 1", 0f, 0f, 1f, Color(255, 27, 141).rgb)
+            Render2D.renderStringWithShadow(context, "Split 2", 0f, 10f, 1f, Color(247, 209, 0).rgb)
+            Render2D.renderStringWithShadow(context, "Split 3", 0f, 20f, 1f, Color(32, 171, 247).rgb)
+
+            Render2D.renderStringWithShadow(context, "1m 01.41s $text", 60f, 0f, 1f)
+            Render2D.renderStringWithShadow(context, "41.41s $text", 60f, 10f, 1f)
+            Render2D.renderStringWithShadow(context, "21.21s $text", 60f, 20f, 1f)
         }
-
-        Render2D.renderStringWithShadow(context, "Split 1", 0f, 0f, 1f, Color(255,27,141).rgb)
-        Render2D.renderStringWithShadow(context, "Split 2", 0f, 10f, 1f, Color(247, 209, 0).rgb)
-        Render2D.renderStringWithShadow(context, "Split 3", 0f, 20f, 1f, Color(32, 171, 247).rgb)
-
-        Render2D.renderStringWithShadow(context, "1m01.41s $text", 60f, 0f, 1f)
-        Render2D.renderStringWithShadow(context, "41.41s $text", 60f, 10f, 1f)
-        Render2D.renderStringWithShadow(context, "21.21s $text", 60f, 20f, 1f)
-
-
-
-        //#if MC >= 1.21.7
-        //$$ matrix.popMatrix()
-        //#else
-        matrix.popPose()
-        //#endif
     }
 
     private fun renderHud(context: GuiGraphics) {
-//        if (DungeonAPI.inBoss) return
-
         val x = HudManager.getX(NAME)
         val y = HudManager.getY(NAME)
         val scale = HudManager.getScale(NAME)
@@ -150,18 +174,22 @@ object SplitTimers: Feature("splitTimers", island = SkyBlockIsland.THE_CATACOMBS
         val renderedList = shownList.filter { it.hasStarted }
         renderedList.forEachIndexed { index, split ->
             val name = split.splitName
-            val timerString = when (timerStyle) {
-                0 -> {
-                    if (split.inSplit) ((System.currentTimeMillis() - split.startTime) / 1000f).toTimerFormat()
-                    else ((split.endTime - split.startTime) / 1000f).toTimerFormat()
+            val timerString = run {
+                val msTimeStr: String
+                val tickTimeStr: String
+
+                if (split.inSplit) {
+                    msTimeStr = ((System.currentTimeMillis() - split.startTime) / 1000f).toTimerFormat()
+                    tickTimeStr = ((ticks - split.startTick) / 20f).toTimerFormat()
+                } else {
+                    msTimeStr = ((split.endTime - split.startTime) / 1000f).toTimerFormat()
+                    tickTimeStr = ((split.endTick - split.startTick) / 20f).toTimerFormat()
                 }
-                1 -> {
-                    if (split.inSplit) ((ticks - split.startTick) / 20f).toTimerFormat()
-                    else ((split.endTick - split.startTick) / 20f).toTimerFormat()
-                }
-                else -> {
-                    if (split.inSplit) "${((System.currentTimeMillis() - split.startTime) / 1000f).toTimerFormat()} §7[${((ticks - split.startTick) / 20f).toTimerFormat()}]"
-                    else "${((split.endTime - split.startTime) / 1000f).toTimerFormat()} §7[${((split.endTick - split.startTick) / 20f).toTimerFormat()}]"
+
+                when (timerStyle) {
+                    0 -> msTimeStr
+                    1 -> tickTimeStr
+                    else -> "$msTimeStr §7[$tickTimeStr]"
                 }
             }
 
@@ -170,24 +198,6 @@ object SplitTimers: Feature("splitTimers", island = SkyBlockIsland.THE_CATACOMBS
         }
     }
 
-    private val shownList = mutableListOf<Split>()
-    private val splitList = mutableListOf<Split>()
-    private class Split(val splitName: String, val startTrigger: String, val floor: DungeonFloor? = null, val master: Boolean = false, val weird: Boolean = false) {
-
-        var startTime = 0L
-        var endTime = 0L
-        var startTick = 0L
-        var endTick = 0L
-
-        var hasStarted = false
-        var hasFinished = false
-        var inSplit = false
-
-        init {
-            splitList.add(this)
-            shownList.add(this)
-        }
-    }
     private fun initSplits() {
         Split("§2Blood Opened", "§e[NPC] §bMort§f: Here, I found this map when I first entered the dungeon.")
         Split("§bBlood Cleared", "[BOSS] The Watcher: ")
@@ -229,8 +239,5 @@ object SplitTimers: Feature("splitTimers", island = SkyBlockIsland.THE_CATACOMBS
         Split("§7Golor", "The Core entrance is opening!", DungeonFloor.F7)
         Split("§cNecron", "[BOSS] Necron: You went further than any human before, congratulations.", DungeonFloor.F7)
         Split("§4Dragons", "[BOSS] Necron: All this, for nothing...", DungeonFloor.F7, true)
-
     }
-
-
 }
