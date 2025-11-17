@@ -60,6 +60,10 @@ object EventBus : EventBus(true) {
             if (post(RenderEvent.World.BlockOutline(event.context))) event.cancel()
         }
 
+        ClientEntityEvents.ENTITY_UNLOAD.register { entity, _ ->
+            post(EntityEvent.Leave(entity))
+        }
+
         ClientLifecycleEvents.CLIENT_STARTED.register { _ ->
             post(GameEvent.Start())
         }

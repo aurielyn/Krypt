@@ -39,4 +39,8 @@ sealed class EntityEvent {
             val name: String
         ) : CancellableEvent()
     }
+
+    class Leave(
+        val entity: Entity
+    ) : Event()
 }
