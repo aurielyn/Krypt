@@ -11,11 +11,13 @@ import tech.thatgravyboat.skyblockapi.utils.regex.RegexUtils.findOrNull
 import tech.thatgravyboat.skyblockapi.utils.regex.RegexUtils.findThenNull
 import tech.thatgravyboat.skyblockapi.utils.regex.matchWhen
 import tech.thatgravyboat.skyblockapi.utils.text.TextProperties.stripped
+import xyz.meowing.knit.api.KnitClient.player
 import xyz.meowing.knit.api.KnitPlayer
 import xyz.meowing.krypt.annotations.Module
 import xyz.meowing.krypt.api.dungeons.enums.DungeonClass
 import xyz.meowing.krypt.api.dungeons.enums.DungeonFloor
 import xyz.meowing.krypt.api.dungeons.enums.DungeonKey
+import xyz.meowing.krypt.api.dungeons.enums.DungeonPhase
 import xyz.meowing.krypt.api.dungeons.enums.map.Door
 import xyz.meowing.krypt.api.dungeons.enums.map.Room
 import xyz.meowing.krypt.api.dungeons.handlers.WorldScanner
@@ -91,6 +93,9 @@ object DungeonAPI {
     var witherKeys = 0
         private set
     var bloodKeys = 0
+        private set
+
+    var f7Phase: DungeonPhase.F7? = null
         private set
 
     var floor: DungeonFloor? = null
@@ -246,6 +251,18 @@ object DungeonAPI {
                 val (x, z) = WorldScanUtils.realCoordToComponent(it.x.toInt(), it.z.toInt())
                 6 * z + x > 35
             } == true
+
+            if (floor?.floorNumber == 7 && inBoss) {
+                val y = player?.y ?: return@registerIn
+
+                f7Phase = when {
+                    y > 210 -> DungeonPhase.F7.P1
+                    y > 155 -> DungeonPhase.F7.P2
+                    y > 100 -> DungeonPhase.F7.P3
+                    y > 45 -> DungeonPhase.F7.P4
+                    else -> DungeonPhase.F7.P5
+                }
+            }
         }
 
         EventBus.registerIn<EntityEvent.Death>(SkyBlockIsland.THE_CATACOMBS) { event ->
