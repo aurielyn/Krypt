@@ -103,6 +103,8 @@ object SplitTimers: Feature("splitTimers", island = SkyBlockIsland.THE_CATACOMBS
                 it.hasStarted = false
                 it.startTick = 0L
                 it.startTime = 0L
+								it.endTime = 0L
+								it.endTick = 0L
                 it.inSplit = false
             }
         }
