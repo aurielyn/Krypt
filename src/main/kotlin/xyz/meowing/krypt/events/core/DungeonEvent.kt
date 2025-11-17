@@ -1,5 +1,9 @@
 package xyz.meowing.krypt.events.core
 
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.level.block.state.BlockState
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.block.entity.BlockEntity
 import xyz.meowing.knit.api.events.Event
 import xyz.meowing.krypt.api.dungeons.enums.DungeonFloor
 import xyz.meowing.krypt.api.dungeons.enums.DungeonKey
@@ -54,4 +58,39 @@ sealed class DungeonEvent {
     class KeyPickUp(
         val key: DungeonKey
     ) : Event()
+
+    /**
+     * Posted when a Secret is found
+     *
+     * @see xyz.meowing.krypt.api.dungeons.DungeonAPI
+     */
+    sealed class Secrets {
+        class Item(
+            val entityId: Int
+        ) : Event()
+
+        class Bat(
+            val entity: Entity
+        ) : Event()
+
+        class Chest(
+            val blockState: BlockState,
+            val blockPos: BlockPos
+        ) : Event()
+
+        class Essence(
+            val blockEntity: BlockEntity,
+            val blockPos: BlockPos,
+        ) : Event()
+
+        class Misc(
+            val secretType: SecretType,
+            val blockPos: BlockPos
+        ) : Event()
+
+        enum class SecretType {
+            RED_SKULL,
+            LEVER
+        }
+    }
 }
