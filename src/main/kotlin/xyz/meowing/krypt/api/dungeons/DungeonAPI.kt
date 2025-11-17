@@ -38,6 +38,7 @@ import xyz.meowing.krypt.events.core.EntityEvent
 import xyz.meowing.krypt.events.core.LocationEvent
 import xyz.meowing.krypt.events.core.TablistEvent
 import xyz.meowing.krypt.events.core.TickEvent
+import xyz.meowing.krypt.features.alerts.MimicAlert
 import kotlin.math.floor
 
 @Module
@@ -257,6 +258,7 @@ object DungeonAPI {
             if (entity.getItemBySlot(EquipmentSlot.HEAD)?.getTexture() != MIMIC_TEXTURE) return@registerIn
 
             mimicKilled = true
+            MimicAlert.displayTitle()
         }
     }
 
