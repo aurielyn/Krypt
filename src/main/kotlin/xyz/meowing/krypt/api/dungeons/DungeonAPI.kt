@@ -48,9 +48,12 @@ import xyz.meowing.krypt.events.core.LocationEvent
 import xyz.meowing.krypt.events.core.PacketEvent
 import xyz.meowing.krypt.events.core.TablistEvent
 import xyz.meowing.krypt.events.core.TickEvent
+import xyz.meowing.krypt.features.alerts.MimicAlert
+import xyz.meowing.krypt.features.alerts.PrinceAlert
 import kotlin.collections.first
 import kotlin.collections.isNotEmpty
 import kotlin.math.floor
+
 //#if MC >= 1.21.9
 //$$ import tech.thatgravyboat.skyblockapi.platform.properties
 //#endif
@@ -209,6 +212,7 @@ object DungeonAPI {
 
                     message.equals("a prince falls. +1 bonus score", true) -> {
                         princeKilled = true
+                        PrinceAlert.displayTitle()
                         return@registerIn
                     }
                 }
@@ -292,6 +296,7 @@ object DungeonAPI {
             if (entity.getItemBySlot(EquipmentSlot.HEAD)?.getTexture() != MIMIC_TEXTURE) return@registerIn
 
             mimicKilled = true
+            MimicAlert.displayTitle()
         }
 
         EventBus.registerIn<PacketEvent.Received>(SkyBlockIsland.THE_CATACOMBS) { event ->
