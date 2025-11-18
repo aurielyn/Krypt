@@ -7,6 +7,7 @@ import kotlin.math.sqrt
 
 object Utils {
     inline val partialTicks get() = client.deltaTracker.getGameTimeDeltaPartialTick(true)
+    private val formatRegex = "[§&][0-9a-fk-or]".toRegex()
 
     fun Map<*, *>.toColorFromMap(): Color? {
         return try {
@@ -36,5 +37,10 @@ object Utils {
             minutes > 0 -> "${minutes}m ${secondsFormatted}s"
             else -> "${secondsFormatted}s"
         }
+    }
+
+    fun String?.removeFormatting(): String {
+        if (this == null) return ""
+        return this.replace(formatRegex, "")
     }
 }
