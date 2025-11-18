@@ -8,12 +8,10 @@ import xyz.meowing.krypt.events.EventBus
 import xyz.meowing.krypt.events.core.ServerEvent
 import xyz.meowing.krypt.managers.config.ConfigManager
 import xyz.meowing.krypt.managers.feature.FeatureManager
+import xyz.meowing.krypt.utils.modMessage
 
 object Krypt : ClientModInitializer {
     private var showLoad = true
-
-    @JvmStatic
-    val prefix = "§7[§dKrypt§7]"
 
     @JvmStatic
     var LOGGER = LogManager.getLogger("krypt")
@@ -31,10 +29,10 @@ object Krypt : ClientModInitializer {
             if (!showLoad) return@register
 
             val loadMessage = KnitText
-                .literal("$prefix §fMod loaded.")
+                .literal("§fMod loaded.")
                 .onHover("§d${FeatureManager.moduleCount} modules §8- §d${FeatureManager.loadTime}ms §8- §d${FeatureManager.commandCount} commands")
 
-            KnitChat.fakeMessage(loadMessage)
+            KnitChat.modMessage(loadMessage)
 
             showLoad = false
         }

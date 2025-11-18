@@ -2,7 +2,6 @@ package xyz.meowing.krypt.features.general
 
 import tech.thatgravyboat.skyblockapi.utils.regex.RegexUtils.findGroup
 import tech.thatgravyboat.skyblockapi.utils.text.TextProperties.stripped
-import xyz.meowing.krypt.Krypt.prefix
 import xyz.meowing.krypt.config.ConfigDelegate
 import xyz.meowing.krypt.config.ui.types.ElementType
 import xyz.meowing.krypt.features.Feature
@@ -15,6 +14,7 @@ import xyz.meowing.krypt.api.location.SkyBlockIsland
 import xyz.meowing.krypt.events.core.ChatEvent
 import xyz.meowing.krypt.managers.config.ConfigElement
 import xyz.meowing.krypt.managers.config.ConfigManager
+import xyz.meowing.krypt.utils.modMessage
 
 @Module
 object ArchitectDraft : Feature(
@@ -57,10 +57,10 @@ object ArchitectDraft : Feature(
             if (name != player?.name?.stripped && onlySelf) return@register
 
             val archMessage = KnitText
-                .literal("$prefix §bClick to get Architect's First Draft from Sack.")
+                .literal("§bClick to get Architect's First Draft from Sack.")
                 .onClick(ClickEvent.RunCommand("/gfs architect's first draft 1"))
 
-            KnitChat.fakeMessage(archMessage)
+            KnitChat.modMessage(archMessage)
         }
     }
 }

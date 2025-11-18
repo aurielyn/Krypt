@@ -10,7 +10,6 @@ import xyz.meowing.knit.api.KnitChat
 import xyz.meowing.knit.api.KnitClient.client
 import xyz.meowing.knit.api.scheduler.TickScheduler
 import xyz.meowing.krypt.Krypt
-import xyz.meowing.krypt.Krypt.prefix
 import xyz.meowing.krypt.annotations.Module
 import xyz.meowing.krypt.api.dungeons.utils.ScanUtils
 import xyz.meowing.krypt.api.dungeons.utils.ScanUtils.getRealCoord
@@ -26,6 +25,7 @@ import xyz.meowing.krypt.features.Feature
 import xyz.meowing.krypt.managers.config.ConfigElement
 import xyz.meowing.krypt.managers.config.ConfigManager
 import xyz.meowing.krypt.utils.NetworkUtils
+import xyz.meowing.krypt.utils.modMessage
 import xyz.meowing.krypt.utils.rendering.Render3D
 import java.awt.Color
 
@@ -101,7 +101,7 @@ object WaterBoardSolver : Feature(
             rotation = 360 - (event.new.rotation.degrees)
 
             TickScheduler.Server.schedule(15) {
-                KnitChat.fakeMessage("$prefix §7Solving Water Board...")
+                KnitChat.modMessage("§7Solving Water Board...")
                 // gaslight the user until we figure out a way to do it without the 1.5-2s delay
             }
 
@@ -225,7 +225,7 @@ object WaterBoardSolver : Feature(
             getBlockAt(BlockPos(1, 78, 12), roomCenter, rotation) == Blocks.EMERALD_BLOCK -> 1
             getBlockAt(BlockPos(-1, 78, 12), roomCenter, rotation) == Blocks.DIAMOND_BLOCK -> 2
             getBlockAt(BlockPos(-1, 78, 12), roomCenter, rotation) == Blocks.QUARTZ_BLOCK -> 3
-            else -> return KnitChat.fakeMessage("$prefix §cFailed to get Water Board pattern. Was the puzzle already started?")
+            else -> return KnitChat.modMessage("§cFailed to get Water Board pattern. Was the puzzle already started?")
         }
 
         solutions.clear()

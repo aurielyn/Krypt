@@ -5,11 +5,11 @@ import xyz.meowing.knit.api.KnitClient.client
 import xyz.meowing.knit.api.command.Commodore
 import xyz.meowing.knit.api.scheduler.TickScheduler
 import xyz.meowing.krypt.Krypt
-import xyz.meowing.krypt.Krypt.prefix
 import xyz.meowing.krypt.annotations.Command
 import xyz.meowing.krypt.hud.HudEditor
 import xyz.meowing.krypt.managers.config.ConfigManager.configUI
 import xyz.meowing.krypt.managers.config.ConfigManager.openConfig
+import xyz.meowing.krypt.utils.modMessage
 import java.lang.Exception
 
 @Command
@@ -20,7 +20,7 @@ object ConfigCommand : Commodore("krypt") {
                 try {
                     val value = parseValue(newValue)
                     configUI.updateConfig(configName, value)
-                    if (!silent) KnitChat.fakeMessage("$prefix §fUpdated config §b$configName §fto §b$value§f.")
+                    if (!silent) KnitChat.modMessage("§fUpdated config §b$configName §fto §b$value§f.")
                     Krypt.LOGGER.info("Updated config $configName to value $value [${value.javaClass}]")
                 } catch (e: Exception) {
                     Krypt.LOGGER.error("Caught exception in command \"/krypt updateConfig\": $e")

@@ -3,6 +3,7 @@
     "package": "xyz.meowing.krypt.mixins",
     "compatibilityLevel": "JAVA_21",
     "mixins": [
+        "LevelChunkMixin",
         "MixinEntity",
         "MixinLivingEntity"
     ],

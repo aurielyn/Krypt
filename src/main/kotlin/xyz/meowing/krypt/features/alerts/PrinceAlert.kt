@@ -20,7 +20,7 @@ object PrinceAlert : Feature(
             .addFeature(
                 "Prince title",
                 "Display prince death title",
-                "Alert",
+                "Alerts",
                 ConfigElement(
                     "princeAlert",
                     ElementType.Switch(false)

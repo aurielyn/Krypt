@@ -3,8 +3,8 @@ package xyz.meowing.krypt.features.commands
 import xyz.meowing.knit.api.KnitChat
 import xyz.meowing.knit.api.command.Commodore
 import xyz.meowing.knit.api.command.utils.GreedyString
-import xyz.meowing.krypt.Krypt.prefix
 import xyz.meowing.krypt.annotations.Command
+import xyz.meowing.krypt.utils.modMessage
 
 @Command
 object DungeonJoin : Commodore("jd") {
@@ -14,7 +14,7 @@ object DungeonJoin : Commodore("jd") {
     init {
         runs { floor: GreedyString ->
             if (floor.string.length > 2) {
-                KnitChat.fakeMessage("$prefix §fInvalid Floor.")
+                KnitChat.modMessage("§fInvalid Floor.")
                 return@runs
             }
 
@@ -26,7 +26,7 @@ object DungeonJoin : Commodore("jd") {
             val floorIndex = floorString.toIntOrNull() ?: -1
 
             if (floorIndex < 0 || floorIndex >= floorNames.size) {
-                KnitChat.fakeMessage("$prefix §fInvalid Floor.")
+                KnitChat.modMessage("§fInvalid Floor.")
                 return@runs
             }
 
