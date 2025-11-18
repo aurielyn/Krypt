@@ -1,75 +1,76 @@
 package xyz.meowing.krypt.features.solvers
 
-import net.minecraft.core.BlockPos
-import net.minecraft.util.CommonColors
-import net.minecraft.world.effect.MobEffects
-import net.minecraft.world.entity.Entity
-import net.minecraft.world.entity.player.Player
-import net.minecraft.world.level.block.Block
-import net.minecraft.world.level.block.Blocks
-import tech.thatgravyboat.skyblockapi.utils.text.TextProperties.stripped
-import xyz.meowing.knit.api.KnitChat
-import xyz.meowing.knit.api.KnitClient.client
-import xyz.meowing.knit.api.scheduler.TickScheduler
-import xyz.meowing.krypt.annotations.Module
-import xyz.meowing.krypt.api.dungeons.DungeonAPI
-import xyz.meowing.krypt.api.dungeons.enums.DungeonFloor
 import xyz.meowing.krypt.config.ConfigDelegate
 import xyz.meowing.krypt.config.ui.types.ElementType
-import xyz.meowing.krypt.events.core.EntityEvent
+import xyz.meowing.krypt.features.Feature
+import xyz.meowing.krypt.utils.rendering.Render3D
+import net.minecraft.world.level.block.state.BlockState
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.item.DyeColor
+import net.minecraft.core.BlockPos
+import tech.thatgravyboat.skyblockapi.utils.text.TextProperties.stripped
+import xyz.meowing.knit.api.KnitClient.world
+import xyz.meowing.knit.api.KnitPlayer.player
+import xyz.meowing.knit.api.scheduler.TickScheduler
+import xyz.meowing.krypt.annotations.Module
+import xyz.meowing.krypt.api.dungeons.enums.DungeonFloor
+import xyz.meowing.krypt.events.core.ChatEvent
 import xyz.meowing.krypt.events.core.LocationEvent
 import xyz.meowing.krypt.events.core.RenderEvent
-import xyz.meowing.krypt.events.core.WorldEvent
-import xyz.meowing.krypt.features.Feature
+import xyz.meowing.krypt.events.core.TickEvent
 import xyz.meowing.krypt.managers.config.ConfigElement
 import xyz.meowing.krypt.managers.config.ConfigManager
 import xyz.meowing.krypt.utils.Utils.toFloatArray
 import xyz.meowing.krypt.utils.glowThisFrame
 import xyz.meowing.krypt.utils.glowingColor
-import xyz.meowing.krypt.utils.modMessage
-import xyz.meowing.krypt.utils.rendering.Render3D
 import java.awt.Color
 
-/**
- * Modified from Odin's LividSolver.
- * Has a cool highlight along with a tracer now.
- *
- * Original File: [GitHub](https://github.com/odtheking/OdinFabric/blob/main/src/main/kotlin/com/odtheking/odin/features/impl/dungeon/LividSolver.kt)
- */
 @Module
 object LividSolver : Feature(
     "lividSolver",
     dungeonFloor = listOf(DungeonFloor.F5, DungeonFloor.M5)
 ) {
-    private val ceilingWoolBlock = BlockPos(5, 108, 43)
-    private var currentLivid: Livid? = null
+    private var lividEntity: Entity? = null
+    private val lividPos = BlockPos(5, 108, 42)
+    private val lividTypes = mapOf(
+        DyeColor.WHITE to "Vendetta",
+        DyeColor.MAGENTA to "Crossed",
+        DyeColor.PINK to "Crossed",
+        DyeColor.RED to "Hockey",
+        DyeColor.GRAY to "Doctor",
+        DyeColor.GREEN to "Frog",
+        DyeColor.LIME to "Smile",
+        DyeColor.BLUE to "Scream",
+        DyeColor.PURPLE to "Purple",
+        DyeColor.YELLOW to "Arcade"
+    )
+    val stainedGlassBlocks = mapOf(
+        Blocks.RED_STAINED_GLASS to DyeColor.RED,
+        Blocks.ORANGE_STAINED_GLASS to DyeColor.ORANGE,
+        Blocks.YELLOW_STAINED_GLASS to DyeColor.YELLOW,
+        Blocks.LIME_STAINED_GLASS to DyeColor.LIME,
+        Blocks.GREEN_STAINED_GLASS to DyeColor.GREEN,
+        Blocks.CYAN_STAINED_GLASS to DyeColor.CYAN,
+        Blocks.LIGHT_BLUE_STAINED_GLASS to DyeColor.LIGHT_BLUE,
+        Blocks.BLUE_STAINED_GLASS to DyeColor.BLUE,
+        Blocks.PURPLE_STAINED_GLASS to DyeColor.PURPLE,
+        Blocks.MAGENTA_STAINED_GLASS to DyeColor.MAGENTA,
+        Blocks.PINK_STAINED_GLASS to DyeColor.PINK,
+        Blocks.WHITE_STAINED_GLASS to DyeColor.WHITE,
+        Blocks.LIGHT_GRAY_STAINED_GLASS to DyeColor.LIGHT_GRAY,
+        Blocks.GRAY_STAINED_GLASS to DyeColor.GRAY,
+        Blocks.BLACK_STAINED_GLASS to DyeColor.BLACK,
+        Blocks.BROWN_STAINED_GLASS to DyeColor.BROWN
+    )
 
-    private val highlight by ConfigDelegate<Boolean>("lividSolver.highlight")
-    private val tracer by ConfigDelegate<Boolean>("lividSolver.showTracer")
-
-    private enum class Livid(
-        val entityName: String,
-        val colorCode: Char,
-        val color: Color,
-        val wool: Block
-    ) {
-        VENDETTA("Vendetta", 'f', Color(CommonColors.WHITE), Blocks.WHITE_WOOL),
-        CROSSED("Crossed", 'd', Color(CommonColors.DARK_PURPLE), Blocks.MAGENTA_WOOL),
-        ARCADE("Arcade", 'e', Color(CommonColors.YELLOW), Blocks.YELLOW_WOOL),
-        SMILE("Smile", 'a', Color(CommonColors.GREEN), Blocks.LIME_WOOL),
-        DOCTOR("Doctor", '7', Color(CommonColors.GRAY), Blocks.GRAY_WOOL),
-        PURPLE("Purple", '5', Color(CommonColors.DARK_PURPLE), Blocks.PURPLE_WOOL),
-        SCREAM("Scream", '9', Color(CommonColors.BLUE), Blocks.BLUE_WOOL),
-        FROG("Frog", '2', Color(CommonColors.GREEN), Blocks.GREEN_WOOL),
-        HOCKEY("Hockey", 'c', Color(CommonColors.RED), Blocks.RED_WOOL);
-
-        var entity: Player? = null
-    }
+    private val highlightLividColor by ConfigDelegate<Color>("highlightLivid.color")
+    private val highlightLividLine by ConfigDelegate<Boolean>("highlightLivid.line")
 
     override fun addConfig() {
         ConfigManager
             .addFeature(
-                "Livid Solver",
+                "Livid solver",
                 "Shows the correct Livid in F5/M5",
                 "Solvers",
                 ConfigElement(
@@ -78,97 +79,80 @@ object LividSolver : Feature(
                 )
             )
             .addFeatureOption(
-                "Highlight livid",
+                "Highlight correct livid color",
                 ConfigElement(
-                    "lividSolver.highlight",
-                    ElementType.Switch(true)
+                    "lividSolver.color",
+                    ElementType.ColorPicker(Color(0, 255, 255, 127))
                 )
             )
             .addFeatureOption(
-                "Show tracer",
+                "Tracer",
                 ConfigElement(
-                    "lividSolver.showTracer",
-                    ElementType.Switch(true)
+                    "lividSolver.line",
+                    ElementType.Switch(false)
                 )
             )
     }
 
     override fun initialize() {
-        register<WorldEvent.BlockUpdate> { event ->
-            if (!DungeonAPI.inBoss || event.pos != ceilingWoolBlock) return@register
-
-            currentLivid = Livid.entries.find {
-                it.wool.defaultBlockState() == event.new.block.defaultBlockState()
-            } ?: return@register
-
-            scheduleMessage()
-        }
-
-        register<EntityEvent.Packet.Metadata> { event ->
-            if (!DungeonAPI.inBoss) return@register
-
-            val livid = currentLivid ?: return@register
-
-            scheduleEntityUpdate(event.entity, livid)
-        }
-
-        register<RenderEvent.Entity.Pre> { event ->
-            if (!highlight) return@register
-            if (!DungeonAPI.inBoss) return@register
-            if (currentLivid?.entity != event.entity) return@register
-            if (client.player?.hasEffect(MobEffects.BLINDNESS) == true) return@register
-
+        createCustomEvent<RenderEvent.Entity.Pre>("renderLivid") { event ->
             val entity = event.entity
-            if (client.player?.hasLineOfSight(entity) == false) return@register
 
-            entity.glowThisFrame = true
-            entity.glowingColor = currentLivid!!.color.rgb
+            if (lividEntity == entity && player?.hasLineOfSight(entity) == true) {
+                entity.glowThisFrame = true
+                entity.glowingColor = highlightLividColor.rgb
+            }
         }
 
-        register<RenderEvent.World.Last> { event ->
-            if (!tracer) return@register
-            if (!DungeonAPI.inBoss) return@register
+        createCustomEvent<RenderEvent.World.Last>("renderLine") { event ->
+            lividEntity?.let { entity ->
+                if (player?.hasLineOfSight(entity) == true) {
+                    Render3D.drawLineToEntity(
+                        entity,
+                        event.context.consumers(),
+                        event.context.matrixStack(),
+                        highlightLividColor.toFloatArray(),
+                        highlightLividColor.alpha.toFloat()
+                    )
+                }
+            }
+        }
 
-            currentLivid?.entity?.let { entity ->
-                if (client.player?.hasLineOfSight(entity) == false) return@register
+        createCustomEvent<TickEvent.Server>("tick") {
+            val world = world ?: return@createCustomEvent
+            val state: BlockState = world.getBlockState(lividPos) ?: return@createCustomEvent
+            val color = stainedGlassBlocks[state.block] ?: return@createCustomEvent
+            val lividType = lividTypes[color] ?: return@createCustomEvent
 
-                Render3D.drawLineToEntity(
-                    entity,
-                    event.context.consumers(),
-                    event.context.matrixStack(),
-                    currentLivid!!.color.toFloatArray(),
-                    1f
-                )
+            world.players().find { it.name.stripped.contains(lividType) }?.let {
+                lividEntity = it
+                registerRender()
+                unregisterEvent("tick")
+            }
+        }
+
+        register<ChatEvent.Receive> { event ->
+            if (event.message.stripped == "[BOSS] Livid: I respect you for making it to here, but I'll be your undoing.") {
+                TickScheduler.Server.schedule(80) {
+                    registerEvent("tick")
+                }
             }
         }
 
         register<LocationEvent.WorldChange> {
-            reset()
+            unregisterRender()
         }
     }
 
-    private fun scheduleMessage() {
-        val livid = currentLivid ?: return
-        val blindnessDuration = client.player?.getEffect(MobEffects.BLINDNESS)?.duration ?: 0
-        val delay = (blindnessDuration - 20).coerceAtLeast(1).toLong()
-
-        TickScheduler.Client.schedule(delay) {
-            KnitChat.modMessage("§7Found Livid: §${livid.colorCode}${livid.entityName}")
-        }
+    private fun registerRender() {
+        registerEvent("renderLivid")
+        if (highlightLividLine) registerEvent("renderLine")
     }
 
-    private fun scheduleEntityUpdate(entity: Entity, livid: Livid) {
-        val blindnessDuration = client.player?.getEffect(MobEffects.BLINDNESS)?.duration ?: 0
-        val delay = (blindnessDuration - 20).coerceAtLeast(1).toLong()
-
-        TickScheduler.Client.schedule(delay) {
-            val player = entity as? Player ?: return@schedule
-            if (player.name.stripped == "${livid.entityName} Livid") livid.entity = player
-        }
-    }
-
-    private fun reset() {
-        currentLivid = null
-        Livid.entries.forEach { it.entity = null }
+    private fun unregisterRender() {
+        unregisterEvent("renderLivid")
+        unregisterEvent("renderWrong")
+        unregisterEvent("renderLine")
+        lividEntity = null
     }
 }
