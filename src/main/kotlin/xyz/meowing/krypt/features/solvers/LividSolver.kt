@@ -34,34 +34,16 @@ object LividSolver : Feature(
     private var lividEntity: Entity? = null
     private val lividPos = BlockPos(5, 108, 42)
     private val lividTypes = mapOf(
-        DyeColor.WHITE to "Vendetta",
-        DyeColor.MAGENTA to "Crossed",
-        DyeColor.PINK to "Crossed",
-        DyeColor.RED to "Hockey",
-        DyeColor.GRAY to "Doctor",
-        DyeColor.GREEN to "Frog",
-        DyeColor.LIME to "Smile",
-        DyeColor.BLUE to "Scream",
-        DyeColor.PURPLE to "Purple",
-        DyeColor.YELLOW to "Arcade"
-    )
-    val stainedGlassBlocks = mapOf(
-        Blocks.RED_STAINED_GLASS to DyeColor.RED,
-        Blocks.ORANGE_STAINED_GLASS to DyeColor.ORANGE,
-        Blocks.YELLOW_STAINED_GLASS to DyeColor.YELLOW,
-        Blocks.LIME_STAINED_GLASS to DyeColor.LIME,
-        Blocks.GREEN_STAINED_GLASS to DyeColor.GREEN,
-        Blocks.CYAN_STAINED_GLASS to DyeColor.CYAN,
-        Blocks.LIGHT_BLUE_STAINED_GLASS to DyeColor.LIGHT_BLUE,
-        Blocks.BLUE_STAINED_GLASS to DyeColor.BLUE,
-        Blocks.PURPLE_STAINED_GLASS to DyeColor.PURPLE,
-        Blocks.MAGENTA_STAINED_GLASS to DyeColor.MAGENTA,
-        Blocks.PINK_STAINED_GLASS to DyeColor.PINK,
-        Blocks.WHITE_STAINED_GLASS to DyeColor.WHITE,
-        Blocks.LIGHT_GRAY_STAINED_GLASS to DyeColor.LIGHT_GRAY,
-        Blocks.GRAY_STAINED_GLASS to DyeColor.GRAY,
-        Blocks.BLACK_STAINED_GLASS to DyeColor.BLACK,
-        Blocks.BROWN_STAINED_GLASS to DyeColor.BROWN
+        Blocks.WHITE_STAINED_GLASS to "Vendetta",
+        Blocks.MAGENTA_STAINED_GLASS to "Crossed",
+        Blocks.PINK_STAINED_GLASS to "Crossed",
+        Blocks.RED_STAINED_GLASS to "Hockey",
+        Blocks.GRAY_STAINED_GLASS to "Doctor",
+        Blocks.GREEN_STAINED_GLASS to "Frog",
+        Blocks.LIME_STAINED_GLASS to "Smile",
+        Blocks.BLUE_STAINED_GLASS to "Scream",
+        Blocks.PURPLE_STAINED_GLASS to "Purple",
+        Blocks.YELLOW_STAINED_GLASS to "Arcade"
     )
 
     private val highlightLividColor by ConfigDelegate<Color>("highlightLivid.color")
@@ -121,8 +103,7 @@ object LividSolver : Feature(
         createCustomEvent<TickEvent.Server>("tick") {
             val world = world ?: return@createCustomEvent
             val state: BlockState = world.getBlockState(lividPos) ?: return@createCustomEvent
-            val color = stainedGlassBlocks[state.block] ?: return@createCustomEvent
-            val lividType = lividTypes[color] ?: return@createCustomEvent
+            val lividType = lividTypes[state.block] ?: return@createCustomEvent
 
             world.players().find { it.name.stripped.contains(lividType) }?.let {
                 lividEntity = it
