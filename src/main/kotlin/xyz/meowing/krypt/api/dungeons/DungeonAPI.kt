@@ -2,8 +2,14 @@
 
 package xyz.meowing.krypt.api.dungeons
 
+import net.minecraft.network.protocol.game.ClientboundTakeItemEntityPacket
+import net.minecraft.network.protocol.game.ServerboundUseItemOnPacket
+import net.minecraft.world.entity.EntityType
 import net.minecraft.world.entity.EquipmentSlot
+import net.minecraft.world.entity.item.ItemEntity
 import net.minecraft.world.entity.monster.Zombie
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.world.level.block.entity.SkullBlockEntity
 import tech.thatgravyboat.skyblockapi.api.data.Perk
 import tech.thatgravyboat.skyblockapi.utils.extentions.getTexture
 import tech.thatgravyboat.skyblockapi.utils.regex.RegexUtils.find
@@ -11,11 +17,14 @@ import tech.thatgravyboat.skyblockapi.utils.regex.RegexUtils.findOrNull
 import tech.thatgravyboat.skyblockapi.utils.regex.RegexUtils.findThenNull
 import tech.thatgravyboat.skyblockapi.utils.regex.matchWhen
 import tech.thatgravyboat.skyblockapi.utils.text.TextProperties.stripped
+import xyz.meowing.knit.api.KnitClient
+import xyz.meowing.knit.api.KnitClient.player
 import xyz.meowing.knit.api.KnitPlayer
 import xyz.meowing.krypt.annotations.Module
 import xyz.meowing.krypt.api.dungeons.enums.DungeonClass
 import xyz.meowing.krypt.api.dungeons.enums.DungeonFloor
 import xyz.meowing.krypt.api.dungeons.enums.DungeonKey
+import xyz.meowing.krypt.api.dungeons.enums.DungeonPhase
 import xyz.meowing.krypt.api.dungeons.enums.map.Door
 import xyz.meowing.krypt.api.dungeons.enums.map.Room
 import xyz.meowing.krypt.api.dungeons.handlers.WorldScanner
@@ -36,15 +45,26 @@ import xyz.meowing.krypt.events.core.ChatEvent
 import xyz.meowing.krypt.events.core.DungeonEvent
 import xyz.meowing.krypt.events.core.EntityEvent
 import xyz.meowing.krypt.events.core.LocationEvent
+import xyz.meowing.krypt.events.core.PacketEvent
 import xyz.meowing.krypt.events.core.TablistEvent
 import xyz.meowing.krypt.events.core.TickEvent
 import xyz.meowing.krypt.features.alerts.MimicAlert
 import xyz.meowing.krypt.features.alerts.PrinceAlert
+import kotlin.collections.first
+import kotlin.collections.isNotEmpty
 import kotlin.math.floor
+//#if MC >= 1.21.9
+//$$ import tech.thatgravyboat.skyblockapi.platform.properties
+//#endif
 
 @Module
 object DungeonAPI {
     private const val MIMIC_TEXTURE = "ewogICJ0aW1lc3RhbXAiIDogMTY3Mjc2NTM1NTU0MCwKICAicHJvZmlsZUlkIiA6ICJhNWVmNzE3YWI0MjA0MTQ4ODlhOTI5ZDA5OTA0MzcwMyIsCiAgInByb2ZpbGVOYW1lIiA6ICJXaW5zdHJlYWtlcnoiLAogICJzaWduYXR1cmVSZXF1aWJlZCIgOiB0cnVlLAogICJ0ZXh0dXJlcyIgOiB7CiAgICAiU0tJTiIgOiB7CiAgICAgICJ1cmwiIDogImh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvZTE5YzEyNTQzYmM3NzkyNjA1ZWY2OGUxZjg3NDlhZThmMmEzODFkOTA4NWQ0ZDRiNzgwYmExMjgyZDM1OTdhMCIsCiAgICAgICJtZXRhZGF0YSIgOiB7CiAgICAgICAgIm1vZGVsIiA6ICJzbGltIgogICAgICB9CiAgICB9CiAgfQp9"
+    private const val RED_SKULL_TEXTURE = "eyJ0aW1lc3RhbXAiOjE1NzA5MTUxODU0ODUsInByb2ZpbGVJZCI6IjVkZTZlMTg0YWY4ZDQ5OGFiYmRlMDU1ZTUwNjUzMzE2IiwicHJvZmlsZU5hbWUiOiJBc3Nhc2luSmlhbmVyMjUiLCJzaWduYXR1cmVSZXF1aXJlZCI6dHJ1ZSwidGV4dHVyZXMiOnsiU0tJTiI6eyJ1cmwiOiJodHRwOi8vdGV4dHVyZXMubWluZWNyYWZ0Lm5ldC90ZXh0dXJlL2EyMjNlMzZhYzEzZjBmNzFhYmNmYmYwYzk2ZmRjMjAxMGNjM2UxMWZmMmIwZDgxMTJkMGU2M2Y0YjRhYWEwZGUifX19"
+    private const val WITHER_ESSENCE_TEXTURE = "ewogICJ0aW1lc3RhbXAiIDogMTYwMzYxMDQ0MzU4MywKICAicHJvZmlsZUlkIiA6ICIzM2ViZDMyYmIzMzk0YWQ5YWM2NzBjOTZjNTQ5YmE3ZSIsCiAgInByb2ZpbGVOYW1lIiA6ICJEYW5ub0JhbmFubm9YRCIsCiAgInNpZ25hdHVyZVJlcXVpcmVkIiA6IHRydWUsCiAgInRleHR1cmVzIiA6IHsKICAgICJTS0lOIiA6IHsKICAgICAgInVybCIgOiAiaHR0cDovL3RleHR1cmVzLm1pbmVjcmFmdC5uZXQvdGV4dHVyZS9lNDllYzdkODJiMTQxNWFjYWUyMDU5Zjc4Y2QxZDE3NTRiOWRlOWIxOGNhNTlmNjA5MDI0YzRhZjg0M2Q0ZDI0IgogICAgfQogIH0KfQ==ewogICJ0aW1lc3RhbXAiIDogMTYwMzYxMDQ0MzU4MywKICAicHJvZmlsZUlkIiA6ICIzM2ViZDMyYmIzMzk0YWQ5YWM2NzBjOTZjNTQ5YmE3ZSIsCiAgInByb2ZpbGVOYW1lIiA6ICJEYW5ub0JhbmFubm9YRCIsCiAgInNpZ25hdHVyZVJlcXVpcmVkIiA6IHRydWUsCiAgInRleHR1cmVzIiA6IHsKICAgICJTS0lOIiA6IHsKICAgICAgInVybCIgOiAiaHR0cDovL3RleHR1cmVzLm1pbmVjcmFmdC5uZXQvdGV4dHVyZS9lNDllYzdkODJiMTQxNWFjYWUyMDU5Zjc4Y2QxZDE3NTRiOWRlOWIxOGNhNTlmNjA5MDI0YzRhZjg0M2Q0ZDI0IgogICAgfQogIH0KfQ=="
+
+    private val secretTypes = listOf("Architect's First Draft", "Candycomb", "Decoy", "Defuse Kit", "Dungeon Chest Key",
+        "Healing VIII Splash Potion", "Inflatable Jerry", "Revive Stone", "Secret Dye", "Spirit Leap", "Training Weights", "Trap", "Treasure Talisman").sorted()
 
     private val watcherSpawnedAllRegex = Regex("""\[BOSS] The Watcher: That will be enough for now\.""")
     private val watcherKilledAllRegex = Regex("\\[BOSS] The Watcher: You have proven yourself\\. You may pass\\.")
@@ -93,6 +113,9 @@ object DungeonAPI {
     var witherKeys = 0
         private set
     var bloodKeys = 0
+        private set
+
+    var f7Phase: DungeonPhase.F7? = null
         private set
 
     var floor: DungeonFloor? = null
@@ -249,6 +272,18 @@ object DungeonAPI {
                 val (x, z) = WorldScanUtils.realCoordToComponent(it.x.toInt(), it.z.toInt())
                 6 * z + x > 35
             } == true
+
+            if (floor?.floorNumber == 7 && inBoss) {
+                val y = player?.y ?: return@registerIn
+
+                f7Phase = when {
+                    y > 210 -> DungeonPhase.F7.P1
+                    y > 155 -> DungeonPhase.F7.P2
+                    y > 100 -> DungeonPhase.F7.P3
+                    y > 45 -> DungeonPhase.F7.P4
+                    else -> DungeonPhase.F7.P5
+                }
+            }
         }
 
         EventBus.registerIn<EntityEvent.Death>(SkyBlockIsland.THE_CATACOMBS) { event ->
@@ -261,6 +296,68 @@ object DungeonAPI {
 
             mimicKilled = true
             MimicAlert.displayTitle()
+        }
+
+        EventBus.registerIn<PacketEvent.Received>(SkyBlockIsland.THE_CATACOMBS) { event ->
+            val packet = event.packet as? ClientboundTakeItemEntityPacket ?: return@registerIn
+
+            val itemId = packet.itemId
+            val world = KnitClient.world
+
+            val entity = world?.getEntity(itemId) as? ItemEntity ?: return@registerIn
+            val name = entity.item.displayName.stripped
+            val sanitizedName = name.drop(1).dropLast(1)
+
+            if (secretTypes.binarySearch(sanitizedName) >= 0) {
+                EventBus.post(DungeonEvent.Secrets.Item(itemId))
+            }
+        }
+
+        EventBus.registerIn<PacketEvent.Sent>(SkyBlockIsland.THE_CATACOMBS) { event ->
+            val packet = event.packet as? ServerboundUseItemOnPacket ?: return@registerIn
+
+            val pos = packet.hitResult.blockPos ?: return@registerIn
+            val world = KnitClient.world ?: return@registerIn
+            val blockState = world.getBlockState(pos)
+
+            if (blockState.block == Blocks.CHEST || blockState.block == Blocks.TRAPPED_CHEST) {
+                EventBus.post(DungeonEvent.Secrets.Chest(blockState, pos))
+                return@registerIn
+            }
+
+            if (blockState.block == Blocks.LEVER) {
+                EventBus.post(DungeonEvent.Secrets.Misc(DungeonEvent.Secrets.Type.LEVER, pos))
+                return@registerIn
+            }
+
+            val entity = world.getBlockEntity(pos) ?: return@registerIn
+            var blockTexture: String? = null
+
+            if (entity is SkullBlockEntity) {
+                val profile = entity.ownerProfile
+                val texture = profile?.properties?.get("textures")
+
+                if (texture != null && texture.isNotEmpty()) {
+                    blockTexture = texture.first().value
+                }
+            }
+
+            if (blockTexture == WITHER_ESSENCE_TEXTURE) {
+                EventBus.post(DungeonEvent.Secrets.Essence(entity, pos))
+                return@registerIn
+            }
+
+            if (blockTexture == RED_SKULL_TEXTURE) {
+                EventBus.post(DungeonEvent.Secrets.Misc(DungeonEvent.Secrets.Type.RED_SKULL, pos))
+                return@registerIn
+            }
+        }
+
+        EventBus.registerIn<EntityEvent.Death>(SkyBlockIsland.THE_CATACOMBS) { event ->
+            if (event.entity.type == EntityType.BAT) {
+                EventBus.post(DungeonEvent.Secrets.Bat(event.entity))
+                return@registerIn
+            }
         }
     }
 
