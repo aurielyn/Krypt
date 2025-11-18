@@ -14,17 +14,25 @@ import xyz.meowing.krypt.utils.TitleUtils
 object PrinceAlert : Feature(
     "princeAlert",
     island = SkyBlockIsland.THE_CATACOMBS
-){
+) {
     override fun addConfig() {
-        ConfigManager.addFeature(
-            "Prince title",
-            "Display prince death title",
-            "Alert",
-            ConfigElement(
-                "princeAlert",
-                ElementType.Switch(false)
+        ConfigManager
+            .addFeature(
+                "Prince title",
+                "Display prince death title",
+                "Alert",
+                ConfigElement(
+                    "princeAlert",
+                    ElementType.Switch(false)
+                )
             )
-        )
+            .addFeatureOption(
+                "Show title",
+                ConfigElement(
+                    "princeAlert.showTitle",
+                    ElementType.Switch(true)
+                )
+            )
             .addFeatureOption(
                 "Send chat message",
                 ConfigElement(
@@ -43,22 +51,13 @@ object PrinceAlert : Feature(
 
     private val message by ConfigDelegate<String>("princeAlert.message")
     private val sendMessage by ConfigDelegate<Boolean>("princeAlert.sendMessage")
+    private val showTitle by ConfigDelegate<Boolean>("princeAlert.showTitle")
     private val enabled by ConfigDelegate<Boolean>("princeAlert")
 
-    private const val DURATION = 2000
-
-    override fun initialize() {
-
-    }
-
     fun displayTitle() {
-        if(!enabled) return
+        if (!enabled) return
 
-        TitleUtils.showTitle(message, duration = DURATION)
-        if(sendMessage) sendChatMessage()
-    }
-
-    private fun sendChatMessage() {
-        KnitChat.sendMessage("/pc $message")
+        if (showTitle) TitleUtils.showTitle(message, duration = 2000)
+        if (sendMessage) KnitChat.sendMessage("/pc $message")
     }
 }

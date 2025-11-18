@@ -16,15 +16,23 @@ object MimicAlert : Feature(
     island = SkyBlockIsland.THE_CATACOMBS
 ) {
     override fun addConfig() {
-        ConfigManager.addFeature(
-            "Mimic alert",
-            "Mimic alert",
-            "Alerts",
-            ConfigElement(
-                "mimicAlert",
-                ElementType.Switch(false)
+        ConfigManager
+            .addFeature(
+                "Mimic alert",
+                "Mimic alert",
+                "Alerts",
+                ConfigElement(
+                    "mimicAlert",
+                    ElementType.Switch(false)
+                )
             )
-        )
+            .addFeatureOption(
+                "Show title",
+                ConfigElement(
+                    "mimicAlert.showTitle",
+                    ElementType.Switch(true)
+                )
+            )
             .addFeatureOption(
                 "Send chat message",
                 ConfigElement(
@@ -43,22 +51,13 @@ object MimicAlert : Feature(
 
     private val message by ConfigDelegate<String>("mimicAlert.message")
     private val sendMessage by ConfigDelegate<Boolean>("mimicAlert.sendMessage")
+    private val showTitle by ConfigDelegate<Boolean>("mimicAlert.showTitle")
     private val enabled by ConfigDelegate<Boolean>("mimicAlert")
 
-    private const val DURATION = 2000
-
-    override fun initialize() {
-
-    }
-
     fun displayTitle() {
-        if(!enabled) return
+        if (!enabled) return
 
-        TitleUtils.showTitle(message, duration = DURATION)
-        if(sendMessage) sendChatMessage()
-    }
-
-    private fun sendChatMessage() {
-        KnitChat.sendMessage("/pc $message")
+        if (showTitle) TitleUtils.showTitle(message, duration = 2000)
+        if (sendMessage) KnitChat.sendMessage("/pc $message")
     }
 }
