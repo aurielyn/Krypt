@@ -48,7 +48,6 @@ import xyz.meowing.krypt.events.core.LocationEvent
 import xyz.meowing.krypt.events.core.PacketEvent
 import xyz.meowing.krypt.events.core.TablistEvent
 import xyz.meowing.krypt.events.core.TickEvent
-import xyz.meowing.krypt.utils.Utils.removeFormatting
 import kotlin.collections.first
 import kotlin.collections.isNotEmpty
 import kotlin.math.floor
@@ -302,11 +301,12 @@ object DungeonAPI {
             val world = KnitClient.world
 
             val entity = world?.getEntity(itemId) as? ItemEntity ?: return@registerIn
-            val name = entity.item.displayName.string.removeFormatting()
+            val name = entity.item.displayName.stripped
             val sanitizedName = name.drop(1).dropLast(1)
 
-            if(secretTypes.binarySearch(sanitizedName) >= 0)
+            if (secretTypes.binarySearch(sanitizedName) >= 0) {
                 EventBus.post(DungeonEvent.Secrets.Item(itemId))
+            }
         }
 
         EventBus.registerIn<PacketEvent.Sent>(SkyBlockIsland.THE_CATACOMBS) { event ->
@@ -316,41 +316,41 @@ object DungeonAPI {
             val world = KnitClient.world ?: return@registerIn
             val blockState = world.getBlockState(pos)
 
-            if(blockState.block == Blocks.CHEST || blockState.block == Blocks.TRAPPED_CHEST) {
+            if (blockState.block == Blocks.CHEST || blockState.block == Blocks.TRAPPED_CHEST) {
                 EventBus.post(DungeonEvent.Secrets.Chest(blockState, pos))
                 return@registerIn
             }
 
-            if(blockState.block == Blocks.LEVER) {
-                EventBus.post(DungeonEvent.Secrets.Misc(DungeonEvent.Secrets.SecretType.LEVER, pos))
+            if (blockState.block == Blocks.LEVER) {
+                EventBus.post(DungeonEvent.Secrets.Misc(DungeonEvent.Secrets.Type.LEVER, pos))
                 return@registerIn
             }
 
             val entity = world.getBlockEntity(pos) ?: return@registerIn
             var blockTexture: String? = null
 
-            if(entity is SkullBlockEntity) {
+            if (entity is SkullBlockEntity) {
                 val profile = entity.ownerProfile
                 val texture = profile?.properties?.get("textures")
 
-                if(texture != null && texture.isNotEmpty()) {
+                if (texture != null && texture.isNotEmpty()) {
                     blockTexture = texture.first().value
                 }
             }
 
-            if(blockTexture == WITHER_ESSENCE_TEXTURE) {
+            if (blockTexture == WITHER_ESSENCE_TEXTURE) {
                 EventBus.post(DungeonEvent.Secrets.Essence(entity, pos))
                 return@registerIn
             }
 
-            if(blockTexture == RED_SKULL_TEXTURE) {
-                EventBus.post(DungeonEvent.Secrets.Misc(DungeonEvent.Secrets.SecretType.RED_SKULL, pos))
+            if (blockTexture == RED_SKULL_TEXTURE) {
+                EventBus.post(DungeonEvent.Secrets.Misc(DungeonEvent.Secrets.Type.RED_SKULL, pos))
                 return@registerIn
             }
         }
 
         EventBus.registerIn<EntityEvent.Death>(SkyBlockIsland.THE_CATACOMBS) { event ->
-            if(event.entity.type == EntityType.BAT) {
+            if (event.entity.type == EntityType.BAT) {
                 EventBus.post(DungeonEvent.Secrets.Bat(event.entity))
                 return@registerIn
             }

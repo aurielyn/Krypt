@@ -84,11 +84,11 @@ sealed class DungeonEvent {
         ) : Event()
 
         class Misc(
-            val secretType: SecretType,
+            val secretType: Type,
             val blockPos: BlockPos
         ) : Event()
 
-        enum class SecretType {
+        enum class Type {
             RED_SKULL,
             LEVER
         }
