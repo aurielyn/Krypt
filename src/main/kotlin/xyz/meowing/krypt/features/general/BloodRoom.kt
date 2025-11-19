@@ -9,6 +9,7 @@ import net.minecraft.world.phys.AABB
 import net.minecraft.world.phys.Vec3
 import tech.thatgravyboat.skyblockapi.utils.extentions.getTexture
 import tech.thatgravyboat.skyblockapi.utils.text.TextProperties.stripped
+import xyz.meowing.knit.api.KnitChat
 import xyz.meowing.knit.api.KnitClient.client
 import xyz.meowing.krypt.annotations.Module
 import xyz.meowing.krypt.api.dungeons.DungeonAPI
@@ -26,6 +27,8 @@ import xyz.meowing.krypt.events.core.TickEvent
 import xyz.meowing.krypt.features.Feature
 import xyz.meowing.krypt.managers.config.ConfigElement
 import xyz.meowing.krypt.managers.config.ConfigManager
+import xyz.meowing.krypt.utils.TitleUtils.showTitle
+import xyz.meowing.krypt.utils.modMessage
 import xyz.meowing.krypt.utils.rendering.Render3D
 import java.awt.Color
 import java.util.concurrent.ConcurrentHashMap
@@ -50,6 +53,7 @@ object BloodRoom : Feature(
         "[BOSS] The Watcher: Oh.. hello?",
         "[BOSS] The Watcher: Things feel a little more roomy now, eh?"
     )
+    private val bloodCampRegex = Regex("^\\[BOSS] The Watcher: You have proven yourself\\. You may pass\\.$")
 
     private data class EntityData(
         var startVector: Vec3,
@@ -70,9 +74,11 @@ object BloodRoom : Feature(
     private var watcherEntity: Zombie? = null
     private var firstSpawns = true
     private var currentTickTime = 0L
+    private var bloodOpen = false
+    private var startTime = 0L
 
     private val mageOnly by ConfigDelegate<Boolean>("bloodRoom.mageOnly")
-    private val showTimer by ConfigDelegate<Boolean>("bloodRoom.showTimer")
+    private val showTimerDisplay by ConfigDelegate<Boolean>("bloodRoom.showTimerDisplay")
     private val showBox by ConfigDelegate<Boolean>("bloodRoom.showBox")
     private val showLine by ConfigDelegate<Boolean>("bloodRoom.showLine")
     private val boxColor by ConfigDelegate<Color>("bloodRoom.boxColor")
@@ -80,21 +86,23 @@ object BloodRoom : Feature(
     private val boxSize by ConfigDelegate<Double>("bloodRoom.boxSize")
     private val tickValue by ConfigDelegate<Double>("bloodRoom.tick")
     private val offset by ConfigDelegate<Double>("bloodRoom.offset")
+    private val showChatTimers by ConfigDelegate<Boolean>("bloodRoom.showChatTimers")
 
     override fun addConfig() {
         ConfigManager
             .addFeature(
-                "Blood camp helper",
-                "Shows where blood mobs will spawn",
-                "General",
+                "Blood room helper",
+                "Shows where blood mobs will spawn and tracks timing",
+                "Dungeons",
                 ConfigElement(
                     "bloodRoom",
                     ElementType.Switch(false)
                 )
             )
             .addFeatureOption(
-                "Show timer",
-                ConfigElement("bloodRoom.showTimer",
+                "Show timer display",
+                ConfigElement(
+                    "bloodRoom.showTimerDisplay",
                     ElementType.Switch(true)
                 )
             )
@@ -133,7 +141,6 @@ object BloodRoom : Feature(
                     ElementType.Slider(0.1, 1.0, 1.0, true)
                 )
             )
-            // yeeted from odin
             .addFeatureOption(
                 "Box offset",
                 ConfigElement(
@@ -155,6 +162,13 @@ object BloodRoom : Feature(
                     ElementType.Switch(false)
                 )
             )
+            .addFeatureOption(
+                "Show chat timers",
+                ConfigElement(
+                    "bloodRoom.showChatTimers",
+                    ElementType.Switch(true)
+                )
+            )
     }
 
     override fun initialize() {
@@ -164,15 +178,37 @@ object BloodRoom : Feature(
             watcherEntity = null
             firstSpawns = true
             currentTickTime = 0L
+            bloodOpen = false
+            startTime = 0L
         }
 
         register<ChatEvent.Receive> { event ->
-            if (event.isActionBar || !shouldRender()) return@register
+            if (event.isActionBar) return@register
             val message = event.message.stripped
 
             when {
-                message in watcherIntroRegex -> firstSpawns = true
-                message.matches(firstSpawnRegex) -> firstSpawns = false
+                message in watcherIntroRegex -> {
+                    firstSpawns = true
+                    if (showChatTimers && !bloodOpen) {
+                        bloodOpen = true
+                        startTime = System.currentTimeMillis()
+                    }
+                }
+                message.matches(firstSpawnRegex) -> {
+                    firstSpawns = false
+                    if (showChatTimers) {
+                        val dialogueTime = (System.currentTimeMillis() - startTime) / 1000.0
+                        showTitle("§c§l!", "§cWatcher reached dialogue!", 3000)
+                        KnitChat.modMessage("§fWatcher took §c${"%.2f".format(dialogueTime)}s §fto reach dialogue!")
+                    }
+                }
+                message.matches(bloodCampRegex) -> {
+                    if (showChatTimers) {
+                        val campTime = (System.currentTimeMillis() - startTime) / 1000.0
+                        KnitChat.modMessage("§fBlood camp took §c${"%.2f".format(campTime)}s")
+                        bloodOpen = false
+                    }
+                }
             }
         }
 
@@ -270,7 +306,7 @@ object BloodRoom : Feature(
                     )
                 }
 
-                if (showTimer) {
+                if (showTimerDisplay) {
                     Render3D.drawString(
                         String.format("%.2fs", timeDisplay),
                         endPoint.add(0.0, 2.0, 0.0),
