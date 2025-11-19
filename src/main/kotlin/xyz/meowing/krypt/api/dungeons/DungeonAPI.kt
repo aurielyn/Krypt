@@ -93,7 +93,7 @@ object DungeonAPI {
     private val bloodDoorOpenRegex = Regex("The BLOOD DOOR has been opened!")
 
     private val startRegex = Regex("\\[NPC] Mort: Here, I found this map when I first entered the dungeon\\.")
-    private val endRegex = Regex("\\s+(?:Master Mode|The) Catacombs - (?:Entrance|Floor [XVI]+)")
+    private val endRegex = Regex("""^\s*(Master Mode)?\s?(?:The)? Catacombs - (Entrance|Floor .{1,3})$""")
 
     private val uniqueClassRegex = Regex("Your .+ stats are doubled because you are the only player using this class!")
     private val mimicRegex = Regex("""^Party > (?:\[[\w+]+] )?\w{1,16}: (.*)$""")

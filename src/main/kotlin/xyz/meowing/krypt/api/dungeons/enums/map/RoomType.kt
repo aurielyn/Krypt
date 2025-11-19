@@ -26,6 +26,21 @@ enum class RoomType {
             UNKNOWN -> Color.GRAY
         }
 
+    val colorCode: String
+        get() = when (this) {
+            NORMAL -> "7"
+            PUZZLE -> "d"
+            TRAP -> "6"
+            YELLOW -> "e"
+            BLOOD -> "c"
+            FAIRY -> "d"
+            ENTRANCE -> "a"
+            UNKNOWN -> "f"
+        }
+
+    val nickname: String
+        get() = this.name.lowercase().replaceFirstChar { it.uppercase() }
+
     companion object {
         fun fromRoomData(data: RoomMetadata): RoomType? = when(data.type.lowercase()) {
             "normal", "rare" -> NORMAL

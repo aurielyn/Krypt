@@ -8,7 +8,6 @@ import net.minecraft.resources.ResourceLocation
 import net.minecraft.world.phys.Vec3
 import xyz.meowing.knit.api.KnitClient
 import xyz.meowing.krypt.Krypt
-import xyz.meowing.krypt.api.dungeons.enums.map.RoomType
 import xyz.meowing.krypt.utils.rendering.Render2D
 import xyz.meowing.krypt.utils.rendering.Render2D.pushPop
 import xyz.meowing.krypt.utils.rendering.Render2D.width
@@ -27,15 +26,6 @@ object Utils {
     val defaultMap: ResourceLocation = ResourceLocation.fromNamespaceAndPath(Krypt.NAMESPACE, "krypt/default_map")
     val markerSelf: ResourceLocation = ResourceLocation.fromNamespaceAndPath(Krypt.NAMESPACE, "krypt/marker_self")
     val markerOther: ResourceLocation = ResourceLocation.fromNamespaceAndPath(Krypt.NAMESPACE, "krypt/marker_other")
-
-    val roomTypes = mapOf(
-        63 to "Normal",
-        30 to "Entrance",
-        74 to "Yellow",
-        18 to "Blood",
-        66 to "Puzzle",
-        62 to "Trap"
-    )
 
     data class BossMapData(
         val image: String,
@@ -115,27 +105,5 @@ object Utils {
 
             Render2D.renderString(context, name, drawX.toFloat(), drawY.toFloat(), 1f)
         }
-    }
-
-    fun typeToColor(type: RoomType): String = when (type) {
-        RoomType.NORMAL   -> "7"
-        RoomType.PUZZLE   -> "d"
-        RoomType.TRAP     -> "6"
-        RoomType.YELLOW   -> "e"
-        RoomType.BLOOD    -> "c"
-        RoomType.FAIRY    -> "d"
-        RoomType.ENTRANCE -> "a"
-        RoomType.UNKNOWN  -> "f"
-    }
-
-    fun typeToName(type: RoomType): String = when (type) {
-        RoomType.NORMAL   -> "Normal"
-        RoomType.PUZZLE   -> "Puzzle"
-        RoomType.TRAP     -> "Trap"
-        RoomType.YELLOW   -> "Yellow"
-        RoomType.BLOOD    -> "Blood"
-        RoomType.FAIRY    -> "Fairy"
-        RoomType.ENTRANCE -> "Entrance"
-        RoomType.UNKNOWN  -> "Unknown"
     }
 }
