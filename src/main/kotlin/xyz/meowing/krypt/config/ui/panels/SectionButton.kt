@@ -13,6 +13,7 @@ import xyz.meowing.krypt.managers.config.FeatureElement
 import xyz.meowing.krypt.managers.config.ConfigManager
 import xyz.meowing.krypt.ui.Theme
 import xyz.meowing.krypt.config.ui.elements.base.ElementRenderer
+import xyz.meowing.vexel.utils.render.NVGRenderer
 import java.awt.Color
 import kotlin.math.absoluteValue
 
@@ -200,6 +201,16 @@ class SectionButton(
         val bottomLeftRadius = if (isLast && !extended) 5f else 0f
         val bottomRightRadius = if (isLast && !extended) 5f else 0f
         buttonBackground.borderRadiusVarying(topRight = 0f, topLeft = 0f, bottomRight = bottomRightRadius, bottomLeft = bottomLeftRadius)
+    }
+
+    override fun renderChildren(mouseX: Float, mouseY: Float) {
+        buttonBackground.render(mouseX, mouseY)
+
+        NVGRenderer.push()
+        NVGRenderer.pushScissor(x, y + HEIGHT, width, height - HEIGHT)
+        children.forEach { it.render(mouseX, mouseY) }
+        NVGRenderer.popScissor()
+        NVGRenderer.pop()
     }
 
     override fun onRender(mouseX: Float, mouseY: Float) {}

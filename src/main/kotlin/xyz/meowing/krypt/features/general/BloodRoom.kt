@@ -93,7 +93,7 @@ object BloodRoom : Feature(
             .addFeature(
                 "Blood room helper",
                 "Shows where blood mobs will spawn and tracks timing",
-                "Dungeons",
+                "General",
                 ConfigElement(
                     "bloodRoom",
                     ElementType.Switch(false)
