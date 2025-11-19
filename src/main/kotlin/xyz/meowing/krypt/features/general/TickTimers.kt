@@ -1,0 +1,155 @@
+<package xyz.meowing.krypt.features.general
+
+import net.minecraft.client.gui.GuiGraphics
+import xyz.meowing.knit.api.KnitClient.client
+import xyz.meowing.knit.api.scheduler.TickScheduler
+import xyz.meowing.krypt.annotations.Module
+import xyz.meowing.krypt.api.dungeons.DungeonAPI
+import xyz.meowing.krypt.api.location.SkyBlockIsland
+import xyz.meowing.krypt.config.ConfigDelegate
+import xyz.meowing.krypt.config.ui.types.ElementType
+import xyz.meowing.krypt.events.core.ChatEvent
+import xyz.meowing.krypt.events.core.GuiEvent
+import xyz.meowing.krypt.events.core.LocationEvent
+import xyz.meowing.krypt.events.core.ScoreboardEvent
+import xyz.meowing.krypt.events.core.TickEvent
+import xyz.meowing.krypt.features.Feature
+import xyz.meowing.krypt.hud.HudEditor
+import xyz.meowing.krypt.hud.HudManager
+import xyz.meowing.krypt.managers.config.ConfigElement
+import xyz.meowing.krypt.managers.config.ConfigManager
+import xyz.meowing.krypt.utils.Utils.removeFormatting
+import xyz.meowing.krypt.utils.rendering.Render2D
+
+@Module
+object TickTimers: Feature("tickTimers", island = SkyBlockIsland.THE_CATACOMBS) {
+    private const val NAME = "Tick Timers"
+    private var secretTicksToggled by ConfigDelegate<Boolean>("tickTimers.secretTicks")
+    private var stormTicksToggled by ConfigDelegate<Boolean>("tickTimers.stormTicks")
+//    private var goldorTicksToggled by ConfigDelegate<Boolean>("tickTimers.goldorTicks")
+    var goldorTicksToggled = false
+    var secretTicks = 20
+    var stormTicks = 20
+    var goldorTicks = 60
+    var inStorm = false
+    var inTerms = false
+    var isStartTicks = false
+    var startTicks = 104
+
+    override fun addConfig() {
+        ConfigManager
+            .addFeature("Tick Timers",
+                "Shows the ticks of the current phase.",
+                "General",
+                ConfigElement(
+                    "tickTimers",
+                    ElementType.Switch(false)
+                )
+            )
+            .addFeatureOption("Secret Ticks",
+                ConfigElement(
+                    "tickTimers.secretTicks",
+                    ElementType.Switch(false)
+                )
+            )
+            .addFeatureOption("Storm Ticks",
+                ConfigElement(
+                    "tickTimers.stormTicks",
+                    ElementType.Switch(false)
+                )
+            )
+//            .addFeatureOption("Goldor Ticks",
+//                ConfigElement(
+//                    "tickTimers.goldorTicks",
+//                    ElementType.Switch(true)
+//                )
+//            ) // This is fucking pissing me off so Im not making it, I tried everything but it wont work so do it if you want
+            .addFeatureOption("HudEditor",
+                ConfigElement(
+                    "tickTimers.hudEditor",
+                    ElementType.Button("Edit Position") {
+                        TickScheduler.Client.post {
+                            client.execute { client.setScreen(HudEditor()) }
+                        }
+                    }
+                )
+            )
+    }
+
+    override fun initialize() {
+        HudManager.registerCustom(NAME, 15, 10, this::hudEditorRender, "splitTimers")
+        register<GuiEvent.Render.HUD> { renderHud(it.context) }
+
+
+        register<TickEvent.Server> {
+            if (secretTicks > 0) secretTicks--
+
+            if (startTicks == 0) isStartTicks = false
+            if (startTicks >= 0) startTicks--
+
+            if (goldorTicks == 0) goldorTicks = 60
+            if (goldorTicks >= 0) goldorTicks--
+
+            if (stormTicks == 0) stormTicks = 20
+            if (stormTicks >= 0) stormTicks--
+        }
+        register<ScoreboardEvent.Update> {
+            secretTicks = 20
+        }
+        register<ChatEvent.Receive> { event ->
+            val message = event.message.string.removeFormatting()
+
+            if (message.startsWith("[BOSS] Storm: Pathetic Maxor, just like expected.")) {
+                inStorm = true
+                stormTicks = 20
+            }
+            if (message.startsWith("[BOSS] Storm: I should have known that I stood no chance.")) {
+                inStorm = false
+                inTerms = true
+
+                startTicks = 104
+                isStartTicks = true
+            }
+            if (message.startsWith("[BOSS] Goldor: Who dares trespass into my domain?")) {
+                goldorTicks = 60
+            }
+            if (message.startsWith("The Core entrance is opening!")) {
+                inTerms = false
+            }
+        }
+
+        register<LocationEvent.WorldChange> {
+            inTerms = false
+            inStorm = false
+            isStartTicks = false
+        }
+
+    }
+
+    fun hudEditorRender(context: GuiGraphics){
+        val x = HudManager.getX(NAME)
+        val y = HudManager.getY(NAME)
+        val scale = HudManager.getScale(NAME)
+        Render2D.renderStringWithShadow(context, "§a17", x, y, scale)
+    }
+
+    private fun renderHud(context: GuiGraphics) {
+        val x = HudManager.getX(NAME)
+        val y = HudManager.getY(NAME)
+        val scale = HudManager.getScale(NAME)
+
+        if ((secretTicksToggled && !DungeonAPI.inBoss)) {
+            val color = if (secretTicks <= 5) "§c" else if (secretTicks <= 10) "§6" else "§a"
+            Render2D.renderStringWithShadow(context, "$color$secretTicks", x, y, scale)
+        }
+        if (stormTicksToggled && inStorm) {
+            val color = if (stormTicks <= 5) "§c" else if (stormTicks <= 10) "§6" else "§a"
+            Render2D.renderStringWithShadow(context, "$color$stormTicks", x, y, scale)
+        }
+        if ((goldorTicksToggled && inTerms)) {
+            val color = if (goldorTicks <= 20) "§c" else if (goldorTicks <= 40) "§6" else "§a"
+            Render2D.renderStringWithShadow(context, if (isStartTicks) "§a$startTicks" else "$color$goldorTicks", x, y, scale)
+        }
+
+    }
+}
