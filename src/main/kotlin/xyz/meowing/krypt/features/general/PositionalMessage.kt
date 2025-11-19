@@ -35,7 +35,10 @@ object PositionalMessage : Feature(
         )
     }
 
-    private data class PosMsg(val pos: Vec3, val radius: Float, val message: String, var sentMessage: Boolean = false, var radiusSquared: Float = radius * radius)
+    private data class PosMsg(val pos: Vec3, val radius: Float, val message: String, var sentMessage: Boolean = false) {
+        val radiusSquared: Float
+            get() = radius * radius
+    }
 
     private val configCache: HashMap<String, MutableList<PosMsg>> = HashMap<String, MutableList<PosMsg>>()
     private var posMsgList: MutableList<PosMsg> = mutableListOf<PosMsg>()
@@ -89,7 +92,7 @@ object PositionalMessage : Feature(
     }
 
     fun removePos(index: Int) {
-        if(posMsgList.size < index) {
+        if(index !in posMsgList.indices) {
             KnitChat.fakeMessage("Index exceeds current list size: ${posMsgList.size}")
             return
         }
@@ -100,9 +103,11 @@ object PositionalMessage : Feature(
 
     fun save() {
         KnitChat.fakeMessage("Saved config!")
+        val jsonArray = JsonArray()
         posMsgList.forEach { element ->
-            config[currentConfig].asJsonArray.add(createJsonObject(element))
+            jsonArray.add(createJsonObject(element))
         }
+        config.add(currentConfig, jsonArray)
 
         config.addProperty("config", currentConfig)
         posMsgData.forceSave()
@@ -139,19 +144,20 @@ object PositionalMessage : Feature(
     }
 
     fun listEntries() {
-        for(i in 0 until posMsgList.size) {
-            KnitChat.fakeMessage("$i: x: ${posMsgList[i].pos.x} " +
-                    "y: ${posMsgList[i].pos.y} " +
-                    "z: ${posMsgList[i].pos.z} " +
-                    "radius: ${posMsgList[i].radius} " +
-                    "message: ${posMsgList[i].message} "
-            )
+        if (posMsgList.isEmpty()) {
+            KnitChat.fakeMessage("No entries in current config.")
+            return
+        }
+        posMsgList.forEachIndexed { i, entry ->
+            KnitChat.fakeMessage("$i: x: ${entry.pos.x} y: ${entry.pos.y} z: ${entry.pos.z} radius: ${entry.radius} message: ${entry.message}")
         }
     }
 
     fun listConfigs() {
         config.entrySet().forEach { entry ->
-            KnitChat.fakeMessage(entry.key)
+            if (entry.key != "config") {
+                KnitChat.fakeMessage(entry.key)
+            }
         }
     }
 
@@ -178,7 +184,7 @@ object PositionalMessage : Feature(
         )
     }
 
-    private fun Double.round(): Double = String.format("%.3f", this).toDouble()
+    private fun Double.round(): Double = kotlin.math.round(this * 1000.0) / 1000.0
     private fun Vec3.round(): Vec3 = Vec3(x.round(), y.round(), z.round())
 
     private fun isInsideCircle(playerPos: Vec3, center: Vec3, radiusSquared: Float): Boolean {
