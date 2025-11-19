@@ -1,4 +1,4 @@
-<package xyz.meowing.krypt.features.general
+package xyz.meowing.krypt.features.general
 
 import net.minecraft.client.gui.GuiGraphics
 import xyz.meowing.knit.api.KnitClient.client
