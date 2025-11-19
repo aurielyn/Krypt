@@ -69,7 +69,10 @@ class StoredFile(val path: String) {
     fun jsonObject(key: String, default: JsonObject = JsonObject()) = object : ReadWriteProperty<Any?, JsonObject> {
         override fun getValue(thisRef: Any?, property: KProperty<*>): JsonObject {
             val obj = load()
-            return if (obj.has(key)) obj.getAsJsonObject(key) else default
+            if (!obj.has(key)) {
+                obj.add(key, default)
+            }
+            return obj.getAsJsonObject(key)
         }
 
         override fun setValue(thisRef: Any?, property: KProperty<*>, value: JsonObject) {
