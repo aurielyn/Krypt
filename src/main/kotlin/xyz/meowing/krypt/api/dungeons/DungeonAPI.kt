@@ -378,28 +378,32 @@ object DungeonAPI {
     fun reset() {
         rooms.fill(null)
         doors.fill(null)
+        
         uniqueRooms.clear()
         uniqueDoors.clear()
         discoveredRooms.clear()
-
+    
         currentRoom = null
         holdingLeaps = false
-
+        
         bloodKilledAll = false
         bloodSpawnedAll = false
         bloodOpened = false
-
+        
         floorCompleted = false
         floorStarted = false
-
+    
         mapLine1 = ""
         mapLine2 = ""
-
+        
         witherKeys = 0
         bloodKeys = 0
-
+        
         uniqueClass = false
-
+        inBoss = false
+        f7Phase = null
+        floor = null
+        
         WorldScanner.reset()
         DungeonPlayerManager.reset()
         ScoreCalculator.reset()
