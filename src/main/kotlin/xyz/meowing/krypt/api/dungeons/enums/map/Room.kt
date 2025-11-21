@@ -20,10 +20,6 @@ class Room(
     val realComponents = mutableListOf<Pair<Int, Int>>()
     val cores = mutableListOf<Int>()
 
-    var roomData: RoomMetadata? = null
-    var shape: RoomShape = RoomShape.UNKNOWN
-    var explored = false
-
     var checkmark by Delegates.observable(Checkmark.UNDISCOVERED) { _, oldValue, newValue ->
         if (oldValue == newValue) return@observable
         if (name == "Unknown") return@observable
@@ -33,22 +29,39 @@ class Room(
         EventBus.post(DungeonEvent.Room.StateChange(this, oldValue, newValue, roomPlayers))
     }
 
-    var players: MutableSet<DungeonPlayer> = mutableSetOf()
+    val players: MutableSet<DungeonPlayer> = mutableSetOf()
 
     var name: String? = null
+
     var corner: Triple<Int, Int, Int>? = null
     var center: Triple<Double, Double, Double>? = null
     var componentCenters: List<Triple<Double, Double, Double>> = emptyList()
+
+    var roomData: RoomMetadata? = null
     var rotation: RoomRotations = RoomRotations.NONE
     var type: RoomType = RoomType.UNKNOWN
+    var shape: RoomShape = RoomShape.UNKNOWN
+    var clearType = RoomClearType.MOB
+
+    var roomID: Int? = null
+    var explored = false
+    var clearTime = 0L
+
     var secrets: Int = 0
     var secretsFound: Int = 0
     var crypts: Int = 0
 
-    var clearTime = 0L
-
     init {
         addComponents(listOf(initialComponent))
+    }
+
+    override fun toString(): String {
+        return """
+            Room: $name, ID: $roomID, Explored: $explored. Cores: $cores
+            Corner: $corner, Center: $center, componentCenters: $componentCenters
+            Rotation: $rotation, Type: $type, Shape: $shape, ClearType: $clearType
+            Secrets: $secrets, Found: $secretsFound, Crypts: $crypts
+        """.trimIndent()
     }
 
     fun addComponent(comp: Pair<Int, Int>, update: Boolean = true): Room {
@@ -72,7 +85,9 @@ class Room(
         realComponents.clear()
         realComponents += components.map { WorldScanUtils.componentToRealCoord(it.first, it.second) }
         scan()
-        shape = RoomShape.fromComponents(components)
+
+        shape = roomData?.shape?.let { RoomShape.fromString(it) } ?: RoomShape.fromComponents(components)
+
         corner = null
         rotation = RoomRotations.NONE
     }
@@ -99,13 +114,36 @@ class Room(
         type = RoomType.fromRoomData(data) ?: RoomType.NORMAL
         secrets = data.secrets
         crypts = data.crypts
+
+        data.roomID?.let { id ->
+            roomID = id
+        }
+
+        data.clearType?.let {
+            clearType = RoomClearType.fromData(data)
+        }
+
+        data.shape?.let { shapeStr ->
+            shape = RoomShape.fromString(shapeStr)
+        }
     }
 
     fun loadFromMapColor(color: Byte): Room {
         type = RoomType.fromMapColor(color.toInt()) ?: RoomType.UNKNOWN
         when (type) {
-            RoomType.BLOOD -> RoomRegistry.getAll().find { it.type == "Blood" }?.let { loadFromData(it) }
-            RoomType.ENTRANCE -> RoomRegistry.getAll().find { it.type == "Entrance" }?.let { loadFromData(it) }
+            RoomType.BLOOD -> {
+                RoomRegistry
+                    .getAll()
+                    .find { it.type.equals("BLOOD", true) }
+                    ?.let { loadFromData(it) }
+            }
+
+            RoomType.ENTRANCE -> {
+                RoomRegistry
+                    .getAll()
+                    .find { it.type.equals("ENTRANCE", true) }
+                    ?.let { loadFromData(it) }
+            }
             else -> {}
         }
         return this
@@ -174,26 +212,6 @@ class Room(
             )
         }
         return this
-    }
-
-    fun fromWorldPos(pos: Triple<Double, Double, Double>): Triple<Int, Int, Int>? {
-        if (corner == null || rotation == RoomRotations.NONE) return null
-        val rel = Triple(
-            (pos.first - corner!!.first).toInt(),
-            (pos.second - corner!!.second).toInt(),
-            (pos.third - corner!!.third).toInt()
-        )
-        return WorldScanUtils.rotateCoord(rel, rotation.degrees)
-    }
-
-    fun toWorldPos(local: Triple<Int, Int, Int>): Triple<Int, Int, Int>? {
-        if (corner == null || rotation == RoomRotations.NONE) return null
-        val rotated = WorldScanUtils.rotateCoord(local, 360 - rotation.degrees)
-        return Triple(
-            rotated.first + corner!!.first,
-            rotated.second,
-            rotated.third + corner!!.third
-        )
     }
 
     fun getRoomComponent(): Pair<Int, Int> {

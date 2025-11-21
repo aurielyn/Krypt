@@ -18,12 +18,12 @@ import xyz.meowing.krypt.utils.glowingColor
 import java.awt.Color
 
 @Module
-object HighlightStarMobs : Feature(
-    "highlightStarMobs",
+object StarMobHighlight : Feature(
+    "starMobHighlight",
     island = SkyBlockIsland.THE_CATACOMBS
 ) {
     private val entities = mutableListOf<Int>()
-    private val starMobsColor by ConfigDelegate<Color>("highlightStarMobs.color")
+    private val starMobsColor by ConfigDelegate<Color>("starMobHighlight.color")
 
     override fun addConfig() {
         ConfigManager
@@ -32,14 +32,14 @@ object HighlightStarMobs : Feature(
                 "Highlights starred mobs in dungeons",
                 "General",
                 ConfigElement(
-                    "highlightStarMobs",
+                    "starMobHighlight",
                     ElementType.Switch(false)
                 )
             )
             .addFeatureOption(
                 "Highlight star mobs color",
                 ConfigElement(
-                    "highlightStarMobs.color",
+                    "starMobHighlight.color",
                     ElementType.ColorPicker(Color(0, 255, 255, 127))
                 )
             )
