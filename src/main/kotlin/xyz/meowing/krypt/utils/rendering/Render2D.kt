@@ -5,6 +5,7 @@ import net.minecraft.client.gui.GuiGraphics
 import net.minecraft.client.gui.components.PlayerFaceRenderer
 import net.minecraft.client.renderer.RenderType
 import net.minecraft.client.resources.DefaultPlayerSkin
+import net.minecraft.client.resources.PlayerSkin
 import net.minecraft.world.item.ItemStack
 import net.minecraft.network.chat.Component
 import net.minecraft.util.CommonColors
@@ -99,20 +100,38 @@ object Render2D {
         //#endif
     }
 
+    private val textureCache = mutableMapOf<UUID, PlayerSkin>()
+    private var lastCacheClear = System.currentTimeMillis()
+
     fun drawPlayerHead(context: GuiGraphics, x: Int, y: Int, size: Int, uuid: UUID) {
-        //#if MC >= 1.21.9
-        //$$ val textures = client.skinManager.get(GameProfile(uuid, null))
-        //#else
-        val textures = SkullBlockEntity.fetchGameProfile(uuid)
-        //#endif
-            .getNow(Optional.empty())
-            //#if MC < 1.21.9
-            .map(client.skinManager::getInsecureSkin)
+        val now = System.currentTimeMillis()
+        if (now - lastCacheClear > 300000L) {
+            textureCache.clear()
+            lastCacheClear = now
+        }
+
+        val textures = textureCache.getOrPut(uuid) {
+            //#if MC >= 1.21.9
+            //$$ val profile = client.connection?.getPlayerInfo(uuid)?.profile
+            //$$ if (profile != null) {
+            //$$     client.skinManager
+            //$$         .get(profile)
+            //$$         .getNow(Optional.empty())
+            //$$         .orElseGet { DefaultPlayerSkin.get(uuid) }
+            //$$ } else {
+            //$$     DefaultPlayerSkin.get(uuid)
+            //$$ }
+            //#else
+            SkullBlockEntity.fetchGameProfile(uuid)
+                .getNow(Optional.empty())
+                .map(client.skinManager::getInsecureSkin)
+                .orElseGet { DefaultPlayerSkin.get(uuid) }
             //#endif
-            .orElseGet { DefaultPlayerSkin.get(uuid) }
+        }
 
         PlayerFaceRenderer.draw(context, textures, x, y, size)
     }
+
 
     fun drawImage(ctx: GuiGraphics, image: ResourceLocation, x: Int, y: Int, width: Int, height: Int) {
         //#if MC >= 1.21.7
