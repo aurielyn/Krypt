@@ -112,12 +112,13 @@ object DoorHighlight : Feature(
             DungeonAPI.doors.forEach { door ->
                 if (door == null) return@forEach
                 if (door.state != DoorState.DISCOVERED) return@forEach
-                if (door.opened) return@forEach
-                if (door.type !in setOf(DoorType.WITHER, DoorType.BLOOD)) return@forEach
+                if (door.opened && !door.isFairyDoor) return@forEach
+                if (door.type !in setOf(DoorType.WITHER, DoorType.BLOOD) && !door.isFairyDoor) return@forEach
 
-                val color = when (door.type) {
-                    DoorType.WITHER -> if (witherKeyObtained) witherWithKey else witherNoKey
-                    DoorType.BLOOD -> if (bloodKeyObtained) bloodWithKey else bloodNoKey
+                val color = when {
+                    door.isFairyDoor -> if (witherKeyObtained) witherWithKey else witherNoKey
+                    door.type == DoorType.WITHER -> if (witherKeyObtained) witherWithKey else witherNoKey
+                    door.type == DoorType.BLOOD -> if (bloodKeyObtained) bloodWithKey else bloodNoKey
                     else -> return@forEach
                 }
 

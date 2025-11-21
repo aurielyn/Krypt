@@ -223,6 +223,7 @@ object MapScanner {
                 rotation = if (cz % 2 == 1) 0 else 1
                 setType(type)
                 setState(DoorState.DISCOVERED)
+                updateFairyDoorStatus()
             }
             DungeonAPI.addDoor(newDoor)
         } else {
@@ -230,6 +231,7 @@ object MapScanner {
             if (existingDoor.type == DoorType.NORMAL && type != DoorType.NORMAL) {
                 existingDoor.setType(type)
             }
+            existingDoor.updateFairyDoorStatus()
         }
     }
 

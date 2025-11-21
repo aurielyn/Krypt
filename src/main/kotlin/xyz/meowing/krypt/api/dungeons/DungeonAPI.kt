@@ -12,6 +12,7 @@ import net.minecraft.world.level.block.Blocks
 import net.minecraft.world.level.block.entity.SkullBlockEntity
 import tech.thatgravyboat.skyblockapi.api.data.Perk
 import tech.thatgravyboat.skyblockapi.utils.extentions.getTexture
+import tech.thatgravyboat.skyblockapi.utils.regex.RegexUtils.anyMatch
 import tech.thatgravyboat.skyblockapi.utils.regex.RegexUtils.find
 import tech.thatgravyboat.skyblockapi.utils.regex.RegexUtils.findOrNull
 import tech.thatgravyboat.skyblockapi.utils.regex.RegexUtils.findThenNull
@@ -46,6 +47,7 @@ import xyz.meowing.krypt.events.core.DungeonEvent
 import xyz.meowing.krypt.events.core.EntityEvent
 import xyz.meowing.krypt.events.core.LocationEvent
 import xyz.meowing.krypt.events.core.PacketEvent
+import xyz.meowing.krypt.events.core.ScoreboardEvent
 import xyz.meowing.krypt.events.core.TablistEvent
 import xyz.meowing.krypt.events.core.TickEvent
 import xyz.meowing.krypt.features.alerts.MimicAlert
@@ -101,6 +103,7 @@ object DungeonAPI {
     private val mimicMessages = listOf("mimic dead", "mimic dead!", "mimic killed", "mimic killed!", $$"$skytils-dungeon-score-mimic$")
 
     private val cataRegex = Regex("^ Catacombs (?<level>\\d+):")
+    private val locationRegex = Regex(" *[⏣ф] *(?<location>(?:\\s?[^ൠ\\s]+)*)(?: ൠ x\\d)?")
 
     val rooms = Array<Room?>(36) { null }
     val doors = Array<Door?>(60) { null }
@@ -190,10 +193,17 @@ object DungeonAPI {
             }
         }
 
-        EventBus.registerIn<LocationEvent.AreaChange>(SkyBlockIsland.THE_CATACOMBS) { event ->
-            dungeonFloorRegex.find(event.new.name, "floor") { (f) ->
-                floor = DungeonFloor.getByName(f)
-                floor?.let { EventBus.post(DungeonEvent.Enter(it)) }
+        EventBus.registerIn<ScoreboardEvent.Update>(SkyBlockIsland.THE_CATACOMBS) { event ->
+            locationRegex.anyMatch(event.new, "location") { (location) ->
+                dungeonFloorRegex.find(location, "floor") { (f) ->
+                    val old = floor
+                    val new = DungeonFloor.getByName(f)
+
+                    if (old == new) return@find
+
+                    floor = new
+                    floor?.let { EventBus.post(DungeonEvent.Enter(it)) }
+                }
             }
         }
 
@@ -378,32 +388,32 @@ object DungeonAPI {
     fun reset() {
         rooms.fill(null)
         doors.fill(null)
-        
+
         uniqueRooms.clear()
         uniqueDoors.clear()
         discoveredRooms.clear()
-    
+
         currentRoom = null
         holdingLeaps = false
-        
+
         bloodKilledAll = false
         bloodSpawnedAll = false
         bloodOpened = false
-        
+
         floorCompleted = false
         floorStarted = false
-    
+
         mapLine1 = ""
         mapLine2 = ""
-        
+
         witherKeys = 0
         bloodKeys = 0
-        
+
         uniqueClass = false
         inBoss = false
         f7Phase = null
         floor = null
-        
+
         WorldScanner.reset()
         DungeonPlayerManager.reset()
         ScoreCalculator.reset()
