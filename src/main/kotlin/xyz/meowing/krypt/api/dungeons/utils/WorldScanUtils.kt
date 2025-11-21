@@ -1,5 +1,6 @@
 package xyz.meowing.krypt.api.dungeons.utils
 
+import net.minecraft.core.BlockPos
 import xyz.meowing.knit.api.KnitClient
 import xyz.meowing.krypt.utils.WorldUtils
 
@@ -73,4 +74,16 @@ object WorldScanUtils {
             else -> pos
         }
     }
+
+    fun getRoomCenter(posX: Int, posZ: Int): Pair<Int, Int> {
+        val roomX = (posX - DUNGEON_START + (1 shl (ROOM_SIZE_SHIFT - 1))) shr ROOM_SIZE_SHIFT
+        val roomZ = (posZ - DUNGEON_START + (1 shl (ROOM_SIZE_SHIFT - 1))) shr ROOM_SIZE_SHIFT
+        return Pair(
+            ((roomX shl ROOM_SIZE_SHIFT) + DUNGEON_START),
+            ((roomZ shl ROOM_SIZE_SHIFT) + DUNGEON_START)
+        )
+    }
 }
+
+fun Triple<Int, Int, Int>.block(): BlockPos = BlockPos(first, second, third)
+fun Triple<Int, Int, Int>.xy(): Pair<Int, Int> = Pair(first, third)

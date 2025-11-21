@@ -13,7 +13,7 @@ import xyz.meowing.knit.api.KnitClient
 import xyz.meowing.knit.api.KnitClient.client
 import xyz.meowing.knit.api.scheduler.TickScheduler
 import xyz.meowing.krypt.annotations.Module
-import xyz.meowing.krypt.api.dungeons.utils.ScanUtils
+import xyz.meowing.krypt.api.dungeons.utils.block
 import xyz.meowing.krypt.api.location.SkyBlockIsland
 import xyz.meowing.krypt.config.ConfigDelegate
 import xyz.meowing.krypt.config.ui.types.ElementType
@@ -71,10 +71,12 @@ object TicTacToeSolver : Feature(
 
     override fun initialize() {
         register<DungeonEvent.Room.Change> { event ->
-            if (event.new.name != "Tic Tac Toe") return@register
+            val room = event.new
+            if (room.name != "Tic Tac Toe") return@register
+            roomCenter = room.center?.block() ?: return@register
+
 
             inTicTacToe = true
-            roomCenter = ScanUtils.getRoomCenter(event.new)
 
             TickScheduler.Server.schedule(2) {
                 scanBoard()

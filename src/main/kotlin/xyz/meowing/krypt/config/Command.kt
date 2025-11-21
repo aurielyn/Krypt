@@ -2,10 +2,14 @@ package xyz.meowing.krypt.config
 
 import xyz.meowing.knit.api.KnitChat
 import xyz.meowing.knit.api.KnitClient.client
+import xyz.meowing.knit.api.KnitPlayer
 import xyz.meowing.knit.api.command.Commodore
 import xyz.meowing.knit.api.scheduler.TickScheduler
 import xyz.meowing.krypt.Krypt
 import xyz.meowing.krypt.annotations.Command
+import xyz.meowing.krypt.api.dungeons.DungeonAPI
+import xyz.meowing.krypt.api.dungeons.utils.ScanUtils
+import xyz.meowing.krypt.api.dungeons.utils.WorldScanUtils
 import xyz.meowing.krypt.hud.HudEditor
 import xyz.meowing.krypt.managers.config.ConfigManager.configUI
 import xyz.meowing.krypt.managers.config.ConfigManager.openConfig
@@ -35,6 +39,25 @@ object ConfigCommand : Commodore("krypt") {
                 }
             }
         }
+
+        literal("test") {
+            runs {
+                val currentRoom = DungeonAPI.currentRoom ?: return@runs
+                val test = ScanUtils.getRoomCenter(currentRoom)
+
+                KnitChat.fakeMessage("$prefix §fRoom centers for room §c${currentRoom.name}")
+                KnitChat.fakeMessage("§d| §fCenter §c${test}")
+                KnitPlayer.player?.let { p ->
+                    KnitChat.fakeMessage("§d| §fCenter2 §c${WorldScanUtils.getRoomCenter(p.x.toInt(), p.z.toInt())}")
+                }
+                KnitChat.fakeMessage("§d| §fRoom Center §c${currentRoom.center}")
+                KnitChat.fakeMessage("§d| §fComp Centers:")
+                currentRoom.componentCenters.forEach {
+                    KnitChat.fakeMessage("§d| §f- §c${it}")
+                }
+            }
+        }
+
 
         runs {
             openConfig()
