@@ -7,7 +7,6 @@ import net.minecraft.core.BlockPos
 import net.minecraft.world.phys.AABB
 import net.minecraft.world.phys.shapes.VoxelShape
 import net.minecraft.world.level.EmptyBlockGetter
-import xyz.meowing.knit.api.KnitClient
 import xyz.meowing.knit.api.KnitClient.client
 import xyz.meowing.krypt.Krypt
 import xyz.meowing.krypt.annotations.Module
@@ -24,7 +23,6 @@ import xyz.meowing.krypt.features.Feature
 import xyz.meowing.krypt.managers.config.ConfigElement
 import xyz.meowing.krypt.managers.config.ConfigManager
 import xyz.meowing.krypt.utils.NetworkUtils
-import xyz.meowing.krypt.utils.WorldUtils
 import xyz.meowing.krypt.utils.rendering.Render3D
 import java.awt.Color
 
@@ -38,7 +36,7 @@ object BoulderSolver : Feature(
     "boulderSolver",
     island = SkyBlockIsland.THE_CATACOMBS
 ) {
-    private data class BoulderBox(val box: BlockPos, val click: VoxelShape, val render: BlockPos, val clickPos: BlockPos)
+    private data class BoulderBox(val box: BlockPos, val clickPos: BlockPos, val render: BlockPos)
 
     private val boulderSolutions = mutableMapOf<String, List<List<Double>>>()
     private var currentSolution = mutableListOf<BoulderBox>()
@@ -121,6 +119,7 @@ object BoulderSolver : Feature(
         register<RenderEvent.World.Last> { event ->
             if (!inBoulder || currentSolution.isEmpty()) return@register
 
+            val world = client.level ?: return@register
             val boxes = if (showAll) currentSolution else listOf(currentSolution.first())
 
             boxes.forEach { box ->
@@ -138,7 +137,7 @@ object BoulderSolver : Feature(
                 )
 
                 Render3D.drawFilledShapeVoxel(
-                    box.click.move(box.clickPos),
+                    getVoxelShape(box.clickPos, world).move(box.clickPos),
                     clickColor,
                     event.context.consumers(),
                     event.context.matrixStack(),
@@ -162,7 +161,6 @@ object BoulderSolver : Feature(
     }
 
     private fun solve() {
-        val world = KnitClient.world ?: return
         val (sx, sy, sz) = bottomLeftBox.let { Triple(it.x, it.y, it.z) }
         var pattern = ""
 
@@ -176,12 +174,9 @@ object BoulderSolver : Feature(
 
         currentSolution = boulderSolutions[pattern]?.map { sol ->
             val box = getRealCoord(BlockPos(sol[0].toInt(), sy, sol[1].toInt()), roomCenter, rotation)
-
             val clickPos = getRealCoord(BlockPos(sol[2].toInt(), sy, sol[3].toInt()), roomCenter, rotation)
-            val click = getVoxelShape(clickPos, world)
-
             val render = getRealCoord(BlockPos(sol[4].toInt(), sy, sol[5].toInt()), roomCenter, rotation)
-            BoulderBox(box, click, render, clickPos)
+            BoulderBox(box, clickPos, render)
         }?.toMutableList() ?: mutableListOf()
     }
 
