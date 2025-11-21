@@ -30,14 +30,14 @@ object TickTimers: Feature("tickTimers", island = SkyBlockIsland.THE_CATACOMBS) 
     private var purplePadTimerToggled by ConfigDelegate<Boolean>("tickTimers.purplePadTimer")
     private var goldorTicksToggled by ConfigDelegate<Boolean>("tickTimers.goldorTicks")
 
-    var secretTicks = 20
-    var stormTicks = 20
-    var goldorTicks = 60
-    var purplePadTicks = 670
-    var inStorm = false
-    var inTerms = false
-    var isStartTicks = false
-    var startTicks = 104
+    private var secretTicks = 20
+    private var stormTicks = 20
+    private var goldorTicks = 60
+    private var purplePadTicks = 670
+    private var inStorm = false
+    private var inTerms = false
+    private var isStartTicks = false
+    private var startTicks = 104
 
     override fun addConfig() {
         ConfigManager
