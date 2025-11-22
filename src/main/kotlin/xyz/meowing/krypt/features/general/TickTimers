@@ -135,10 +135,7 @@ object TickTimers: Feature("tickTimers", island = SkyBlockIsland.THE_CATACOMBS) 
     }
 
     fun hudEditorRender(context: GuiGraphics){
-        val x = HudManager.getX(NAME)
-        val y = HudManager.getY(NAME)
-        val scale = HudManager.getScale(NAME)
-        Render2D.renderStringWithShadow(context, "§a17", x, y, scale)
+        Render2D.renderStringWithShadow(context, "§a17", 0f, 0f, 1f)
     }
 
     private fun renderHud(context: GuiGraphics) {
