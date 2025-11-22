@@ -224,7 +224,7 @@ object QuizSolver : Feature(
     }
 
     fun hudEditorRender(context: GuiGraphics){
-        Render2D.renderStringWithShadow(context, "§5Quiz &7: §c10.45s", 0f, 0f, 1f)
+        Render2D.renderStringWithShadow(context, "§5Quiz §f: §c10.45s", 0f, 0f, 1f)
     }
 
     private fun renderHud(context: GuiGraphics) {
