@@ -85,7 +85,7 @@ object TickTimers: Feature("tickTimers", island = SkyBlockIsland.THE_CATACOMBS) 
     }
 
     override fun initialize() {
-        HudManager.registerCustom(NAME, 15, 10, this::hudEditorRender, "splitTimers")
+        HudManager.registerCustom(NAME, 15, 10, this::hudEditorRender, "tickTimers")
         register<GuiEvent.Render.HUD> { renderHud(it.context) }
 
 
