@@ -20,7 +20,7 @@ import xyz.meowing.krypt.utils.rendering.Render2D
 object ServerFreezeIndicator: Feature("freezeIndicator", island = SkyBlockIsland.THE_CATACOMBS) {
     private const val NAME = "Freeze Indicator"
     private val threshold by ConfigDelegate<Double>("freezeIndicator.threshold")
-    private var lastTick = 0L
+    private var lastTick = System.currentTimeMillis()
 
     override fun addConfig() {
         ConfigManager
@@ -71,7 +71,7 @@ object ServerFreezeIndicator: Feature("freezeIndicator", island = SkyBlockIsland
         val timeDelta = now - lastTick
 
         if (timeDelta > threshold && timeDelta < 60000L /*1 minute max to make it only detect "coherent" values*/) {
-            val text = "§c${now - lastTick}ms"
+            val text = "§c${timeDelta}ms"
             Render2D.renderStringWithShadow(context, text, x , y, scale)
         }
     }
