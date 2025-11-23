@@ -98,7 +98,7 @@ object QuizSolver : Feature(
                 "Timer",
                 ConfigElement(
                     "quizSolver.timer",
-                    ElementType.Switch(true)
+                    ElementType.Switch(false)
                 )
             )
             .addFeatureOption("HudEditor",
